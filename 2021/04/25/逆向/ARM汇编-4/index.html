@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"liujiaboy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="1. 指针 指针也就是内存地址，指针变量是用来存放内存地址的变量。不同类型的指针变量所占用的存储单元长度是相同的，而存放数据的变量因数据的类型不同，所占用的存储空间长度也不同。可使用 &amp; 运算符访问地址。  之前的文章中有过说明，指针在内存中占8个字节。可以是用sizeof来打印指针的size。 123456void func() &amp;#123;    int *a;    a &#x3D; (int">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ARM汇编-4 指针">
+<meta property="og:url" content="http://liujiaboy.github.io/2021/04/25/%E9%80%86%E5%90%91/ARM%E6%B1%87%E7%BC%96-4/index.html">
+<meta property="og:site_name" content="不会飞的小白">
+<meta property="og:description" content="1. 指针 指针也就是内存地址，指针变量是用来存放内存地址的变量。不同类型的指针变量所占用的存储单元长度是相同的，而存放数据的变量因数据的类型不同，所占用的存储空间长度也不同。可使用 &amp; 运算符访问地址。  之前的文章中有过说明，指针在内存中占8个字节。可以是用sizeof来打印指针的size。 123456void func() &amp;#123;    int *a;    a &#x3D; (int">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-04-25T15:34:37.000Z">
+<meta property="article:modified_time" content="2022-12-23T11:34:49.891Z">
+<meta property="article:author" content="不会飞的小白">
+<meta property="article:tag" content="ARM汇编">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://liujiaboy.github.io/2021/04/25/%E9%80%86%E5%90%91/ARM%E6%B1%87%E7%BC%96-4/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>ARM汇编-4 指针 | 不会飞的小白</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">不会飞的小白</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Stay Hungry, Stay Foolish</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://liujiaboy.github.io/2021/04/25/%E9%80%86%E5%90%91/ARM%E6%B1%87%E7%BC%96-4/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="不会飞的小白">
+      <meta itemprop="description" content="一只iOS程序猿，会陆陆续续的把之前的一些总结搬到这里。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="不会飞的小白">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          ARM汇编-4 指针
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-04-25 23:34:37" itemprop="dateCreated datePublished" datetime="2021-04-25T23:34:37+08:00">2021-04-25</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-12-23 19:34:49" itemprop="dateModified" datetime="2022-12-23T19:34:49+08:00">2022-12-23</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E9%80%86%E5%90%91/" itemprop="url" rel="index"><span itemprop="name">逆向</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="1-指针"><a href="#1-指针" class="headerlink" title="1. 指针"></a>1. 指针</h1><blockquote>
+<p>指针也就是内存地址，指针变量是用来存放内存地址的变量。不同类型的指针变量所占用的存储单元长度是相同的，而存放数据的变量因数据的类型不同，所占用的存储空间长度也不同。<br>可使用 &amp; 运算符访问地址。</p>
+</blockquote>
+<p>之前的文章中有过说明，指针在内存中占8个字节。<br>可以是用sizeof来打印指针的size。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">void func() &#123;</span><br><span class="line">    int *a;</span><br><span class="line">    a = (int *)100;</span><br><span class="line">    a ++;</span><br><span class="line">    printf(&quot;%d&quot;, a);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里定义一个int类型的指针a，然后赋值位100，我们知道指针的size是8个字节，a++之后打印多少？</p>
+<p>答案是104。是的，没有看错，这里是因为指针的自增和自减操作，与执行的数据类型的宽度有关。</p>
+<p>如果<code>a = (char *)100</code>,则打印的就是101。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">void func() &#123;</span><br><span class="line">    int *a;</span><br><span class="line">    a = (int *)100;</span><br><span class="line">    a = a + 1;</span><br><span class="line">    printf(&quot;%d&quot;, a);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个不是指针的自增、自减了，这个时候就跟指针的size有关了，打印108。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">void func_add() &#123;</span><br><span class="line">    int *a;</span><br><span class="line">    a = (int *)100;</span><br><span class="line">    </span><br><span class="line">    int *b;</span><br><span class="line">    b = (int *)200;</span><br><span class="line">    </span><br><span class="line">    int x = a - b;</span><br><span class="line">    printf(&quot;x = %d&quot;, x);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>先说答案，打印的结果是<code>x = -25</code>。</p>
+<p>a - b &#x3D; -100, 然后除以4就得到了这个结果。</p>
+<blockquote>
+<p>指针的运算单位是执行的数据类型的宽度。</p>
+</blockquote>
+<h2 id="1-1-二级指针"><a href="#1-1-二级指针" class="headerlink" title="1.1 二级指针"></a>1.1 二级指针</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">void func() &#123;</span><br><span class="line">    int **a;</span><br><span class="line">    a = (int **)100;</span><br><span class="line">    a = a + 1;</span><br><span class="line">    printf(&quot;%d&quot;, a);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个时候a运算时，执行的类型就是 <code>char *</code>类型，这是一个指针，8个字节。所以结果就是108。</p>
+<h1 id="2-指针的汇编"><a href="#2-指针的汇编" class="headerlink" title="2. 指针的汇编"></a>2. 指针的汇编</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">void func() &#123;</span><br><span class="line">    int *a;</span><br><span class="line">    int b = 10;</span><br><span class="line">    a = &amp;b;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>按照我们正常的理解，上述代码的意思就是把b的地址给到a，这个时候<code>*a=10</code>。</p>
+<p>看一下上面的代码汇编之后是什么样子的。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">Demo`func:</span><br><span class="line">    0x100206130 &lt;+0&gt;:  sub    sp, sp, #0x10             ; =0x10 </span><br><span class="line">    // 1. x8 = sp + 0x4，x8指向这个位置</span><br><span class="line">    0x100206134 &lt;+4&gt;:  add    x8, sp, #0x4              ; =0x4 </span><br><span class="line">    // 2. 局部变量，w9=10</span><br><span class="line">    0x100206138 &lt;+8&gt;:  mov    w9, #0xa</span><br><span class="line">    // 3. 把w9的值放在x8所在的地址上。</span><br><span class="line">    0x10020613c &lt;+12&gt;: str    w9, [sp, #0x4]</span><br><span class="line">    // 4. 把x8存储的地址放在sp + 0x8的位置上。</span><br><span class="line">-&gt;  0x100206140 &lt;+16&gt;: str    x8, [sp, #0x8]</span><br><span class="line">    0x100206144 &lt;+20&gt;: add    sp, sp, #0x10             ; =0x10 </span><br><span class="line">    0x100206148 &lt;+24&gt;: ret    </span><br></pre></td></tr></table></figure>
+
+<p>通过lldb打印一下相关数据：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">(lldb) register read sp</span><br><span class="line">      sp = 0x000000016fbff880</span><br><span class="line"></span><br><span class="line">(lldb) register read x8</span><br><span class="line">      x8 = 0x000000016fbff884</span><br><span class="line">   </span><br><span class="line">(lldb) register read x9</span><br><span class="line">      x9 = 0x000000000000000a</span><br><span class="line"></span><br><span class="line">// 打印一下x8寄存器里的内存地址情况，里头存的值是0xa</span><br><span class="line">(lldb) x 0x000000016fbff884</span><br><span class="line">0x16fbff884: 0a 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................</span><br><span class="line">0x16fbff894: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................   </span><br><span class="line"></span><br><span class="line">// x8的地址放在了sp+0x8的位置，打印一下内存，就是x8存储的地址。</span><br><span class="line">(lldb) x 0x000000016fbff888</span><br><span class="line">0x16fbff888: 84 f8 bf 6f 01 00 00 00 00 00 00 00 00 00 00 00  ...o............</span><br><span class="line">0x16fbff898: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="2-1-数组"><a href="#2-1-数组" class="headerlink" title="2.1 数组"></a>2.1 数组</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">void func() &#123;</span><br><span class="line">    int arr[5] = &#123;1,2,3,4,5&#125;;</span><br><span class="line">    for (int i = 0; i &lt; 5; i++) &#123;</span><br><span class="line">        printf(&quot;%d\n&quot;, *(arr + i));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-2-野指针"><a href="#2-2-野指针" class="headerlink" title="2.2 野指针"></a>2.2 野指针</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">void func() &#123;</span><br><span class="line">    char *p;</span><br><span class="line">    char a = *p;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>通过代码，我们知道，只是把*p的值给了a<br>为什么会发生野指针呢？</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Demo`func:</span><br><span class="line">    0x100812134 &lt;+0&gt;:  sub    sp, sp, #0x10             ; =0x10 </span><br><span class="line">    // 1. 因为p是指针。把sp + 0x8的地址中的值给x8</span><br><span class="line">-&gt;  0x100812138 &lt;+4&gt;:  ldr    x8, [sp, #0x8]</span><br><span class="line">    // 2. 把x8寄存器中存的地址的值给w9</span><br><span class="line">    0x10081213c &lt;+8&gt;:  ldrb   w9, [x8]</span><br><span class="line">    0x100812140 &lt;+12&gt;: strb   w9, [sp, #0x7]</span><br><span class="line">    0x100812144 &lt;+16&gt;: add    sp, sp, #0x10             ; =0x10 </span><br><span class="line">    0x100812148 &lt;+20&gt;: ret    </span><br></pre></td></tr></table></figure>
+
+<ol>
+<li><p>第一步寻址操作，获取x8寄存器的值的地址</p>
+ <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">(lldb) register read sp</span><br><span class="line">      sp = 0x000000016f5f3880</span><br><span class="line"></span><br><span class="line">// sp + 0x8 = 0x000000016f5f3888</span><br><span class="line">(lldb) x 0x000000016f5f3888</span><br><span class="line">0x16f5f3888: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................</span><br><span class="line">0x16f5f3898: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................</span><br><span class="line"></span><br><span class="line">(lldb) register read x8</span><br><span class="line">  x8 = 0x0000000000000000</span><br></pre></td></tr></table></figure>
+
+<p> 这里发现 x8寄存器中存的地址是空，全是0。</p>
+</li>
+<li><p>把x8寄存器中地址所在的值给w9。寻址操作<br> 这里寻址是从0x00000000上找值，从空地址上找值，就会发生crash。</p>
+</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/ARM%E6%B1%87%E7%BC%96/" rel="tag"># ARM汇编</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/04/18/OC%E5%8E%9F%E7%90%86/oc-3-%E5%AF%B9%E8%B1%A1%E7%9A%84%E6%9C%AC%E8%B4%A8/" rel="prev" title="3.对象的本质">
+      <i class="fa fa-chevron-left"></i> 3.对象的本质
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/04/28/%E9%80%86%E5%90%91/ARM%E6%B1%87%E7%BC%96-5/" rel="next" title="ARM汇编-5 OC反汇编">
+      ARM汇编-5 OC反汇编 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-%E6%8C%87%E9%92%88"><span class="nav-number">1.</span> <span class="nav-text">1. 指针</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-1-%E4%BA%8C%E7%BA%A7%E6%8C%87%E9%92%88"><span class="nav-number">1.1.</span> <span class="nav-text">1.1 二级指针</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-%E6%8C%87%E9%92%88%E7%9A%84%E6%B1%87%E7%BC%96"><span class="nav-number">2.</span> <span class="nav-text">2. 指针的汇编</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-1-%E6%95%B0%E7%BB%84"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 数组</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2-%E9%87%8E%E6%8C%87%E9%92%88"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 野指针</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="不会飞的小白"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">不会飞的小白</p>
+  <div class="site-description" itemprop="description">一只iOS程序猿，会陆陆续续的把之前的一些总结搬到这里。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">49</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">24</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/liujiaboy" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;liujiaboy" rel="noopener" target="_blank"><i class="github fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:alan129@163.com" title="E-Mail → mailto:alan129@163.com" rel="noopener" target="_blank"><i class="envelope fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/1768698000" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;u&#x2F;1768698000" rel="noopener" target="_blank"><i class="weibo fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="rss fa-fw"></i></a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">不会飞的小白</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"liujiaboy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="内存管理方案 ARC&#x2F;MRC TarggedPointer: 专门用来处理小对象，比如NSNumber、NSDate、（NSString中有一种是targeed pointer） Nonpointer_isa：非指针类型的isa。主要用来优化64位地址。 SideTables：散列表。主要有两种类型的表，引用计数表，弱引用表。  12345678910111213141516171819">
+<meta property="og:type" content="article">
+<meta property="og:title" content="内存管理">
+<meta property="og:url" content="http://liujiaboy.github.io/2021/05/29/OC%E5%8E%9F%E7%90%86/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/index.html">
+<meta property="og:site_name" content="不会飞的小白">
+<meta property="og:description" content="内存管理方案 ARC&#x2F;MRC TarggedPointer: 专门用来处理小对象，比如NSNumber、NSDate、（NSString中有一种是targeed pointer） Nonpointer_isa：非指针类型的isa。主要用来优化64位地址。 SideTables：散列表。主要有两种类型的表，引用计数表，弱引用表。  12345678910111213141516171819">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-05-29T11:35:15.000Z">
+<meta property="article:modified_time" content="2022-12-23T11:34:49.846Z">
+<meta property="article:author" content="不会飞的小白">
+<meta property="article:tag" content="iOS">
+<meta property="article:tag" content="Objective-C,">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://liujiaboy.github.io/2021/05/29/OC%E5%8E%9F%E7%90%86/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>内存管理 | 不会飞的小白</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">不会飞的小白</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Stay Hungry, Stay Foolish</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://liujiaboy.github.io/2021/05/29/OC%E5%8E%9F%E7%90%86/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="不会飞的小白">
+      <meta itemprop="description" content="一只iOS程序猿，会陆陆续续的把之前的一些总结搬到这里。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="不会飞的小白">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          内存管理
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-05-29 19:35:15" itemprop="dateCreated datePublished" datetime="2021-05-29T19:35:15+08:00">2021-05-29</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-12-23 19:34:49" itemprop="dateModified" datetime="2022-12-23T19:34:49+08:00">2022-12-23</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/OC%E5%8E%9F%E7%90%86/" itemprop="url" rel="index"><span itemprop="name">OC原理</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="内存管理方案"><a href="#内存管理方案" class="headerlink" title="内存管理方案"></a>内存管理方案</h1><ol>
+<li>ARC&#x2F;MRC</li>
+<li>TarggedPointer: 专门用来处理小对象，比如NSNumber、NSDate、（NSString中有一种是targeed pointer）</li>
+<li>Nonpointer_isa：非指针类型的isa。主要用来优化64位地址。</li>
+<li>SideTables：散列表。主要有两种类型的表，引用计数表，弱引用表。</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">// viewDidLoad添加</span><br><span class="line">- (void)taggedPointerDemo &#123;</span><br><span class="line">  self.queue = dispatch_queue_create(&quot;com.cjl.cn&quot;, DISPATCH_QUEUE_CONCURRENT);</span><br><span class="line">    </span><br><span class="line">    for (int i = 0; i&lt;10000; i++) &#123;</span><br><span class="line">        dispatch_async(self.queue, ^&#123;</span><br><span class="line">            // alloc堆上，iOS优化之后变成 taggedpointer</span><br><span class="line">            // nameStr是NSTaggedPointerString</span><br><span class="line">            self.nameStr = [NSString stringWithFormat:@&quot;aaa&quot;];  </span><br><span class="line">             NSLog(@&quot;%@&quot;,self.nameStr);</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 点击</span><br><span class="line">- (void)touchesBegan:(NSSet&lt;UITouch *&gt; *)touches withEvent:(UIEvent *)event&#123;</span><br><span class="line">    NSLog(@&quot;来了&quot;);</span><br><span class="line">    for (int i = 0; i&lt;10000; i++) &#123;</span><br><span class="line">        dispatch_async(self.queue, ^&#123;</span><br><span class="line">            // nameStr是NSCFString</span><br><span class="line">            self.nameStr = [NSString stringWithFormat:@&quot;aa-加油&quot;];</span><br><span class="line">            NSLog(@&quot;%@&quot;,self.nameStr);</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行上面的代码啊，发现在<code>taggedPointerDemo</code>方法中没有问题，但是点击屏幕，执行了touchesBegan就发生了崩溃。虽然在多线程时有过类似的例子，是由于多次释放造成的。但是这里的根本原因是<code>nameStr</code>在底层的类型不一致导致的，分别在两个赋值的方法处打上断点，看看是什么类型。</p>
+<ul>
+<li>taggedPointerDemo方法中的nameStr类型是 NSTaggedPointerString，存储在常量区。因为nameStr在alloc分配时在堆区，由于较小，所以经过xcode中iOS的优化，成了NSTaggedPointerString类型，存储在常量区。</li>
+<li>touchesBegan方法中的nameStr类型是 NSCFString类型，存储在堆上</li>
+</ul>
+<h2 id="NSString的类型"><a href="#NSString的类型" class="headerlink" title="NSString的类型"></a>NSString的类型</h2><ol>
+<li>NSCFConstantString：字符串常量，是一种编译时常量，retainCount值很大，对其操作，不会引起引用计数变化，存储在字符串常量区。</li>
+<li>NSCFString：是在运行时创建的NSString子类，创建后引用计数会加1，存储在堆上。</li>
+<li>NSTaggedPointerString：标签指针，是苹果在64位环境下对NSString、NSNumber等对象做的优化。对于NSString对象来说，当字符串是由数字、英文字母组合且长度小于等于9时，会自动成为NSTaggedPointerString类型，存储在常量区。</li>
+<li>当有中文或者其他特殊符号时，会直接成为__NSCFString类型，存储在堆区。</li>
+</ol>
+<h2 id="Tagged-Pointer小对象"><a href="#Tagged-Pointer小对象" class="headerlink" title="Tagged Pointer小对象"></a>Tagged Pointer小对象</h2><p>接下来看一下tagged pointer对象的引用计数相关逻辑。直接上源码：</p>
+<p><code>void objc_setProperty</code> -&gt; <code>reallySetProperty</code>。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">static inline void reallySetProperty(id self, SEL _cmd, id newValue, ptrdiff_t offset, bool atomic, bool copy, bool mutableCopy)</span><br><span class="line">&#123;</span><br><span class="line">    if (offset == 0) &#123;</span><br><span class="line">        object_setClass(self, newValue);</span><br><span class="line">        return;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    id oldValue;</span><br><span class="line">    id *slot = (id*) ((char*)self + offset);</span><br><span class="line"></span><br><span class="line">    // copy和mutableCopy处理</span><br><span class="line">    if (copy) &#123;</span><br><span class="line">        newValue = [newValue copyWithZone:nil];</span><br><span class="line">    &#125; else if (mutableCopy) &#123;</span><br><span class="line">        newValue = [newValue mutableCopyWithZone:nil];</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        if (*slot == newValue) return;</span><br><span class="line">        // retain操作</span><br><span class="line">        newValue = objc_retain(newValue);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    if (!atomic) &#123;</span><br><span class="line">        oldValue = *slot;</span><br><span class="line">        *slot = newValue;</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        spinlock_t&amp; slotlock = PropertyLocks[slot];</span><br><span class="line">        slotlock.lock();</span><br><span class="line">        oldValue = *slot;</span><br><span class="line">        *slot = newValue;        </span><br><span class="line">        slotlock.unlock();</span><br><span class="line">    &#125;</span><br><span class="line">    // release操作</span><br><span class="line">    objc_release(oldValue);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>接下来我们看看retain和release内部做了什么</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">__attribute__((aligned(16), flatten, noinline))</span><br><span class="line">id </span><br><span class="line">objc_retain(id obj)</span><br><span class="line">&#123;</span><br><span class="line">    if (!obj) return obj;</span><br><span class="line">    //判断是否是小对象，如果是，则直接返回对象</span><br><span class="line">    if (obj-&gt;isTaggedPointer()) return obj;</span><br><span class="line">    //如果不是小对象，则retain</span><br><span class="line">    return obj-&gt;retain();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">//****************objc_release****************</span><br><span class="line">__attribute__((aligned(16), flatten, noinline))</span><br><span class="line">void </span><br><span class="line">objc_release(id obj)</span><br><span class="line">&#123;</span><br><span class="line">    if (!obj) return;</span><br><span class="line">    //如果是小对象，则直接返回</span><br><span class="line">    if (obj-&gt;isTaggedPointer()) return;</span><br><span class="line">    //如果不是小对象，则release</span><br><span class="line">    return obj-&gt;release();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果是Tagged Pointer小对象，不会对引用计数做处理。</p>
+<h3 id="小对象地址分析"><a href="#小对象地址分析" class="headerlink" title="小对象地址分析"></a>小对象地址分析</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">NSString *str1 = [NSString stringWithFormat:@&quot;a&quot;];</span><br><span class="line">NSString *str2 = [NSString stringWithFormat:@&quot;啊&quot;];</span><br><span class="line">NSLog(@&quot;%p-%@&quot;,str1,str1);</span><br><span class="line">NSLog(@&quot;%p-%@&quot;,str2,str2);</span><br></pre></td></tr></table></figure>
+
+<p>看一下输出结果：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">0xd3c9816ac08c01c6-a</span><br><span class="line">0x6000033631e0-啊</span><br></pre></td></tr></table></figure>
+
+<p>在类的加载时，其中的_read_images源码有一个方法对小对象进行了处理，即initializeTaggedPointerObfuscator方法。</p>
+<p>查看一下源码：<code>_read_images</code> -&gt; <code>initializeTaggedPointerObfuscator</code>。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">static void</span><br><span class="line">initializeTaggedPointerObfuscator(void)</span><br><span class="line">&#123;</span><br><span class="line">    if (sdkIsOlderThan(10_14, 12_0, 12_0, 5_0, 3_0) ||</span><br><span class="line">        // Set the obfuscator to zero for apps linked against older SDKs,</span><br><span class="line">        // in case they&#x27;re relying on the tagged pointer representation.</span><br><span class="line">        DisableTaggedPointerObfuscation) &#123;</span><br><span class="line">        objc_debug_taggedpointer_obfuscator = 0;</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        // Pull random data into the variable, then shift away all non-payload bits.</span><br><span class="line">        arc4random_buf(&amp;objc_debug_taggedpointer_obfuscator,</span><br><span class="line">                       sizeof(objc_debug_taggedpointer_obfuscator));</span><br><span class="line">        // _OBJC_TAG_MASK 进行混淆</span><br><span class="line">        objc_debug_taggedpointer_obfuscator &amp;= ~_OBJC_TAG_MASK;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>全局搜索<code>objc_debug_taggedpointer_obfuscator</code>，找到了encode和decode方法。分别是对tagged pointer的编码和解码。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">static inline void * _Nonnull</span><br><span class="line">_objc_encodeTaggedPointer(uintptr_t ptr)</span><br><span class="line">&#123;</span><br><span class="line">    return (void *)(objc_debug_taggedpointer_obfuscator ^ ptr);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static inline uintptr_t</span><br><span class="line">_objc_decodeTaggedPointer(const void * _Nullable ptr)</span><br><span class="line">&#123;</span><br><span class="line">    return (uintptr_t)ptr ^ objc_debug_taggedpointer_obfuscator;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>encode时进行了一次<code>^</code>操作，decode时也进行了一次<code>^</code>操作。可以对值进行还原。</p>
+<p>那我们分别打印一下decode后的值：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">NSString *str1 = [NSString stringWithFormat:@&quot;a&quot;];</span><br><span class="line">NSLog(@&quot;%p-%@&quot;,str1,str1);</span><br><span class="line">NSLog(@&quot;0x%lx&quot;,_objc_decodeTaggedPointer_(str1));</span><br><span class="line"></span><br><span class="line">NSNumber *number1 = @1;</span><br><span class="line">NSLog(@&quot;%@-%p-%@&quot;,object_getClass(number1),number1,number1);</span><br><span class="line">NSLog(@&quot;0x%lx&quot;,_objc_decodeTaggedPointer_(number3));</span><br></pre></td></tr></table></figure>
+
+<p>输出结果：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">0xe4742f5bd16235e6-a</span><br><span class="line">0xa000000000000611</span><br><span class="line"></span><br><span class="line">__NSCFNumber-0xf4742f5bd16233e5-1</span><br><span class="line">0xb000000000000012</span><br></pre></td></tr></table></figure>
+
+<p>在源码中有一个判断条件，是否为TaggedPointer：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">static inline bool </span><br><span class="line">_objc_isTaggedPointer(const void * _Nullable ptr)</span><br><span class="line">&#123;</span><br><span class="line">    //等价于 ptr &amp; 1左移63，即2^63，相当于除了64位，其他位都为0，即只是保留了最高位的值</span><br><span class="line">    return ((uintptr_t)ptr &amp; _OBJC_TAG_MASK) == _OBJC_TAG_MASK;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>所以0xa、0xb主要是用于判断是否是小对象taggedpointer，即判断条件，判断第64位上是否为1（taggedpointer指针地址即表示指针地址，也表示值）</p>
+<p>0xa 转换成二进制为 1 010（64为为1，63~61后三位表示 tagType类型 - 2），表示NSString类型</p>
+<p>0xb 转换为二进制为 1 011（64为为1，63~61后三位表示 tagType类型 - 3），表示NSNumber类型，这里需要注意一点，如果NSNumber的值是-1，其地址中的值是用补码表示的</p>
+<p>这里可以通过_objc_makeTaggedPointer方法的参数tag类型objc_tag_index_t进入其枚举，其中 2表示NSString，3表示NSNumber</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">#if __has_feature(objc_fixed_enum)  ||  __cplusplus &gt;= 201103L</span><br><span class="line">enum objc_tag_index_t : uint16_t</span><br><span class="line">#else</span><br><span class="line">typedef uint16_t objc_tag_index_t;</span><br><span class="line">enum</span><br><span class="line">#endif</span><br><span class="line">&#123;</span><br><span class="line">    // 60-bit payloads</span><br><span class="line">    OBJC_TAG_NSAtom            = 0, </span><br><span class="line">    OBJC_TAG_1                 = 1, </span><br><span class="line">    OBJC_TAG_NSString          = 2,     // NSString</span><br><span class="line">    OBJC_TAG_NSNumber          = 3,     // NSNumber</span><br><span class="line">    OBJC_TAG_NSIndexPath       = 4, </span><br><span class="line">    OBJC_TAG_NSManagedObjectID = 5, </span><br><span class="line">    OBJC_TAG_NSDate            = 6,</span><br><span class="line"></span><br><span class="line">    // 60-bit reserved</span><br><span class="line">    OBJC_TAG_RESERVED_7        = 7, </span><br><span class="line"></span><br><span class="line">    // 52-bit payloads</span><br><span class="line">    OBJC_TAG_Photos_1          = 8,</span><br><span class="line">    OBJC_TAG_Photos_2          = 9,</span><br><span class="line">    OBJC_TAG_Photos_3          = 10,</span><br><span class="line">    OBJC_TAG_Photos_4          = 11,</span><br><span class="line">    OBJC_TAG_XPC_1             = 12,</span><br><span class="line">    OBJC_TAG_XPC_2             = 13,</span><br><span class="line">    OBJC_TAG_XPC_3             = 14,</span><br><span class="line">    OBJC_TAG_XPC_4             = 15,</span><br><span class="line">    OBJC_TAG_NSColor           = 16,</span><br><span class="line">    OBJC_TAG_UIColor           = 17,</span><br><span class="line">    OBJC_TAG_CGColor           = 18,</span><br><span class="line">    OBJC_TAG_NSIndexSet        = 19,</span><br><span class="line"></span><br><span class="line">    OBJC_TAG_First60BitPayload = 0, </span><br><span class="line">    OBJC_TAG_Last60BitPayload  = 6, </span><br><span class="line">    OBJC_TAG_First52BitPayload = 8, </span><br><span class="line">    OBJC_TAG_Last52BitPayload  = 263, </span><br><span class="line"></span><br><span class="line">    OBJC_TAG_RESERVED_264      = 264</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>跟我们上面得到的结果是一样的。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><ul>
+<li>Tagged Pointer小对象类型（用于存储NSNumber、NSDate、小NSString），小对象指针不再是简单的地址，而是地址 + 值，即真正的值，它只是一个披着对象皮的普通变量而以。所以可以直接进行读取。优点是占用空间小，节省内存</li>
+<li>Tagged Pointer小对象 不会进入retain 和 release，意味着不需要ARC进行管理，所以可以直接被系统自主的释放和回收。</li>
+<li>Tagged Pointer的内存并不存储在堆中，而是在常量区中，也不需要malloc和free。</li>
+<li>对于NSString类型，建议直接使用<code>@&quot;&quot;</code>初始化赋值。</li>
+</ul>
+<h1 id="SideTables-散列表"><a href="#SideTables-散列表" class="headerlink" title="SideTables 散列表"></a>SideTables 散列表</h1><p>SideTables是一个hash表。在weak修饰时会存放在SideTables这个表中。</p>
+<p>对于OC正常的对象来说当执行retain操作时，当引用计数达到一定的值（256）时，则会存放在SideTables中。</p>
+<p>我们接下来看一下retain 的流程</p>
+<h2 id="retain流程"><a href="#retain流程" class="headerlink" title="retain流程"></a>retain流程</h2><p>看一些源码：进入<code>objc_retain</code> -&gt; <code>retain</code> -&gt; <code>rootRetain</code>查看源码实现。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line">LWAYS_INLINE id </span><br><span class="line">objc_object::rootRetain(bool tryRetain, bool handleOverflow)</span><br><span class="line">&#123;</span><br><span class="line">    if (isTaggedPointer()) return (id)this;</span><br><span class="line"></span><br><span class="line">    bool sideTableLocked = false;</span><br><span class="line">    bool transcribeToSideTable = false;</span><br><span class="line">    //为什么有isa？因为需要对引用计数+1，即retain+1，而引用计数存储在isa的bits中，需要进行新旧isa的替换</span><br><span class="line">    isa_t oldisa;</span><br><span class="line">    isa_t newisa;</span><br><span class="line">    //重点</span><br><span class="line">    do &#123;</span><br><span class="line">        transcribeToSideTable = false;</span><br><span class="line">        oldisa = LoadExclusive(&amp;isa.bits);</span><br><span class="line">        newisa = oldisa;</span><br><span class="line">        //判断是否为nonpointer isa</span><br><span class="line">        if (slowpath(!newisa.nonpointer)) &#123;</span><br><span class="line">            //如果不是 nonpointer isa，直接操作散列表sidetable</span><br><span class="line">            ClearExclusive(&amp;isa.bits);</span><br><span class="line">            if (rawISA()-&gt;isMetaClass()) return (id)this;</span><br><span class="line">            if (!tryRetain &amp;&amp; sideTableLocked) sidetable_unlock();</span><br><span class="line">            if (tryRetain) return sidetable_tryRetain() ? (id)this : nil;</span><br><span class="line">            else return sidetable_retain();</span><br><span class="line">        &#125;</span><br><span class="line">        // don&#x27;t check newisa.fast_rr; we already called any RR overrides</span><br><span class="line">        //dealloc源码</span><br><span class="line">        if (slowpath(tryRetain &amp;&amp; newisa.deallocating)) &#123;</span><br><span class="line">            ClearExclusive(&amp;isa.bits);</span><br><span class="line">            if (!tryRetain &amp;&amp; sideTableLocked) sidetable_unlock();</span><br><span class="line">            return nil;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        </span><br><span class="line">        uintptr_t carry;</span><br><span class="line">        //执行引用计数+1操作，即对bits中的 1ULL&lt;&lt;45（arm64） 即extra_rc，用于该对象存储引用计数值</span><br><span class="line">        newisa.bits = addc(newisa.bits, RC_ONE, 0, &amp;carry);  // extra_rc++</span><br><span class="line">        //判断extra_rc是否满了，carry是标识符</span><br><span class="line">        if (slowpath(carry)) &#123;</span><br><span class="line">            // newisa.extra_rc++ overflowed</span><br><span class="line">            if (!handleOverflow) &#123;</span><br><span class="line">                ClearExclusive(&amp;isa.bits);</span><br><span class="line">                return rootRetain_overflow(tryRetain);</span><br><span class="line">            &#125;</span><br><span class="line">            // Leave half of the retain counts inline and </span><br><span class="line">            // prepare to copy the other half to the side table.</span><br><span class="line">            if (!tryRetain &amp;&amp; !sideTableLocked) sidetable_lock();</span><br><span class="line">            sideTableLocked = true;</span><br><span class="line">            transcribeToSideTable = true;</span><br><span class="line">            //如果extra_rc满了，则直接将满状态的一半拿出来存到extra_rc</span><br><span class="line">            newisa.extra_rc = RC_HALF;</span><br><span class="line">            //给一个标识符为YES，表示需要存储到散列表</span><br><span class="line">            newisa.has_sidetable_rc = true;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; while (slowpath(!StoreExclusive(&amp;isa.bits, oldisa.bits, newisa.bits)));</span><br><span class="line"></span><br><span class="line">    if (slowpath(transcribeToSideTable)) &#123;</span><br><span class="line">        // Copy the other half of the retain counts to the side table.</span><br><span class="line">        //将另一半存在散列表的rc_half中，即满状态下是8位，一半就是1左移7位，即除以2</span><br><span class="line">        //这么操作的目的在于提高性能，因为如果都存在散列表中，当需要release-1时，需要去访问散列表，每次都需要开解锁，比较消耗性能。extra_rc存储一半的话，可以直接操作extra_rc即可，不需要操作散列表。性能会提高很多</span><br><span class="line">        sidetable_addExtraRC_nolock(RC_HALF);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    if (slowpath(!tryRetain &amp;&amp; sideTableLocked)) sidetable_unlock();</span><br><span class="line">    return (id)this;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>流程分析：</p>
+<ol>
+<li>isTaggedPointer直接返回。</li>
+<li>不是nonpointer，直接存sideTable</li>
+<li>是否正在释放，deallocating，返回nil</li>
+<li>引用计数+1。</li>
+<li>判断引用计数是否存满了，满了则变成一半，另一半存放在散列表中。</li>
+</ol>
+<p>之所以不直接把引用计数存放在散列表中，是因为对表的操作，需要用到锁，这是耗时操作。<br>如果每一个对象都需要一个散列表，也会造成性能问题。如果所有对象公用一个散列表，则其他数据可能不安全，所以也不会公用一个表。真机上最多有8个表。</p>
+<h2 id="release流程"><a href="#release流程" class="headerlink" title="release流程"></a>release流程</h2><p>release流程与retain相反。</p>
+<p><code>setProperty</code> -&gt; <code>reallySetProperty</code> -&gt; <code>objc_release</code> -&gt; <code>release</code> -&gt; <code>rootRelease</code> -&gt; <code>rootRelease</code>查看源码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br></pre></td><td class="code"><pre><span class="line">ALWAYS_INLINE bool </span><br><span class="line">objc_object::rootRelease(bool performDealloc, bool handleUnderflow)</span><br><span class="line">&#123;</span><br><span class="line">    if (isTaggedPointer()) return false;</span><br><span class="line"></span><br><span class="line">    bool sideTableLocked = false;</span><br><span class="line"></span><br><span class="line">    isa_t oldisa;</span><br><span class="line">    isa_t newisa;</span><br><span class="line"></span><br><span class="line"> retry:</span><br><span class="line">    do &#123;</span><br><span class="line">        oldisa = LoadExclusive(&amp;isa.bits);</span><br><span class="line">        newisa = oldisa;</span><br><span class="line">        //判断是否是Nonpointer isa</span><br><span class="line">        if (slowpath(!newisa.nonpointer)) &#123;</span><br><span class="line">            //如果不是，则直接操作散列表-1</span><br><span class="line">            ClearExclusive(&amp;isa.bits);</span><br><span class="line">            if (rawISA()-&gt;isMetaClass()) return false;</span><br><span class="line">            if (sideTableLocked) sidetable_unlock();</span><br><span class="line">            return sidetable_release(performDealloc);</span><br><span class="line">        &#125;</span><br><span class="line">        // don&#x27;t check newisa.fast_rr; we already called any RR overrides</span><br><span class="line">        uintptr_t carry;</span><br><span class="line">        //进行引用计数-1操作，即extra_rc-1</span><br><span class="line">        newisa.bits = subc(newisa.bits, RC_ONE, 0, &amp;carry);  // extra_rc--</span><br><span class="line">        //如果此时extra_rc的值为0了，则走到underflow</span><br><span class="line">        if (slowpath(carry)) &#123;</span><br><span class="line">            // don&#x27;t ClearExclusive()</span><br><span class="line">            goto underflow;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; while (slowpath(!StoreReleaseExclusive(&amp;isa.bits, </span><br><span class="line">                                             oldisa.bits, newisa.bits)));</span><br><span class="line"></span><br><span class="line">    if (slowpath(sideTableLocked)) sidetable_unlock();</span><br><span class="line">    return false;</span><br><span class="line"></span><br><span class="line"> underflow:</span><br><span class="line">    // newisa.extra_rc-- underflowed: borrow from side table or deallocate</span><br><span class="line"></span><br><span class="line">    // abandon newisa to undo the decrement</span><br><span class="line">    newisa = oldisa;</span><br><span class="line">    //判断散列表中是否存储了一半的引用计数</span><br><span class="line">    if (slowpath(newisa.has_sidetable_rc)) &#123;</span><br><span class="line">        if (!handleUnderflow) &#123;</span><br><span class="line">            ClearExclusive(&amp;isa.bits);</span><br><span class="line">            return rootRelease_underflow(performDealloc);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        // Transfer retain count from side table to inline storage.</span><br><span class="line"></span><br><span class="line">        if (!sideTableLocked) &#123;</span><br><span class="line">            ClearExclusive(&amp;isa.bits);</span><br><span class="line">            sidetable_lock();</span><br><span class="line">            sideTableLocked = true;</span><br><span class="line">            // Need to start over to avoid a race against </span><br><span class="line">            // the nonpointer -&gt; raw pointer transition.</span><br><span class="line">            goto retry;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        // Try to remove some retain counts from the side table.</span><br><span class="line">        //从散列表中取出存储的一半引用计数</span><br><span class="line">        size_t borrowed = sidetable_subExtraRC_nolock(RC_HALF);</span><br><span class="line"></span><br><span class="line">        // To avoid races, has_sidetable_rc must remain set </span><br><span class="line">        // even if the side table count is now zero.</span><br><span class="line"></span><br><span class="line">        if (borrowed &gt; 0) &#123;</span><br><span class="line">            // Side table retain count decreased.</span><br><span class="line">            // Try to add them to the inline count.</span><br><span class="line">            //进行-1操作，然后存储到extra_rc中</span><br><span class="line">            newisa.extra_rc = borrowed - 1;  // redo the original decrement too</span><br><span class="line">            bool stored = StoreReleaseExclusive(&amp;isa.bits, </span><br><span class="line">                                                oldisa.bits, newisa.bits);</span><br><span class="line">            if (!stored) &#123;</span><br><span class="line">                // Inline update failed. </span><br><span class="line">                // Try it again right now. This prevents livelock on LL/SC </span><br><span class="line">                // architectures where the side table access itself may have </span><br><span class="line">                // dropped the reservation.</span><br><span class="line">                isa_t oldisa2 = LoadExclusive(&amp;isa.bits);</span><br><span class="line">                isa_t newisa2 = oldisa2;</span><br><span class="line">                if (newisa2.nonpointer) &#123;</span><br><span class="line">                    uintptr_t overflow;</span><br><span class="line">                    newisa2.bits = </span><br><span class="line">                        addc(newisa2.bits, RC_ONE * (borrowed-1), 0, &amp;overflow);</span><br><span class="line">                    if (!overflow) &#123;</span><br><span class="line">                        stored = StoreReleaseExclusive(&amp;isa.bits, oldisa2.bits, </span><br><span class="line">                                                       newisa2.bits);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            if (!stored) &#123;</span><br><span class="line">                // Inline update failed.</span><br><span class="line">                // Put the retains back in the side table.</span><br><span class="line">                sidetable_addExtraRC_nolock(borrowed);</span><br><span class="line">                goto retry;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            // Decrement successful after borrowing from side table.</span><br><span class="line">            // This decrement cannot be the deallocating decrement - the side </span><br><span class="line">            // table lock and has_sidetable_rc bit ensure that if everyone </span><br><span class="line">            // else tried to -release while we worked, the last one would block.</span><br><span class="line">            sidetable_unlock();</span><br><span class="line">            return false;</span><br><span class="line">        &#125;</span><br><span class="line">        else &#123;</span><br><span class="line">            // Side table is empty after all. Fall-through to the dealloc path.</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    //此时extra_rc中值为0，散列表中也是空的，则直接进行析构，即自动触发dealloc流程</span><br><span class="line">    // Really deallocate.</span><br><span class="line">    //触发dealloc的时机</span><br><span class="line">    if (slowpath(newisa.deallocating)) &#123;</span><br><span class="line">        ClearExclusive(&amp;isa.bits);</span><br><span class="line">        if (sideTableLocked) sidetable_unlock();</span><br><span class="line">        return overrelease_error();</span><br><span class="line">        // does not actually return</span><br><span class="line">    &#125;</span><br><span class="line">    newisa.deallocating = true;</span><br><span class="line">    if (!StoreExclusive(&amp;isa.bits, oldisa.bits, newisa.bits)) goto retry;</span><br><span class="line"></span><br><span class="line">    if (slowpath(sideTableLocked)) sidetable_unlock();</span><br><span class="line"></span><br><span class="line">    __c11_atomic_thread_fence(__ATOMIC_ACQUIRE);</span><br><span class="line"></span><br><span class="line">    if (performDealloc) &#123;</span><br><span class="line">        //发送一个dealloc消息</span><br><span class="line">        ((void(*)(objc_object *, SEL))objc_msgSend)(this, @selector(dealloc));</span><br><span class="line">    &#125;</span><br><span class="line">    return true;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>流程分析如下：</p>
+<ol>
+<li><p>判断是否是Nonpointer isa，如果不是，则直接对散列表进行-1操作</p>
+</li>
+<li><p>如果是Nonpointer isa，则对extra_rc中的引用计数值进行-1操作，并存储此时的extra_rc状态到carry中</p>
+</li>
+<li><p>如果此时的状态carray为0，则走到underflow流程</p>
+<p> underflow流程有以下几步：</p>
+<ol>
+<li>判断散列表中是否存储了一半的引用计数，如果是，则从散列表中取出存储的一半引用计数，进行-1操作，然后存储到extra_rc中</li>
+<li>如果此时extra_rc没有值，散列表中也是空的，则直接进行析构，即dealloc操作，属于自动触发</li>
+</ol>
+</li>
+</ol>
+<h2 id="dealloc分析"><a href="#dealloc分析" class="headerlink" title="dealloc分析"></a>dealloc分析</h2><p>dealloc是在retainCount为0时系统自动触发的。</p>
+<p><code>dealloc</code> -&gt; <code>_objc_rootDealloc</code> -&gt; <code>rootDealloc</code>查看源码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">inline void</span><br><span class="line">objc_object::rootDealloc()</span><br><span class="line">&#123;</span><br><span class="line">    //对象要释放，需要做哪些事情？</span><br><span class="line">    //1、isa - cxx - 关联对象 - 弱引用表 - 引用计数表</span><br><span class="line">    //2、free</span><br><span class="line">    if (isTaggedPointer()) return;  // fixme necessary?</span><br><span class="line"></span><br><span class="line">    //如果没有这些，则直接free</span><br><span class="line">    if (fastpath(isa.nonpointer  &amp;&amp;  </span><br><span class="line">                 !isa.weakly_referenced  &amp;&amp;  </span><br><span class="line">                 !isa.has_assoc  &amp;&amp;  </span><br><span class="line">                 !isa.has_cxx_dtor  &amp;&amp;  </span><br><span class="line">                 !isa.has_sidetable_rc))</span><br><span class="line">    &#123;</span><br><span class="line">        assert(!sidetable_present());</span><br><span class="line">        free(this);</span><br><span class="line">    &#125; </span><br><span class="line">    else &#123;</span><br><span class="line">        //如果有</span><br><span class="line">        object_dispose((id)this);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>根据条件判断是否有isa、cxx、关联对象、弱引用表、引用计数表，如果没有，则直接free释放内存</li>
+<li>如果有，则进入object_dispose方法</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">id </span><br><span class="line">object_dispose(id obj)</span><br><span class="line">&#123;</span><br><span class="line">    if (!obj) return nil;</span><br><span class="line">    // 销毁实例而不会释放内存</span><br><span class="line">    objc_destructInstance(obj);</span><br><span class="line">    //释放内存</span><br><span class="line">    free(obj);</span><br><span class="line"></span><br><span class="line">    return nil;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>objc_destructInstance</code>为了消耗实例对象。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">void *objc_destructInstance(id obj) </span><br><span class="line">&#123;</span><br><span class="line">    if (obj) &#123;</span><br><span class="line">        // Read all of the flags at once for performance.</span><br><span class="line">        bool cxx = obj-&gt;hasCxxDtor();</span><br><span class="line">        bool assoc = obj-&gt;hasAssociatedObjects();</span><br><span class="line"></span><br><span class="line">        // This order is important.</span><br><span class="line">        //调用C ++析构函数</span><br><span class="line">        if (cxx) object_cxxDestruct(obj);</span><br><span class="line">        //删除关联引用</span><br><span class="line">        if (assoc) _object_remove_assocations(obj);</span><br><span class="line">        //释放</span><br><span class="line">        obj-&gt;clearDeallocating();</span><br><span class="line">    &#125;</span><br><span class="line">    return obj;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>在内部判断是否有析构函数，如果有则调用。</li>
+<li>是否有关联对象，有的花移除关联对象。</li>
+<li>执行clearDeallocating</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">inline void </span><br><span class="line">objc_object::clearDeallocating()</span><br><span class="line">&#123;</span><br><span class="line">    //判断是否为nonpointer isa</span><br><span class="line">    if (slowpath(!isa.nonpointer)) &#123;</span><br><span class="line">        // Slow path for raw pointer isa.</span><br><span class="line">        //如果不是，则直接释放散列表</span><br><span class="line">        sidetable_clearDeallocating();</span><br><span class="line">    &#125;</span><br><span class="line">    //如果是，清空弱引用表 + 散列表</span><br><span class="line">    else if (slowpath(isa.weakly_referenced  ||  isa.has_sidetable_rc)) &#123;</span><br><span class="line">        // Slow path for non-pointer isa with weak refs and/or side table data.</span><br><span class="line">        clearDeallocating_slow();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    assert(!sidetable_present());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>clearDeallocating</code>的目的主要是为了清空散列表。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">NEVER_INLINE void</span><br><span class="line">objc_object::clearDeallocating_slow()</span><br><span class="line">&#123;</span><br><span class="line">    ASSERT(isa.nonpointer  &amp;&amp;  (isa.weakly_referenced || isa.has_sidetable_rc));</span><br><span class="line"></span><br><span class="line">    SideTable&amp; table = SideTables()[this];</span><br><span class="line">    table.lock();</span><br><span class="line">    if (isa.weakly_referenced) &#123;</span><br><span class="line">        //清空弱引用表</span><br><span class="line">        weak_clear_no_lock(&amp;table.weak_table, (id)this);</span><br><span class="line">    &#125;</span><br><span class="line">    if (isa.has_sidetable_rc) &#123;</span><br><span class="line">        //清空引用计数</span><br><span class="line">        table.refcnts.erase(this);</span><br><span class="line">    &#125;</span><br><span class="line">    table.unlock();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>清空引用计数，情况弱引用表。</p>
+<p>以上就是dealloc 的流程。</p>
+<h2 id="retainCount"><a href="#retainCount" class="headerlink" title="retainCount"></a>retainCount</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">NSObject *objc = [NSObject alloc];</span><br><span class="line">NSLog(@&quot;%ld&quot;,CFGetRetainCount((__bridge CFTypeRef)objc));</span><br></pre></td></tr></table></figure>
+
+<p>上面输出的引用计数是多少？这是一个经典的面试题。</p>
+<p>这里输出的结果是1。但是1是不对的。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">- (NSUInteger)retainCount &#123;</span><br><span class="line">    return _objc_rootRetainCount(self);</span><br><span class="line">&#125;</span><br><span class="line">👇</span><br><span class="line">uintptr_t</span><br><span class="line">_objc_rootRetainCount(id obj)</span><br><span class="line">&#123;</span><br><span class="line">    ASSERT(obj);</span><br><span class="line"></span><br><span class="line">    return obj-&gt;rootRetainCount();</span><br><span class="line">&#125;</span><br><span class="line">👇</span><br><span class="line">inline uintptr_t </span><br><span class="line">objc_object::rootRetainCount()</span><br><span class="line">&#123;</span><br><span class="line">    if (isTaggedPointer()) return (uintptr_t)this;</span><br><span class="line"></span><br><span class="line">    sidetable_lock();</span><br><span class="line">    isa_t bits = LoadExclusive(&amp;isa.bits);</span><br><span class="line">    ClearExclusive(&amp;isa.bits);</span><br><span class="line">    //如果是nonpointer isa，才有引用计数的下层处理</span><br><span class="line">    if (bits.nonpointer) &#123;</span><br><span class="line">        //alloc创建的对象引用计数为0，包括sideTable,所以对于alloc来说，是 0+1=1，这也是为什么通过retaincount获取的引用计数为1的原因</span><br><span class="line">        uintptr_t rc = 1 + bits.extra_rc;</span><br><span class="line">        if (bits.has_sidetable_rc) &#123;</span><br><span class="line">            rc += sidetable_getExtraRC_nolock();</span><br><span class="line">        &#125;</span><br><span class="line">        sidetable_unlock();</span><br><span class="line">        return rc;</span><br><span class="line">    &#125;</span><br><span class="line">    //如果不是，则正常返回</span><br><span class="line">    sidetable_unlock();</span><br><span class="line">    return sidetable_retainCount();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>当对象创建时，并没有存引用计数，bits.extra_rc还是0，当调用了retainCount时执行了<code>1 + bits.extra_rc</code>，所以就变成了1 。如果reatinCount&#x3D;0，相当于创建成功之后就会被释放掉。</p>
+<p>所以这里的答案应该是0。不管我有没有执行init操作，都是0 。在读的时候才会是1。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/iOS/" rel="tag"># iOS</a>
+              <a href="/tags/Objective-C/" rel="tag"># Objective-C,</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/05/27/OC%E5%8E%9F%E7%90%86/%E5%90%AF%E5%8A%A8%E4%BC%98%E5%8C%96/" rel="prev" title="启动优化">
+      <i class="fa fa-chevron-left"></i> 启动优化
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/05/30/OC%E5%8E%9F%E7%90%86/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86-%E8%87%AA%E5%8A%A8%E9%87%8A%E6%94%BE%E6%B1%A0/" rel="next" title="内存管理-自动释放池">
+      内存管理-自动释放池 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86%E6%96%B9%E6%A1%88"><span class="nav-number">1.</span> <span class="nav-text">内存管理方案</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#NSString%E7%9A%84%E7%B1%BB%E5%9E%8B"><span class="nav-number">1.1.</span> <span class="nav-text">NSString的类型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Tagged-Pointer%E5%B0%8F%E5%AF%B9%E8%B1%A1"><span class="nav-number">1.2.</span> <span class="nav-text">Tagged Pointer小对象</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%8F%E5%AF%B9%E8%B1%A1%E5%9C%B0%E5%9D%80%E5%88%86%E6%9E%90"><span class="nav-number">1.2.1.</span> <span class="nav-text">小对象地址分析</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">1.3.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#SideTables-%E6%95%A3%E5%88%97%E8%A1%A8"><span class="nav-number">2.</span> <span class="nav-text">SideTables 散列表</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#retain%E6%B5%81%E7%A8%8B"><span class="nav-number">2.1.</span> <span class="nav-text">retain流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#release%E6%B5%81%E7%A8%8B"><span class="nav-number">2.2.</span> <span class="nav-text">release流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#dealloc%E5%88%86%E6%9E%90"><span class="nav-number">2.3.</span> <span class="nav-text">dealloc分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#retainCount"><span class="nav-number">2.4.</span> <span class="nav-text">retainCount</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="不会飞的小白"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">不会飞的小白</p>
+  <div class="site-description" itemprop="description">一只iOS程序猿，会陆陆续续的把之前的一些总结搬到这里。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">49</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">24</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/liujiaboy" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;liujiaboy" rel="noopener" target="_blank"><i class="github fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:alan129@163.com" title="E-Mail → mailto:alan129@163.com" rel="noopener" target="_blank"><i class="envelope fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/1768698000" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;u&#x2F;1768698000" rel="noopener" target="_blank"><i class="weibo fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="rss fa-fw"></i></a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">不会飞的小白</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

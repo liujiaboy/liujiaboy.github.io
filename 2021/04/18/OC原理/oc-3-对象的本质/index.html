@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"liujiaboy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="本篇使用的objc源码版本位818.2  1. clang介绍Clang是一个由Apple主导的使用C++编写、基于LLVM、发布于LLVM BSD许可证下的C&#x2F;C++&#x2F;Objective-C&#x2F;Objective-C++编译器。它与GNU C语言规范几乎完全兼容(当然，也有部分不兼容的内容， 包括编译命令选项也会有点差异)，并在此基础上增加了额外的语法特性，比如C函">
+<meta property="og:type" content="article">
+<meta property="og:title" content="3.对象的本质">
+<meta property="og:url" content="http://liujiaboy.github.io/2021/04/18/OC%E5%8E%9F%E7%90%86/oc-3-%E5%AF%B9%E8%B1%A1%E7%9A%84%E6%9C%AC%E8%B4%A8/index.html">
+<meta property="og:site_name" content="不会飞的小白">
+<meta property="og:description" content="本篇使用的objc源码版本位818.2  1. clang介绍Clang是一个由Apple主导的使用C++编写、基于LLVM、发布于LLVM BSD许可证下的C&#x2F;C++&#x2F;Objective-C&#x2F;Objective-C++编译器。它与GNU C语言规范几乎完全兼容(当然，也有部分不兼容的内容， 包括编译命令选项也会有点差异)，并在此基础上增加了额外的语法特性，比如C函">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://liujiaboy.github.io/2021/04/18/OC%E5%8E%9F%E7%90%86/oc-3-%E5%AF%B9%E8%B1%A1%E7%9A%84%E6%9C%AC%E8%B4%A8/set_property.jpg">
+<meta property="og:image" content="http://liujiaboy.github.io/2021/04/18/OC%E5%8E%9F%E7%90%86/oc-3-%E5%AF%B9%E8%B1%A1%E7%9A%84%E6%9C%AC%E8%B4%A8/isa_t.jpg">
+<meta property="og:image" content="http://liujiaboy.github.io/2021/04/18/OC%E5%8E%9F%E7%90%86/oc-3-%E5%AF%B9%E8%B1%A1%E7%9A%84%E6%9C%AC%E8%B4%A8/magic_47.png">
+<meta property="article:published_time" content="2021-04-18T05:39:47.000Z">
+<meta property="article:modified_time" content="2022-12-23T11:34:49.826Z">
+<meta property="article:author" content="不会飞的小白">
+<meta property="article:tag" content="iOS">
+<meta property="article:tag" content="Objective-C,">
+<meta property="article:tag" content="runtime">
+<meta property="article:tag" content="clang">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://liujiaboy.github.io/2021/04/18/OC%E5%8E%9F%E7%90%86/oc-3-%E5%AF%B9%E8%B1%A1%E7%9A%84%E6%9C%AC%E8%B4%A8/set_property.jpg">
+
+<link rel="canonical" href="http://liujiaboy.github.io/2021/04/18/OC%E5%8E%9F%E7%90%86/oc-3-%E5%AF%B9%E8%B1%A1%E7%9A%84%E6%9C%AC%E8%B4%A8/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>3.对象的本质 | 不会飞的小白</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">不会飞的小白</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Stay Hungry, Stay Foolish</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://liujiaboy.github.io/2021/04/18/OC%E5%8E%9F%E7%90%86/oc-3-%E5%AF%B9%E8%B1%A1%E7%9A%84%E6%9C%AC%E8%B4%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="不会飞的小白">
+      <meta itemprop="description" content="一只iOS程序猿，会陆陆续续的把之前的一些总结搬到这里。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="不会飞的小白">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          3.对象的本质
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-04-18 13:39:47" itemprop="dateCreated datePublished" datetime="2021-04-18T13:39:47+08:00">2021-04-18</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-12-23 19:34:49" itemprop="dateModified" datetime="2022-12-23T19:34:49+08:00">2022-12-23</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/OC%E5%8E%9F%E7%90%86/" itemprop="url" rel="index"><span itemprop="name">OC原理</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>本篇使用的objc源码版本位818.2</p>
+</blockquote>
+<h1 id="1-clang介绍"><a href="#1-clang介绍" class="headerlink" title="1. clang介绍"></a>1. clang介绍</h1><p>Clang是一个由Apple主导的使用C++编写、基于LLVM、发布于LLVM BSD许可证下的C&#x2F;C++&#x2F;Objective-C&#x2F;Objective-C++编译器。它与GNU C语言规范几乎完全兼容(当然，也有部分不兼容的内容， 包括编译命令选项也会有点差异)，并在此基础上增加了额外的语法特性，比如C函数重载 (通过__attribute__((overloadable))来修饰函数)，其目标(之一)就是超越GCC。</p>
+<p>2013年4月,Clang已经全面支持C++11标准，并开始实现C++1y特性(也就是C++14，这是 C++的下一个小更新版本)。Clang将支持其普通lambda表达式、返回类型的简化处理以及更好的处理constexpr关键字。 </p>
+<h2 id="1-1-clang的简单使用"><a href="#1-1-clang的简单使用" class="headerlink" title="1.1 clang的简单使用"></a>1.1 clang的简单使用</h2><p>我们通常想看代码的内部实现逻辑，通常会把源文件转换成cpp文件</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">clang -rewrite-objc main.m -o main.cpp</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>main.m 目标文件</li>
+<li>main.cpp 转换后的文件</li>
+</ul>
+<h2 id="1-2-UIKit报错问题"><a href="#1-2-UIKit报错问题" class="headerlink" title="1.2 UIKit报错问题"></a>1.2 UIKit报错问题</h2><p>当我们想转化带有UIKit相关的的东西时，上面的命令就会报错了。使用如下命令即可</p>
+<p>clang -rewrite-objc -fobjc-arc -fobjc-runtime&#x3D;ios-14.0.0 -isysroot &#x2F;Applications&#x2F;Xcode.app&#x2F;Contents&#x2F;Developer&#x2F;Platforms&#x2F;iPhoneSimulator.platform&#x2F;Developer&#x2F;SDKs&#x2F;iPhoneSimulator14.3.sdk ViewController.m</p>
+<p>如果还会报错，多数是因为<code>iPhoneSimulator14.3.sdk</code>没有找到，则通过xcode-contents找到对应的sdk即可。 </p>
+<h2 id="1-3-xcrun"><a href="#1-3-xcrun" class="headerlink" title="1.3 xcrun"></a>1.3 xcrun</h2><p>xcode安装的时候顺带安装了<code>xcrun</code>命令，<code>xcrun</code>命令在<code>clang</code>的基础上进行了一些封装，要更好用一些。</p>
+<ul>
+<li><p>模拟器 - 使用如下命令<br>xcrun -sdk iphonesimulator clang -arch arm64 -rewrite-objc main.m -o main-arm64.cpp </p>
+</li>
+<li><p>真机<br>xcrun -sdk iphoneos clang -arch arm64 -rewrite-objc main.m -o main-arm64.cpp</p>
+</li>
+</ul>
+<h1 id="2-类"><a href="#2-类" class="headerlink" title="2. 类"></a>2. 类</h1><p>在main.m下创建一个Person类，然后通过上面的clang命令，找到我们需要的cpp文件。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">@interface Person : NSObject</span><br><span class="line">// 添加一个属性，方便确认这就是我们要找的类</span><br><span class="line">@property (nonatomic, copy) NSString *name;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@implementation Person</span><br><span class="line">@end</span><br></pre></td></tr></table></figure>
+
+<p>转化之后，在cpp文件里，我们找到了如下的结构体。</p>
+<h2 id="2-1-类的声明"><a href="#2-1-类的声明" class="headerlink" title="2.1 类的声明"></a>2.1 类的声明</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">// @interface Person : NSObject。声明</span><br><span class="line">struct Person_IMPL &#123;</span><br><span class="line">	struct NSObject_IMPL NSObject_IVARS;</span><br><span class="line">	NSString *_name;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">struct NSObject_IMPL &#123;</span><br><span class="line">	Class isa;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>我们发现，一个对象，它本身就是一个结构体，内部有一个变量<code>Class isa</code>。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">/// Represents an instance of a class.</span><br><span class="line">struct objc_object &#123;</span><br><span class="line">    Class _Nonnull isa  OBJC_ISA_AVAILABILITY;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">/// A pointer to an instance of a class.</span><br><span class="line">typedef struct objc_object *id;</span><br></pre></td></tr></table></figure>
+
+<p>通过objc的源码，我们找到了<code>objc_object</code>的定义，其内部就是一个<code>Class isa</code>。与我们clang编译之后的<code>NSObject_IMPL</code>是一致的。所以<code>NSObject_IVARS</code>就是我们经常说的isa指针。</p>
+<p>我们经常使用id类型来声明变量时不用带<code>*</code>，就是因为在底层已经做了处理。</p>
+<h2 id="2-2-类的实现"><a href="#2-2-类的实现" class="headerlink" title="2.2 类的实现"></a>2.2 类的实现</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">// @implementation Person</span><br><span class="line"></span><br><span class="line">static NSString * _I_Person_name(Person * self, SEL _cmd) </span><br><span class="line">&#123; return (*(NSString **)((char *)self + OBJC_IVAR_$_Person$_name)); &#125;</span><br><span class="line">extern &quot;C&quot; __declspec(dllimport) void objc_setProperty (id, SEL, long, id, bool, bool);</span><br><span class="line"></span><br><span class="line">static void _I_Person_setName_(Person * self, SEL _cmd, NSString *name) </span><br><span class="line">&#123; objc_setProperty (self, _cmd, __OFFSETOFIVAR__(struct Person, _name), (id)name, 0, 1); &#125;</span><br><span class="line">// @end</span><br></pre></td></tr></table></figure>
+
+<p>我们在上面的代码里，看到了两个方法</p>
+<ol>
+<li><code>_I_Person_name</code>：这是一个get方法，直接做了一个return操作。</li>
+<li><code>_I_Person_setName_</code>：这是一个set方法，调用了<code>objc_setProperty</code>。</li>
+</ol>
+<h3 id="2-2-1-set方法"><a href="#2-2-1-set方法" class="headerlink" title="2.2.1 set方法"></a>2.2.1 set方法</h3><p>通过objc的源码，我们查找<code>objc_setProperty</code>方法。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">void objc_setProperty(id self, SEL _cmd, ptrdiff_t offset, id newValue, BOOL atomic, signed char shouldCopy) </span><br><span class="line">&#123;</span><br><span class="line">    bool copy = (shouldCopy &amp;&amp; shouldCopy != MUTABLE_COPY);</span><br><span class="line">    bool mutableCopy = (shouldCopy == MUTABLE_COPY);</span><br><span class="line">    reallySetProperty(self, _cmd, newValue, offset, atomic, copy, mutableCopy);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>内部判断是通过copy还是mutableCopy，然后调用<code>reallySetProperty</code>。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">static inline void reallySetProperty(id self, SEL _cmd, id newValue, ptrdiff_t offset, bool atomic, bool copy, bool mutableCopy)</span><br><span class="line">&#123;</span><br><span class="line">    if (offset == 0) &#123;</span><br><span class="line">        object_setClass(self, newValue);</span><br><span class="line">        return;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    id oldValue;</span><br><span class="line">    id *slot = (id*) ((char*)self + offset);</span><br><span class="line"></span><br><span class="line">    if (copy) &#123;</span><br><span class="line">        newValue = [newValue copyWithZone:nil];</span><br><span class="line">    &#125; else if (mutableCopy) &#123;</span><br><span class="line">        newValue = [newValue mutableCopyWithZone:nil];</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        if (*slot == newValue) return;</span><br><span class="line">        newValue = objc_retain(newValue);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    if (!atomic) &#123;</span><br><span class="line">        oldValue = *slot;</span><br><span class="line">        *slot = newValue;</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        spinlock_t&amp; slotlock = PropertyLocks[slot];</span><br><span class="line">        slotlock.lock();</span><br><span class="line">        oldValue = *slot;</span><br><span class="line">        *slot = newValue;        </span><br><span class="line">        slotlock.unlock();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    objc_release(oldValue);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里最主要的操作，就是对oldvalue进行release操作，新值进行retain操作。</p>
+<p>这也是经常在面试时，经常会问的，声明一个@property内部有哪些操作的的答案：</p>
+<ol>
+<li>自动创建带有<code>_</code>的变量。</li>
+<li>自动实现set、get方法。</li>
+</ol>
+<p><img src="set_property.jpg"></p>
+<p>苹果的这种设计思路很值得我们学习。它提供了一个对外的接口供上层调用，其内部调用底层的方法。这样上层无论怎么变化，都不会影响底层接口及实现。</p>
+<h1 id="3-isa"><a href="#3-isa" class="headerlink" title="3. isa"></a>3. isa</h1><p>我们应该还记得在【alloc、init、new】这一节中有<code>callAlloc</code>这个方法，这个方法有一步操作是进行对象关联。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">obj-&gt;initInstanceIsa(cls, hasCxxDtor);</span><br><span class="line"></span><br><span class="line">inline void </span><br><span class="line">objc_object::initInstanceIsa(Class cls, bool hasCxxDtor)</span><br><span class="line">&#123;</span><br><span class="line">    ASSERT(!cls-&gt;instancesRequireRawIsa());</span><br><span class="line">    ASSERT(hasCxxDtor == cls-&gt;hasCxxDtor());</span><br><span class="line"></span><br><span class="line">    initIsa(cls, true, hasCxxDtor);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>接下来就看看这里是怎么搞的。对代码进行了简化，如果有需要请自行查看源码。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">inline void </span><br><span class="line">objc_object::initIsa(Class cls, bool nonpointer, UNUSED_WITHOUT_INDEXED_ISA_AND_DTOR_BIT bool hasCxxDtor)</span><br><span class="line">&#123; </span><br><span class="line">    ASSERT(!isTaggedPointer()); </span><br><span class="line">    // 这个是重点，创建一个isa_t，这个isa_t是啥呢？我们点进去看一下。</span><br><span class="line">    isa_t newisa(0);</span><br><span class="line"></span><br><span class="line">    // 以下代码可以等先看我isa_t之后再回过头来看。</span><br><span class="line">    </span><br><span class="line">    // 对bits内容赋默认值</span><br><span class="line">    newisa.bits = ISA_MAGIC_VALUE;      </span><br><span class="line">    // isa.magic is part of ISA_MAGIC_VALUE</span><br><span class="line">    // isa.nonpointer is part of ISA_MAGIC_VALUE</span><br><span class="line">    newisa.has_cxx_dtor = hasCxxDtor;</span><br><span class="line">    // 这里是关联对象，就是本节的重点内容，我们进去看这个setClass是怎么实现的。</span><br><span class="line">    newisa.setClass(cls, this);</span><br><span class="line">    newisa.extra_rc = 1;</span><br><span class="line">    isa = newisa;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里我们先看下isa_t</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">union isa_t &#123;</span><br><span class="line">    isa_t() &#123; &#125;</span><br><span class="line">    isa_t(uintptr_t value) : bits(value) &#123; &#125;</span><br><span class="line">    uintptr_t bits;</span><br><span class="line">private: //这是个私有的，不会主动赋值，而是通过赋值别的变量(bits)时给的。</span><br><span class="line">    Class cls;</span><br><span class="line"></span><br><span class="line">public:</span><br><span class="line">#if defined(ISA_BITFIELD)</span><br><span class="line">    struct &#123;</span><br><span class="line">        ISA_BITFIELD;  // defined in isa.h</span><br><span class="line">    &#125;;</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">    void setClass(Class cls, objc_object *obj);</span><br><span class="line">    Class getClass(bool authenticated);</span><br><span class="line">    Class getDecodedClass(bool authenticated);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上面的代码做了精简处理，看起来会容易点，这个其实就是一个<b>【联合位域】</b>。<br>union是联合体。里面有一个struct。这种方式就是为了优化内存空间，在极少的内存情况下，来使用。举个例子来看一下：</p>
+<p>如果我们需要声明一个car的类，定义4个属性，前后左右行驶。如果是int类型的数据，那就是需要4 * 4 &#x3D; 16个字节的空间，也就是128位。但是如果使用联合位域的话，就可以极大的减少空间。只需要4位就可以了。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">union car &#123;</span><br><span class="line">    struct &#123;</span><br><span class="line">        char forward;   //1</span><br><span class="line">        char back;      //1</span><br><span class="line">        char left;      //1</span><br><span class="line">        char right;     //1</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>也就是<code>0000</code>，第一个0代表的是前，第二个0代表后，依次类推。</p>
+<p>知道了联合位域的大概情况，我们就看一下这个<code>ISA_BITFIELD</code>是个什么东西。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">define ISA_MASK        0x0000000ffffffff8ULL</span><br><span class="line">#     define ISA_MAGIC_MASK  0x000003f000000001ULL</span><br><span class="line">#     define ISA_MAGIC_VALUE 0x000001a000000001ULL</span><br><span class="line">#     define ISA_HAS_CXX_DTOR_BIT 1</span><br><span class="line">#     define ISA_BITFIELD                                                      \</span><br><span class="line">        uintptr_t nonpointer        : 1;                                       \</span><br><span class="line">        uintptr_t has_assoc         : 1;                                       \</span><br><span class="line">        uintptr_t has_cxx_dtor      : 1;                                       \</span><br><span class="line">        uintptr_t shiftcls          : 33; /*MACH_VM_MAX_ADDRESS 0x1000000000*/ \</span><br><span class="line">        uintptr_t magic             : 6;                                       \</span><br><span class="line">        uintptr_t weakly_referenced : 1;                                       \</span><br><span class="line">        uintptr_t unused            : 1;                                       \</span><br><span class="line">        uintptr_t has_sidetable_rc  : 1;                                       \</span><br><span class="line">        uintptr_t extra_rc          : 19</span><br><span class="line">#     define RC_ONE   (1ULL&lt;&lt;45)</span><br><span class="line">#     define RC_HALF  (1ULL&lt;&lt;18)</span><br></pre></td></tr></table></figure>
+
+<p><img src="isa_t.jpg"></p>
+<p>注意：这个是ARM64下的存储，而使用（非M1芯片）电脑本地运行的的都是基于x86_64的，所以这里面的值存储的位置是有些变化的。</p>
+<p>特别提一下shiftcls，在ARM64下是33位，在x86下是44位，导致magic开始的位置分别是36和47，这个位置一会有用到。</p>
+<ul>
+<li>nonpointer:表示是否对 isa 指针开启指针优化 0:纯isa指针，1:不止是类对象地址,isa 中包含了类信息、对象的引用计数等，在iOS中，正常情况下生成的对象nonpointer都等于1。</li>
+<li>has_assoc:关联对象标志位，0没有，1存在</li>
+<li>has_cxx_dtor:该对象是否有 C++ 或者 Objc 的析构器,如果有析构函数,则需要做析构逻辑, 如果没有,则可以更快的释放对象。oc中的<code>dealloc</code></li>
+<li>shiftcls:存储类指针的值。开启指针优化的情况下，在 arm64 架构中有 33 位用来存储类指针。</li>
+<li>magic:用于调试器判断当前对象是真的对象还是没有初始化的空</li>
+<li>weakly_referenced:志对象是否被指向或者曾经指向一个 ARC 的弱变量，没有弱引用的对象可以更快释放。 </li>
+<li>unsed:不同版本的是<code>deallocating</code>，标志对象是否正在释放内存</li>
+<li>has_sidetable_rc:当对象引用技术大于 10 时，则需要借用该变量存储进位</li>
+<li>extra_rc:当表示该对象的引用计数值，实际上是引用计数值减 1， 例如，如果对象的引用计数为 10，那么 extra_rc 为 9。如果引用计数大于 10， 则需要使用到下面的 has_sidetable_rc。</li>
+</ul>
+<p>我们了解了isa是啥东西了之后，在回过头看看是怎么进行管理对象的。了解上面的代码之后，我们继续看setCalss是怎么实现的。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">// 对代码进行了简化，</span><br><span class="line">inline void</span><br><span class="line">isa_t::setClass(Class newCls, UNUSED_WITHOUT_PTRAUTH objc_object *obj)</span><br><span class="line">&#123;</span><br><span class="line">    shiftcls = (uintptr_t)newCls &gt;&gt; 3;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>是不是很不可思议，只是通过newCls向右偏移了3位。为啥偏移3位？<br>我们知道isa-&gt;shiftcls存储类指针的值。是从isa的内存里面第3位开始的。就这么简单。因为在内存里没有办法直接存储类名，所以通过存储数字替带。</p>
+<h2 id="3-1-验证isa指针的关联过程"><a href="#3-1-验证isa指针的关联过程" class="headerlink" title="3.1 验证isa指针的关联过程"></a>3.1 验证isa指针的关联过程</h2><p><code>Person *p = [[Person alloc] init];</code> 运行objc源码工程。<br>断点进入<code>objc_object::initIsa</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">inline void </span><br><span class="line">objc_object::initIsa(Class cls, bool nonpointer, UNUSED_WITHOUT_INDEXED_ISA_AND_DTOR_BIT bool hasCxxDtor)</span><br><span class="line">&#123; </span><br><span class="line">    ASSERT(!isTaggedPointer()); </span><br><span class="line">    // ① 创建newisa</span><br><span class="line">    isa_t newisa(0);</span><br><span class="line">    </span><br><span class="line">    // ② 对bits内容赋默认值</span><br><span class="line">    newisa.bits = ISA_MAGIC_VALUE;      </span><br><span class="line">    // isa.magic is part of ISA_MAGIC_VALUE</span><br><span class="line">    // isa.nonpointer is part of ISA_MAGIC_VALUE</span><br><span class="line">    // ③ </span><br><span class="line">    newisa.has_cxx_dtor = hasCxxDtor;</span><br><span class="line">    // ④ 这里是关联对象，就是本节的重点内容，我们进去看这个setClass是怎么实现的。</span><br><span class="line">    newisa.setClass(cls, this);</span><br><span class="line">    newisa.extra_rc = 1;</span><br><span class="line">    isa = newisa;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>当断点走到②的时候。我们输出一些newisa的内容</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">(lldb) p newisa</span><br><span class="line">(isa_t) $1 = &#123;</span><br><span class="line">  bits = 0</span><br><span class="line">  cls = nil</span><br><span class="line">   = &#123;</span><br><span class="line">    nonpointer = 0</span><br><span class="line">    has_assoc = 0</span><br><span class="line">    has_cxx_dtor = 0</span><br><span class="line">    shiftcls = 0</span><br><span class="line">    magic = 0</span><br><span class="line">    weakly_referenced = 0</span><br><span class="line">    unused = 0</span><br><span class="line">    has_sidetable_rc = 0</span><br><span class="line">    extra_rc = 0</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>继续执行下一步，仍然输出newisa</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">(lldb) p newisa</span><br><span class="line">(isa_t) $5 = &#123;</span><br><span class="line">  bits = 8303511812964353</span><br><span class="line">  cls = 0x001d800000000001</span><br><span class="line">   = &#123;</span><br><span class="line">    nonpointer = 1</span><br><span class="line">    has_assoc = 0</span><br><span class="line">    has_cxx_dtor = 0</span><br><span class="line">    shiftcls = 0</span><br><span class="line">    magic = 59</span><br><span class="line">    weakly_referenced = 0</span><br><span class="line">    unused = 0</span><br><span class="line">    has_sidetable_rc = 0</span><br><span class="line">    extra_rc = 0</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>发现有了变化，bits有初值了，cls也被赋值了，而且magic也被赋值了。这些都是默认值，我们上面说了isa的内部是64位的数据。我们把cls的值，放在二进制的计算器里，看看是什么内容。第一位1对应的是nonpointer&#x3D;1</p>
+<p><img src="magic_47.png"></p>
+<p>看这个图，第47位开始的6位数据是110111，这个二进制数是什么？正好是59。</p>
+<p>之后，继续断点下一步。走到④。然后进到setClass方法内部，我们执行语句，看看cls偏移后的值。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">(lldb) po (uintptr_t)newCls</span><br><span class="line">(uintptr_t) $15 = 4295000320</span><br><span class="line">(lldb) po (uintptr_t)newCls &gt;&gt; 3</span><br><span class="line">536875040</span><br></pre></td></tr></table></figure>
+
+<p>然后继续下一步，打印newisa</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">lldb) p newisa</span><br><span class="line">(isa_t) $11 = &#123;</span><br><span class="line">  bits = 8303516107964673</span><br><span class="line">  cls = Person</span><br><span class="line">   = &#123;</span><br><span class="line">    nonpointer = 1</span><br><span class="line">    has_assoc = 0</span><br><span class="line">    has_cxx_dtor = 0</span><br><span class="line">    shiftcls = 536875040</span><br><span class="line">    magic = 59</span><br><span class="line">    weakly_referenced = 0</span><br><span class="line">    unused = 0</span><br><span class="line">    has_sidetable_rc = 0</span><br><span class="line">    extra_rc = 0</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>嗯哼。。。。。是不是，就是这么牛。shiftcls是啥，存储类指针的值。也验证了我们上面说的，是从isa的内存里面第3位开始的。就这么简单。因为在内存里没有办法直接存储类名，所以通过存储数字替带。</p>
+<p>我们继续执行，返回到<code>_class_createInstanceFromZone</code>这个函数里，<br>然后先停一停哈，不要走断点了哈~我们来通过<code>object_getClass</code>在来验证一下。</p>
+<h2 id="3-2-反向验证-ISA-MASK"><a href="#3-2-反向验证-ISA-MASK" class="headerlink" title="3.2 反向验证 ISA_MASK"></a>3.2 反向验证 ISA_MASK</h2><p>我们通过object_getClass来反向验证isa指向。这里全部对代码进行了简化。如有需要请自行查看源码。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">Class object_getClass(id obj)</span><br><span class="line">&#123;</span><br><span class="line">    if (obj) return obj-&gt;getIsa();</span><br><span class="line">    else return Nil;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">inline Class</span><br><span class="line">objc_object::getIsa() </span><br><span class="line">&#123;</span><br><span class="line">    if (fastpath(!isTaggedPointer())) return ISA();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">inline Class</span><br><span class="line">objc_object::ISA(bool authenticated)</span><br><span class="line">&#123;</span><br><span class="line">    ASSERT(!isTaggedPointer());</span><br><span class="line">    return isa.getDecodedClass(authenticated);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">inline Class</span><br><span class="line">isa_t::getClass(MAYBE_UNUSED_AUTHENTICATED_PARAM bool authenticated) &#123;</span><br><span class="line">    uintptr_t clsbits = bits;</span><br><span class="line">    clsbits &amp;= ISA_MASK;</span><br><span class="line">    return (Class)clsbits;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>终于看到了结果了，最后就是通过<code>bits &amp; ISA_MASK</code>来返回当前class的。还记得bits是啥吗？往上翻一下，bits是isa指针内部的第一个元素。所以我们按照这个&amp;运算来验证一些，返回的数据是不是person</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">(lldb) x/4gx obj</span><br><span class="line">0x10060d9b0: 0x011d800100008101 0x0000000000000000</span><br><span class="line">0x10060d9c0: 0x0000000000000000 0x86c8f7c495bce30f</span><br><span class="line"></span><br><span class="line">// 拿第一位的地址进行&amp;运算，注意这里是在mac上，所以使用x86下的ISA_MASK值</span><br><span class="line">(lldb) po 0x011d800100008101 &amp; 0x00007ffffffffff8ULL</span><br><span class="line">Person</span><br></pre></td></tr></table></figure>
+
+<p>以上就是isa的全部内容了。但是isa里面的这些东西是真的有用吗？肯定是有用的啊，我们从dealloc的函数实现去找到蛛丝马迹。</p>
+<h1 id="4-补充-dealloc"><a href="#4-补充-dealloc" class="headerlink" title="4.补充 dealloc"></a>4.补充 dealloc</h1><p>在objc源码中找到dealloc的方法。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">- (void)dealloc &#123;</span><br><span class="line">    _objc_rootDealloc(self);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void</span><br><span class="line">_objc_rootDealloc(id obj)</span><br><span class="line">&#123;</span><br><span class="line">    ASSERT(obj);</span><br><span class="line"></span><br><span class="line">    obj-&gt;rootDealloc();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>好了，见证奇迹的时候到了。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">inline void</span><br><span class="line">objc_object::rootDealloc()</span><br><span class="line">&#123;</span><br><span class="line">    if (isTaggedPointer()) return;  // fixme necessary?</span><br><span class="line"></span><br><span class="line">    if (fastpath(isa.nonpointer                     &amp;&amp;</span><br><span class="line">         !isa.weakly_referenced             &amp;&amp;</span><br><span class="line">         !isa.has_assoc                     &amp;&amp;</span><br><span class="line">#if ISA_HAS_CXX_DTOR_BIT</span><br><span class="line">         !isa.has_cxx_dtor                  &amp;&amp;</span><br><span class="line">#else</span><br><span class="line">         !isa.getClass(false)-&gt;hasCxxDtor() &amp;&amp;</span><br><span class="line">#endif</span><br><span class="line">         !isa.has_sidetable_rc))</span><br><span class="line">    &#123;</span><br><span class="line">        assert(!sidetable_present());</span><br><span class="line">        free(this);</span><br><span class="line">    &#125; </span><br><span class="line">    else &#123;</span><br><span class="line">        object_dispose((id)this);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上面<code>objc_object::rootDealloc</code>中对isa的各个属性的值来判断是执行<code>free</code>操作或者<code>object_dispose</code>。free函数就不用多说了，来看看dispose操作。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">id </span><br><span class="line">object_dispose(id obj)</span><br><span class="line">&#123;</span><br><span class="line">    if (!obj) return nil;</span><br><span class="line"></span><br><span class="line">    objc_destructInstance(obj);    </span><br><span class="line">    free(obj);</span><br><span class="line"></span><br><span class="line">    return nil;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void *objc_destructInstance(id obj) </span><br><span class="line">&#123;</span><br><span class="line">    if (obj) &#123;</span><br><span class="line">        // Read all of the flags at once for performance.</span><br><span class="line">        bool cxx = obj-&gt;hasCxxDtor();</span><br><span class="line">        bool assoc = obj-&gt;hasAssociatedObjects();</span><br><span class="line"></span><br><span class="line">        // This order is important.</span><br><span class="line">        if (cxx) object_cxxDestruct(obj);</span><br><span class="line">        if (assoc) _object_remove_assocations(obj, /*deallocating*/true);</span><br><span class="line">        obj-&gt;clearDeallocating();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    return obj;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>这里就是整个的dealloc的流程。通过源码只是来加深对这些流程的印象。<br>到这里，对象的alloc、init、dealloc都已经出现了，接下来就是类相关了。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/iOS/" rel="tag"># iOS</a>
+              <a href="/tags/Objective-C/" rel="tag"># Objective-C,</a>
+              <a href="/tags/runtime/" rel="tag"># runtime</a>
+              <a href="/tags/clang/" rel="tag"># clang</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/04/18/OC%E5%8E%9F%E7%90%86/oc-4-%E7%B1%BB%E7%9A%84%E6%9C%AC%E8%B4%A8/" rel="prev" title="4.类的本质">
+      <i class="fa fa-chevron-left"></i> 4.类的本质
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/04/25/%E9%80%86%E5%90%91/ARM%E6%B1%87%E7%BC%96-4/" rel="next" title="ARM汇编-4 指针">
+      ARM汇编-4 指针 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-clang%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.</span> <span class="nav-text">1. clang介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-1-clang%E7%9A%84%E7%AE%80%E5%8D%95%E4%BD%BF%E7%94%A8"><span class="nav-number">1.1.</span> <span class="nav-text">1.1 clang的简单使用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-2-UIKit%E6%8A%A5%E9%94%99%E9%97%AE%E9%A2%98"><span class="nav-number">1.2.</span> <span class="nav-text">1.2 UIKit报错问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-3-xcrun"><span class="nav-number">1.3.</span> <span class="nav-text">1.3 xcrun</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-%E7%B1%BB"><span class="nav-number">2.</span> <span class="nav-text">2. 类</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-1-%E7%B1%BB%E7%9A%84%E5%A3%B0%E6%98%8E"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 类的声明</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2-%E7%B1%BB%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 类的实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-1-set%E6%96%B9%E6%B3%95"><span class="nav-number">2.2.1.</span> <span class="nav-text">2.2.1 set方法</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-isa"><span class="nav-number">3.</span> <span class="nav-text">3. isa</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#3-1-%E9%AA%8C%E8%AF%81isa%E6%8C%87%E9%92%88%E7%9A%84%E5%85%B3%E8%81%94%E8%BF%87%E7%A8%8B"><span class="nav-number">3.1.</span> <span class="nav-text">3.1 验证isa指针的关联过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-2-%E5%8F%8D%E5%90%91%E9%AA%8C%E8%AF%81-ISA-MASK"><span class="nav-number">3.2.</span> <span class="nav-text">3.2 反向验证 ISA_MASK</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#4-%E8%A1%A5%E5%85%85-dealloc"><span class="nav-number">4.</span> <span class="nav-text">4.补充 dealloc</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="不会飞的小白"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">不会飞的小白</p>
+  <div class="site-description" itemprop="description">一只iOS程序猿，会陆陆续续的把之前的一些总结搬到这里。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">49</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">24</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/liujiaboy" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;liujiaboy" rel="noopener" target="_blank"><i class="github fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:alan129@163.com" title="E-Mail → mailto:alan129@163.com" rel="noopener" target="_blank"><i class="envelope fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/1768698000" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;u&#x2F;1768698000" rel="noopener" target="_blank"><i class="weibo fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="rss fa-fw"></i></a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">不会飞的小白</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

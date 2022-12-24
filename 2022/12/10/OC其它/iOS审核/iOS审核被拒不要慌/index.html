@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"liujiaboy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="iOS审核审核团队苹果在全球多个地方都拥有审核团队，比如我们的上海就有。所以不用担心纯中文的APP，老外看不明白，他们一定会有懂中文的审核人员进行审核。 基于以上内容，我们在审核被拒时就不用慌张，不是必须用英文回复。  在APP Store Connect信息页面回复时，都可以全程使用中文，即使在沟通过程中需要电话沟通，也可以指定使用中文，并指定电话沟通的时间。但是如果我们的APP着急上架，那最好">
+<meta property="og:type" content="article">
+<meta property="og:title" content="iOS审核被拒不要慌">
+<meta property="og:url" content="http://liujiaboy.github.io/2022/12/10/OC%E5%85%B6%E5%AE%83/iOS%E5%AE%A1%E6%A0%B8/iOS%E5%AE%A1%E6%A0%B8%E8%A2%AB%E6%8B%92%E4%B8%8D%E8%A6%81%E6%85%8C/index.html">
+<meta property="og:site_name" content="不会飞的小白">
+<meta property="og:description" content="iOS审核审核团队苹果在全球多个地方都拥有审核团队，比如我们的上海就有。所以不用担心纯中文的APP，老外看不明白，他们一定会有懂中文的审核人员进行审核。 基于以上内容，我们在审核被拒时就不用慌张，不是必须用英文回复。  在APP Store Connect信息页面回复时，都可以全程使用中文，即使在沟通过程中需要电话沟通，也可以指定使用中文，并指定电话沟通的时间。但是如果我们的APP着急上架，那最好">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-12-10T07:44:36.000Z">
+<meta property="article:modified_time" content="2022-12-23T11:34:49.799Z">
+<meta property="article:author" content="不会飞的小白">
+<meta property="article:tag" content="iOS">
+<meta property="article:tag" content="审核">
+<meta property="article:tag" content="App Review">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://liujiaboy.github.io/2022/12/10/OC%E5%85%B6%E5%AE%83/iOS%E5%AE%A1%E6%A0%B8/iOS%E5%AE%A1%E6%A0%B8%E8%A2%AB%E6%8B%92%E4%B8%8D%E8%A6%81%E6%85%8C/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>iOS审核被拒不要慌 | 不会飞的小白</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">不会飞的小白</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Stay Hungry, Stay Foolish</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://liujiaboy.github.io/2022/12/10/OC%E5%85%B6%E5%AE%83/iOS%E5%AE%A1%E6%A0%B8/iOS%E5%AE%A1%E6%A0%B8%E8%A2%AB%E6%8B%92%E4%B8%8D%E8%A6%81%E6%85%8C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="不会飞的小白">
+      <meta itemprop="description" content="一只iOS程序猿，会陆陆续续的把之前的一些总结搬到这里。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="不会飞的小白">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          iOS审核被拒不要慌
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-12-10 15:44:36" itemprop="dateCreated datePublished" datetime="2022-12-10T15:44:36+08:00">2022-12-10</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-12-23 19:34:49" itemprop="dateModified" datetime="2022-12-23T19:34:49+08:00">2022-12-23</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/app%E5%AE%A1%E6%A0%B8/" itemprop="url" rel="index"><span itemprop="name">app审核</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="iOS审核"><a href="#iOS审核" class="headerlink" title="iOS审核"></a>iOS审核</h1><h2 id="审核团队"><a href="#审核团队" class="headerlink" title="审核团队"></a>审核团队</h2><p>苹果在全球多个地方都拥有审核团队，比如我们的上海就有。所以不用担心纯中文的APP，老外看不明白，他们一定会有懂中文的审核人员进行审核。</p>
+<p>基于以上内容，我们在审核被拒时就不用慌张，不是必须用英文回复。</p>
+<ol>
+<li>在APP Store Connect信息页面回复时，都可以全程使用中文，即使在沟通过程中需要电话沟通，也可以指定使用中文，并指定电话沟通的时间。但是如果我们的APP着急上架，那最好附上英文翻译，这将有助于审核。</li>
+<li>在邮件回复中，要引用被拒的内容，并给出明确的答复。</li>
+<li>苹果全球都有审核点，所以你的APP不一定会是哪个团队做的审核，除了苹果明确通知的节假日或其他时间，一般是一周七天都会审核。</li>
+</ol>
+<h2 id="审核效率"><a href="#审核效率" class="headerlink" title="审核效率"></a>审核效率</h2><p>苹果现在大大提升了审核效率，几乎所有的APP在24小时内都会完成审核，我经历过最快的一次审核是，被拒之后回复邮件，3个小时后就通过了审核。</p>
+<h2 id="审核过程"><a href="#审核过程" class="headerlink" title="审核过程"></a>审核过程</h2><p>一次审核的流程从提交审核开始，到审核结束，APP发布上线。</p>
+<p>大致流程为：填写APP应用消息 – 后台创建版本 – 提交版本 – 提交审核 – 等待审核（机审）– 审核中（人工）– 审核通过&#x2F;拒绝 – 发布上线</p>
+<p>机审：扫描APP代码，（主要为了防范马甲包），基本会喜提4.3和2.1大礼包。之后就是人审。</p>
+<p>即使中间审核被拒了，也还是在审核流程中，当你修改完内容，重新提交APP包后，<b>也不需要重新提交审核</b>。最优的做法是，回复审核人员，已经完成了修改（引用被拒内容，一一做出回复），希望继续审核。</p>
+<p>之后可能会出现两种情况：</p>
+<ol>
+<li>对应的审核人员会对上次的问题继续审核，而不会把APP所有内容重新审核一次。</li>
+<li>也有可能会重新排队审核，这时的审核人员就不一定是上次的审核人员了。</li>
+</ol>
+<p>所以建议不要重新提交审核。</p>
+<h2 id="加急审核"><a href="#加急审核" class="headerlink" title="加急审核"></a>加急审核</h2><p>可以利用加急审核，但不要滥用。只要诉求合理，一般会进入加急队列。<br>比如：紧急bug修复，指定时间发布需要配合营销活动等。<br><a target="_blank" rel="noopener" href="https://developer.apple.com/contact/app-store/?topic=expedite">加急审核</a></p>
+<h2 id="添加备注、附件"><a href="#添加备注、附件" class="headerlink" title="添加备注、附件"></a>添加备注、附件</h2><p>在App Store Connect中有<b>备注、附件</b>一栏，可以添加一些功能的操作路径，录屏文件、截图、政策说明等等，这有助于APP过审。</p>
+<h2 id="审核被拒"><a href="#审核被拒" class="headerlink" title="审核被拒"></a>审核被拒</h2><p>不要害怕和审核人员沟通，大部分人都是很友善的。</p>
+<p>在回复审核邮件时，一定要一条一条引用被拒的原因，给出具体的解决方案，可以使用录屏和截图，一定要注意的是要给出明确的答复，不要模棱两可，更不要欺骗，后果很严重。</p>
+<p>如果认为被拒绝的理由或者确认不是自己的问题，最好还是直接回复审核团队加以说明情况，可以使用录屏和截图，如有必要可以进行申诉。</p>
+<p>对于审核回复的信息不是很理解，或者信息不充分，可以回复审核追要截图等关键信息，也可以提出使用电话沟通的方式。</p>
+<h2 id="常用回复模板"><a href="#常用回复模板" class="headerlink" title="常用回复模板"></a>常用回复模板</h2><h3 id="1-需要电话沟通"><a href="#1-需要电话沟通" class="headerlink" title="1.需要电话沟通"></a>1.需要电话沟通</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">尊敬的审核团队：</span><br><span class="line">	你们好！</span><br><span class="line"></span><br><span class="line">	我们已经收到了贵司的审核回复，但是我们感到很迷惑，不太明白审核团队所指的我们的应用存在的具体问题是什么。期间我们优化了代码，重新做了提交，但是还是被拒绝。</span><br><span class="line"></span><br><span class="line">	我们很乐意你们给出明确的原因，以便我们进一步修改我们的APP。</span><br><span class="line"></span><br><span class="line">	1、关于encourage users to watch ads or perform marketing-oriented tasks，我们会修改、优化代码之后重新打包提交审核。</span><br><span class="line">	2、关于account deletion，我们确认我们的APP有注销账号的功能（需要登录），路径为：我--&gt;设置--&gt;注销账号。我们需要更进一步的信息来了解具体的原因。</span><br><span class="line">	3、关于includes code that is not embedded in the binary，我们仔细检查了代码，并没有发现相关内容，还请指出具体原因。</span><br><span class="line"></span><br><span class="line">	综上，我们需要更进一步的信息，来帮助我们按照App Store 审核指南的真实意图修改代码，使我们的应用真正符合App Store 审核指南。</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	我们喜爱App Store这个平台，也希望维护这个平台的生态健康。使我们的app完全符合App Store 审核指南的要求，是我们工作的方向。</span><br><span class="line"></span><br><span class="line">	您可以电话沟通来帮助我们处理这次APP被拒绝。</span><br><span class="line">	电话：0086 187xxx  姓名：xxx</span><br><span class="line">	我们将在在北京时间的9:00-21:00接听电话，我们需要中文服务。</span><br><span class="line"></span><br><span class="line">	期待您的回复！</span><br><span class="line"></span><br><span class="line">	最后，祝您工作愉快！</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-正常回复继续审核"><a href="#2-正常回复继续审核" class="headerlink" title="2. 正常回复继续审核"></a>2. 正常回复继续审核</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">尊敬的审核团队：</span><br><span class="line">	你们好！</span><br><span class="line"></span><br><span class="line">	关于“unable to locate the App Tracking Transparency permission request when reviewed on iOS 15.5.”的问题，我们确定使用了相关API，但是我们不会对系统和设备进行区分，在代码中iOS14以上的设备都会请求该权限。之所以需要该权限，是因为我们的APP宝宝树孕育需要访问您的idfa信息，从而精准的推荐广告服务。</span><br><span class="line"></span><br><span class="line">	安装APP之后，首次点击运行APP时会有获取该权限的弹窗，请查看附件中的视频和截图。</span><br><span class="line"></span><br><span class="line">	我们喜爱App Store这个平台，也希望维护这个平台的生态健康。使我们的app完全符合App Store 审核指南的要求，是我们工作的方向。</span><br><span class="line"></span><br><span class="line">	最后，祝您工作愉快！</span><br><span class="line">	</span><br><span class="line">	附件视频</span><br><span class="line">	附件图片</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h2><blockquote>
+<p><a target="_blank" rel="noopener" href="https://developer.apple.com/cn/app-store/review/guidelines/">App Store 审核指南</a></p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/iOS/" rel="tag"># iOS</a>
+              <a href="/tags/%E5%AE%A1%E6%A0%B8/" rel="tag"># 审核</a>
+              <a href="/tags/App-Review/" rel="tag"># App Review</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/04/18/OC%E5%85%B6%E5%AE%83/iOS%E5%8C%85%E5%A4%A7%E5%B0%8F%E4%BC%98%E5%8C%96/" rel="prev" title="iOS包大小优化">
+      <i class="fa fa-chevron-left"></i> iOS包大小优化
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/12/12/OC%E5%85%B6%E5%AE%83/iOS%E5%AE%A1%E6%A0%B8/iOS%E5%AE%A1%E6%A0%B8-1/" rel="next" title="iOS审核被拒梳理 - 1.4.1 & 2.3.0">
+      iOS审核被拒梳理 - 1.4.1 & 2.3.0 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#iOS%E5%AE%A1%E6%A0%B8"><span class="nav-number">1.</span> <span class="nav-text">iOS审核</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%A1%E6%A0%B8%E5%9B%A2%E9%98%9F"><span class="nav-number">1.1.</span> <span class="nav-text">审核团队</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%A1%E6%A0%B8%E6%95%88%E7%8E%87"><span class="nav-number">1.2.</span> <span class="nav-text">审核效率</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%A1%E6%A0%B8%E8%BF%87%E7%A8%8B"><span class="nav-number">1.3.</span> <span class="nav-text">审核过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8A%A0%E6%80%A5%E5%AE%A1%E6%A0%B8"><span class="nav-number">1.4.</span> <span class="nav-text">加急审核</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0%E5%A4%87%E6%B3%A8%E3%80%81%E9%99%84%E4%BB%B6"><span class="nav-number">1.5.</span> <span class="nav-text">添加备注、附件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%A1%E6%A0%B8%E8%A2%AB%E6%8B%92"><span class="nav-number">1.6.</span> <span class="nav-text">审核被拒</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B8%B8%E7%94%A8%E5%9B%9E%E5%A4%8D%E6%A8%A1%E6%9D%BF"><span class="nav-number">1.7.</span> <span class="nav-text">常用回复模板</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E9%9C%80%E8%A6%81%E7%94%B5%E8%AF%9D%E6%B2%9F%E9%80%9A"><span class="nav-number">1.7.1.</span> <span class="nav-text">1.需要电话沟通</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E6%AD%A3%E5%B8%B8%E5%9B%9E%E5%A4%8D%E7%BB%A7%E7%BB%AD%E5%AE%A1%E6%A0%B8"><span class="nav-number">1.7.2.</span> <span class="nav-text">2. 正常回复继续审核</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%95%E7%94%A8"><span class="nav-number">1.8.</span> <span class="nav-text">引用</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="不会飞的小白"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">不会飞的小白</p>
+  <div class="site-description" itemprop="description">一只iOS程序猿，会陆陆续续的把之前的一些总结搬到这里。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">49</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">24</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/liujiaboy" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;liujiaboy" rel="noopener" target="_blank"><i class="github fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:alan129@163.com" title="E-Mail → mailto:alan129@163.com" rel="noopener" target="_blank"><i class="envelope fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/1768698000" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;u&#x2F;1768698000" rel="noopener" target="_blank"><i class="weibo fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="rss fa-fw"></i></a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">不会飞的小白</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
