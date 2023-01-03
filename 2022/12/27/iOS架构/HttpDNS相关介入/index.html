@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"liujiaboy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="1、技术背景   运营商的LocalDNS服务往往存在域名缓存、解析转发、递归出口NAT等域名解析异常的问题：  域名缓存1、指向缓存：LocalDNS会缓存公司权威DNS的一些指向以提升访问速度，如下图2、内容缓存：LocalDNS可能会缓存具体指向的内容，可以植入一些广告（注入了一段JS代码），还有最近常见的联通流量提醒（右下角那个泡泡）等等。  ![img](域名缓存 .png)  解析转发">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HttpDNS相关介入">
+<meta property="og:url" content="http://liujiaboy.github.io/2022/12/27/iOS%E6%9E%B6%E6%9E%84/HttpDNS%E7%9B%B8%E5%85%B3%E4%BB%8B%E5%85%A5/index.html">
+<meta property="og:site_name" content="不会飞的小白">
+<meta property="og:description" content="1、技术背景   运营商的LocalDNS服务往往存在域名缓存、解析转发、递归出口NAT等域名解析异常的问题：  域名缓存1、指向缓存：LocalDNS会缓存公司权威DNS的一些指向以提升访问速度，如下图2、内容缓存：LocalDNS可能会缓存具体指向的内容，可以植入一些广告（注入了一段JS代码），还有最近常见的联通流量提醒（右下角那个泡泡）等等。  ![img](域名缓存 .png)  解析转发">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://liujiaboy.github.io/2022/12/27/iOS%E6%9E%B6%E6%9E%84/HttpDNS%E7%9B%B8%E5%85%B3%E4%BB%8B%E5%85%A5/HttpDNS-001.png">
+<meta property="og:image" content="http://liujiaboy.github.io/2022/12/27/iOS%E6%9E%B6%E6%9E%84/HttpDNS%E7%9B%B8%E5%85%B3%E4%BB%8B%E5%85%A5/HttpDNS-004.png">
+<meta property="og:image" content="http://liujiaboy.github.io/2022/12/27/iOS%E6%9E%B6%E6%9E%84/HttpDNS%E7%9B%B8%E5%85%B3%E4%BB%8B%E5%85%A5/HttpDNS-005.png">
+<meta property="og:image" content="http://space.babytree-inc.com/download/attachments/4563202/E297B9AC-3C5B-4980-931D-80E1F0EF4680.png?version=1&modificationDate=1485159288000&api=v2">
+<meta property="og:image" content="http://space.babytree-inc.com/download/attachments/4563202/F4F7F293-30AF-4134-8669-9BBD0D3F1317.png?version=1&modificationDate=1485157366000&api=v2">
+<meta property="og:image" content="http://space.babytree-inc.com/download/attachments/4563202/880D3B0A-DF01-4950-9C29-0CD64B7247EC.png?version=1&modificationDate=1485157506000&api=v2">
+<meta property="article:published_time" content="2022-12-27T06:46:11.000Z">
+<meta property="article:modified_time" content="2022-12-28T06:19:39.298Z">
+<meta property="article:author" content="不会飞的小白">
+<meta property="article:tag" content="DNS">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://liujiaboy.github.io/2022/12/27/iOS%E6%9E%B6%E6%9E%84/HttpDNS%E7%9B%B8%E5%85%B3%E4%BB%8B%E5%85%A5/HttpDNS-001.png">
+
+<link rel="canonical" href="http://liujiaboy.github.io/2022/12/27/iOS%E6%9E%B6%E6%9E%84/HttpDNS%E7%9B%B8%E5%85%B3%E4%BB%8B%E5%85%A5/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>HttpDNS相关介入 | 不会飞的小白</title><meta name="robots" content="noindex">
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">不会飞的小白</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Stay Hungry, Stay Foolish</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://liujiaboy.github.io/2022/12/27/iOS%E6%9E%B6%E6%9E%84/HttpDNS%E7%9B%B8%E5%85%B3%E4%BB%8B%E5%85%A5/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="不会飞的小白">
+      <meta itemprop="description" content="一只iOS程序猿，会陆陆续续的把之前的一些总结搬到这里。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="不会飞的小白">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          HttpDNS相关介入
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-12-27 14:46:11" itemprop="dateCreated datePublished" datetime="2022-12-27T14:46:11+08:00">2022-12-27</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-12-28 14:19:39" itemprop="dateModified" datetime="2022-12-28T14:19:39+08:00">2022-12-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index"><span itemprop="name">iOS</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="1、技术背景"><a href="#1、技术背景" class="headerlink" title="1、技术背景"></a>1、技术背景</h2><p>   运营商的LocalDNS服务往往存在域名缓存、解析转发、递归出口NAT等域名解析异常的问题：</p>
+<ul>
+<li>域名缓存<br>1、指向缓存：LocalDNS会缓存公司权威DNS的一些指向以提升访问速度，如下图<br>2、内容缓存：LocalDNS可能会缓存具体指向的内容，可以植入一些广告（注入了一段JS代码），还有最近常见的联通流量提醒（右下角那个泡泡）等等。</li>
+</ul>
+<p>![img](域名缓存 .png)</p>
+<ul>
+<li>解析转发<br>有些部分小运营商为了节省资源，就直接将解析请求转发到了其它运营的递归LocalDNS上去了，导致域名解析错误，用户跨网访问</li>
+</ul>
+<p>​          </p>
+<p><img src="HttpDNS-001.png" alt="img"> </p>
+<ul>
+<li>递归出口NAT（地址转换）<br>LocalDNS递归出口NAT指的是运营商的LocalDNS按照标准的DNS协议进行递归，但是因为在网络上存在多出口且配置了目标路由NAT，结果导致LocalDNS最终进行递归解析的时候的出口IP就有概率不为本网的IP地址</li>
+</ul>
+<p><img src="HttpDNS-004.png" alt="img"></p>
+<hr>
+<p>   HttpDNS是为移动客户端量身定做的基于Http协议和域名解析的流量调度解决方案，专治LocalDNS解析异常以及流量调度不准。</p>
+<p>   HttpDNS主要解决三类问题：</p>
+<ul>
+<li><p>LocalDNS劫持</p>
+</li>
+<li><p>减少平均访问延迟</p>
+</li>
+<li><p>降低用户连接失败率</p>
+<p> 1、 LocalDNS劫持:</p>
+<p> 由于HttpDNS是通过ip直接请求http获取服务器A记录地址，不存在向本地运营商询问domain解析过程，所以从根本避免了DNS劫持问题。 （对于http劫持，可以通过对称／非对称加密、“加盐”、MD5校验数据的完整性，时效性，保证传输数据的安全性） </p>
+<p> 2、减少平均访问延迟:</p>
+<p> 由于是ip直接访问省掉了一次domain解析过程，（即使系统有缓存速度也会稍快一些‘毫秒级’）通过智能算法排序后找到最快节点进行访问。 </p>
+<p> 3、降低用户连接失败率:</p>
+</li>
+</ul>
+<p>​     通过算法降低以往失败率过高的服务器排序，通过时间近期访问过的数据提高服务器排序，通过历史访问成功记录提高服务器排序。如果ip(a)访问错误，在下一次返回ip(b)或者ip(c) 排序后的记录。（LocalDNS很可能在一个ttl时间内（或多个ttl）都是返回记录 </p>
+<p>2、技术原理</p>
+<p>HttpDNS的原理非常简单，主要有两步：</p>
+<p> A、客户端直接访问HttpDNS接口，获取业务在域名配置管理系统上配置的访问延迟最优的IP。（基于容灾考虑，还是保留次选使用运营商LocalDNS解析域名的方式）</p>
+<p>B、客户端向获取到的IP后就向直接往此IP发送业务协议请求。以Http请求为例，通过在header中指定host字段，向HttpDNS返回的IP发送标准的Http请求即可。</p>
+<p><img src="HttpDNS-005.png" alt="img"></p>
+<h2 id="3、阿里云、腾讯云服务对比"><a href="#3、阿里云、腾讯云服务对比" class="headerlink" title="3、阿里云、腾讯云服务对比"></a>3、阿里云、腾讯云服务对比</h2><h3 id="腾讯云"><a href="#腾讯云" class="headerlink" title="腾讯云"></a>腾讯云</h3><p><a target="_blank" rel="noopener" href="https://www.qcloud.com/product/hd">https://www.qcloud.com/product/hd</a></p>
+<p>从原理上来讲，HTTPDNS只是将域名解析的协议由DNS协议换成了Http协议，并不复杂。但是这一微小的转换，却带来了巨大的收益：</p>
+<ul>
+<li><h4 id="根治域名解析异常"><a href="#根治域名解析异常" class="headerlink" title="根治域名解析异常"></a>根治域名解析异常</h4></li>
+</ul>
+<p>由于绕过了运营商的LocalDNS，用户解析域名的请求通过Http协议直接透传到了HTTPDNS服务器IP上，用户在客户端的域名解析请求将不会遭受到域名解析异常的困扰。</p>
+<ul>
+<li><h4 id="调度精准"><a href="#调度精准" class="headerlink" title="调度精准"></a>调度精准</h4></li>
+</ul>
+<p>HTTPDNS能直接获取到用户IP，通过结合DNSPod自有专利技术生成的IP地址库以及测速系统，可以保证将用户引导的访问速度最快的IDC节点上。</p>
+<ul>
+<li><h4 id="实现成本低"><a href="#实现成本低" class="headerlink" title="实现成本低"></a>实现成本低</h4></li>
+</ul>
+<p>接入HTTPDNS的业务仅需要对客户端接入层做少量改造，无需用户手机进行root或越狱；而且由于Http协议请求构造非常简单，兼容各版本的移动操作系统更不成问题；总而言之，就是以最小的改造成本，解决了业务遭受域名解析异常的问题，并满足业务精确流量调度的需求。</p>
+<ul>
+<li><h4 id="扩展性强"><a href="#扩展性强" class="headerlink" title="扩展性强"></a>扩展性强</h4></li>
+</ul>
+<p>HTTPDNS提供可靠的域名解析服务，业务可将自有调度逻辑与HTTPDNS返回结果结合，实现更精细化的流量调度。比如指定版本的客户端连接请求的IP地址，指定网络类型的用户连接指定的IP地址等。</p>
+<p>总结来说，HttpDNS能有效地避免由于移动互联网用户所使用的LocalDNS异常导致的无法访问到您预期的最优接入点，最终导致用户访问您的业务出现异常。</p>
+<h3 id="阿里云"><a href="#阿里云" class="headerlink" title="阿里云"></a>阿里云</h3><p><a target="_blank" rel="noopener" href="https://help.aliyun.com/document_detail/30102.html?spm=5176.doc30141.6.539.YNLli9">https://help.aliyun.com/document_detail/30102.html?spm=5176.doc30141.6.539.YNLli9</a></p>
+<p>HTTPDNS使用HTTP协议进行域名解析，代替现有基于UDP的DNS协议，域名解析请求直接发送到阿里云的HTTPDNS服务器，从而绕过运营商的Local DNS，能够避免Local DNS造成的域名劫持问题和调度不精准问题。</p>
+<p>相比于传统的DNS，HTTPDNS主要有下面两个优势：</p>
+<ul>
+<li>防劫持：绕过运营商Local DNS，避免域名劫持，让每一次访问都畅通无阻。</li>
+<li>精准调度：基于访问的来源IP，获得最精准的解析结果，让客户端就近接入业务节点。</li>
+</ul>
+<h2 id="4、客户端接入"><a href="#4、客户端接入" class="headerlink" title="4、客户端接入"></a>4、客户端接入</h2><h3 id="腾讯云-1"><a href="#腾讯云-1" class="headerlink" title="腾讯云"></a>腾讯云</h3><p>官方文档：<a target="_blank" rel="noopener" href="https://www.qcloud.com/document/product/379/6469">https://www.qcloud.com/document/product/379/6469</a></p>
+<ul>
+<li><p>先在网站上注册</p>
+</li>
+<li><p>引入Framework</p>
+</li>
+<li><p>设置Plist</p>
+</li>
+<li><p>代码里注册<br><img src="http://space.babytree-inc.com/download/attachments/4563202/E297B9AC-3C5B-4980-931D-80E1F0EF4680.png?version=1&modificationDate=1485159288000&api=v2" alt="img"></p>
+</li>
+<li><p>实际请求</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">std::vector&lt;unsigned char*&gt; ipsVector = MSDKDns::GetInstance()-&gt;WGGetHostByName((unsigned char *)&quot;www.qq.com&quot;);</span><br><span class="line">if (ipsVector.size() &gt; 1)&#123;</span><br><span class="line">    NSString* ipv4 = [NSString stringWithUTF8String:(const char*)result[0]];</span><br><span class="line">    NSString* ipv6 = [NSString stringWithUTF8String:(const char*)result[1]];</span><br><span class="line">    if (![ipv6 isEqualToString:@&quot;0&quot;]) &#123;</span><br><span class="line">        //使用建议：当ipv6地址存在时，优先使用ipv6地址</span><br><span class="line">        //TODO 使用ipv6地址进行连接，注意格式，ipv6需加方框号[ ]进行处理，例如：http://[64:ff9b::b6fe:7475]/</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">       //使用ipv4地址进行连接</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>注意：</p>
+<p>   使用ipv6地址进行连接时，注意格式，ipv6需加方框号[ ]进行处理，例如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://[64:ff9b::b6fe:7475]/*******</span><br></pre></td></tr></table></figure>
+
+<p>使用建议：</p>
+<p>   1、ipv6为0，直接使用ipv4地址连接</p>
+<p>   2、ipv6地址不为0，优先使用ipv6连接，如果ipv6连接失败，再使用ipv4地址进行连接，注：返回给业务的地址格式为：”dns&#x3D;ipv4,ipv6”，如果没有ipv6地址，返回为0，例如:dns&#x3D;192.168.1.1,0</p>
+</li>
+</ul>
+<h3 id="阿里云-1"><a href="#阿里云-1" class="headerlink" title="阿里云"></a>阿里云</h3><p>官方文档：<a target="_blank" rel="noopener" href="https://help.aliyun.com/document_detail/30141.html?spm=5176.doc30103.6.580.SETg7n">https://help.aliyun.com/document_detail/30141.html?spm=5176.doc30103.6.580.SETg7n</a></p>
+<ul>
+<li><p>先在网站上注册App 下载对应SDK（1.1版本以上的）</p>
+</li>
+<li><p>引入对应framework</p>
+</li>
+<li><p>代码里注册<br><img src="http://space.babytree-inc.com/download/attachments/4563202/F4F7F293-30AF-4134-8669-9BBD0D3F1317.png?version=1&modificationDate=1485157366000&api=v2" alt="img"></p>
+</li>
+<li><p>预设对应服务的Host 以便SDK提前解析，减少后续解析域名时请求的时延<br><img src="http://space.babytree-inc.com/download/attachments/4563202/880D3B0A-DF01-4950-9C29-0CD64B7247EC.png?version=1&modificationDate=1485157506000&api=v2" alt="img"></p>
+</li>
+<li><p>实际请求中，首先获取IP地址如果有的话就替换Host访问，没有或者失败的话考虑降级，用LocalDNS访问。</p>
+</li>
+<li><p>如果是IPv6地址替换的时候要加 [ ]  如： http:&#x2F;&#x2F;[2001:db8:c000:221::]&#x2F;path  IPv4不用</p>
+</li>
+</ul>
+<p>实际应用中需要解决的问题</p>
+<ul>
+<li><p>每个请求前需要知道每个请求的IP地址，并作对应host替换。 考虑广告等地址是否也需要替换</p>
+</li>
+<li><p>Https 请求需要处理发送链接前SSL ／TLS握手，替换过的HOST会导致验收不同过.  (但目前项目中没有用到校验)</p>
+<p>发送HTTPS请求首先要进行SSL&#x2F;TLS握手，握手过程大致如下：</p>
+<ol>
+<li>客户端发起握手请求，携带随机数、支持算法列表等参数。</li>
+<li>服务端收到请求，选择合适的算法，下发公钥证书和随机数。</li>
+<li>客户端对服务端证书进行校验，并发送随机数信息，该信息使用公钥加密。</li>
+<li>服务端通过私钥获取随机数信息。</li>
+<li>双方根据以上交互的信息生成session ticket，用作该连接后续数据传输的加密密钥。</li>
+</ol>
+<p>上述过程中，和HTTPDNS有关的是第3步，客户端需要验证服务端下发的证书，验证过程有以下两个要点：</p>
+<ol>
+<li>客户端用本地保存的根证书解开证书链，确认服务端下发的证书是由可信任的机构颁发的。</li>
+<li>客户端需要检查证书的domain域和扩展域，看是否包含本次请求的host。</li>
+</ol>
+<p>如果上述两点都校验通过，就证明当前的服务端是可信任的，否则就是不可信任，应当中断当前连接。</p>
+<p>当客户端使用HTTPDNS解析域名时，请求URL中的host会被替换成HTTPDNS解析出来的IP，所以在证书验证的第2步，会出现domain不匹配的情况，导致SSL&#x2F;TLS握手不成功。</p>
+<ul>
+<li>阿里云Https解决方案 <a target="_blank" rel="noopener" href="https://help.aliyun.com/document_detail/30143.html?spm=5176.doc30141.2.6.94GVxK">https://help.aliyun.com/document_detail/30143.html?spm=5176.doc30141.2.6.94GVxK</a></li>
+<li>腾讯云Https解决方案 <a target="_blank" rel="noopener" href="https://www.qcloud.com/document/product/379/6471">https://www.qcloud.com/document/product/379/6471</a></li>
+</ul>
+</li>
+<li><p>webView的跳转，需要重写NSURLProtocol去实现。</p>
+</li>
+</ul>
+<!-- flag of hidden posts -->
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/DNS/" rel="tag"># DNS</a>
+          </div>
+
+        
+
+
+        
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1%E3%80%81%E6%8A%80%E6%9C%AF%E8%83%8C%E6%99%AF"><span class="nav-number">1.</span> <span class="nav-text">1、技术背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3%E3%80%81%E9%98%BF%E9%87%8C%E4%BA%91%E3%80%81%E8%85%BE%E8%AE%AF%E4%BA%91%E6%9C%8D%E5%8A%A1%E5%AF%B9%E6%AF%94"><span class="nav-number">2.</span> <span class="nav-text">3、阿里云、腾讯云服务对比</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%85%BE%E8%AE%AF%E4%BA%91"><span class="nav-number">2.1.</span> <span class="nav-text">腾讯云</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%A0%B9%E6%B2%BB%E5%9F%9F%E5%90%8D%E8%A7%A3%E6%9E%90%E5%BC%82%E5%B8%B8"><span class="nav-number">2.1.1.</span> <span class="nav-text">根治域名解析异常</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%B0%83%E5%BA%A6%E7%B2%BE%E5%87%86"><span class="nav-number">2.1.2.</span> <span class="nav-text">调度精准</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0%E6%88%90%E6%9C%AC%E4%BD%8E"><span class="nav-number">2.1.3.</span> <span class="nav-text">实现成本低</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%89%A9%E5%B1%95%E6%80%A7%E5%BC%BA"><span class="nav-number">2.1.4.</span> <span class="nav-text">扩展性强</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%98%BF%E9%87%8C%E4%BA%91"><span class="nav-number">2.2.</span> <span class="nav-text">阿里云</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4%E3%80%81%E5%AE%A2%E6%88%B7%E7%AB%AF%E6%8E%A5%E5%85%A5"><span class="nav-number">3.</span> <span class="nav-text">4、客户端接入</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%85%BE%E8%AE%AF%E4%BA%91-1"><span class="nav-number">3.1.</span> <span class="nav-text">腾讯云</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%98%BF%E9%87%8C%E4%BA%91-1"><span class="nav-number">3.2.</span> <span class="nav-text">阿里云</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="不会飞的小白"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">不会飞的小白</p>
+  <div class="site-description" itemprop="description">一只iOS程序猿，会陆陆续续的把之前的一些总结搬到这里。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">49</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/liujiaboy" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;liujiaboy" rel="noopener" target="_blank"><i class="github fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:alan129@163.com" title="E-Mail → mailto:alan129@163.com" rel="noopener" target="_blank"><i class="envelope fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/1768698000" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;u&#x2F;1768698000" rel="noopener" target="_blank"><i class="weibo fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="rss fa-fw"></i></a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">不会飞的小白</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

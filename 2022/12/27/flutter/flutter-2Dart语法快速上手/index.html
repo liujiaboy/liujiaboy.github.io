@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"liujiaboy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="一. 几个重要概念在学习 Dart 语言时, 先要清楚以下几个事实和概念：  Dart 语句是以分号 ; 结尾的。 任何保存在变量中的都是一个对象，并且所有的对象都是对应一个类的实例。无论是数字，函数和 null 都是对象。所有对象继承自 Object 类。 尽管 Dart 是强类型的，但是 Dart 可以推断类型，所以类型注释是可选的。 如果要明确说明不需要任何类型， 需要使用特殊类型 dyna">
+<meta property="og:type" content="article">
+<meta property="og:title" content="flutter-2Dart语法快速上手">
+<meta property="og:url" content="http://liujiaboy.github.io/2022/12/27/flutter/flutter-2Dart%E8%AF%AD%E6%B3%95%E5%BF%AB%E9%80%9F%E4%B8%8A%E6%89%8B/index.html">
+<meta property="og:site_name" content="不会飞的小白">
+<meta property="og:description" content="一. 几个重要概念在学习 Dart 语言时, 先要清楚以下几个事实和概念：  Dart 语句是以分号 ; 结尾的。 任何保存在变量中的都是一个对象，并且所有的对象都是对应一个类的实例。无论是数字，函数和 null 都是对象。所有对象继承自 Object 类。 尽管 Dart 是强类型的，但是 Dart 可以推断类型，所以类型注释是可选的。 如果要明确说明不需要任何类型， 需要使用特殊类型 dyna">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://space.babytree-inc.com/download/attachments/30609176/640.png?version=2&modificationDate=1645091354000&api=v2">
+<meta property="article:published_time" content="2022-12-27T03:48:08.000Z">
+<meta property="article:modified_time" content="2022-12-27T03:52:36.747Z">
+<meta property="article:author" content="不会飞的小白">
+<meta property="article:tag" content="flutter">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://space.babytree-inc.com/download/attachments/30609176/640.png?version=2&modificationDate=1645091354000&api=v2">
+
+<link rel="canonical" href="http://liujiaboy.github.io/2022/12/27/flutter/flutter-2Dart%E8%AF%AD%E6%B3%95%E5%BF%AB%E9%80%9F%E4%B8%8A%E6%89%8B/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>flutter-2Dart语法快速上手 | 不会飞的小白</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">不会飞的小白</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Stay Hungry, Stay Foolish</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://liujiaboy.github.io/2022/12/27/flutter/flutter-2Dart%E8%AF%AD%E6%B3%95%E5%BF%AB%E9%80%9F%E4%B8%8A%E6%89%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="不会飞的小白">
+      <meta itemprop="description" content="一只iOS程序猿，会陆陆续续的把之前的一些总结搬到这里。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="不会飞的小白">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          flutter-2Dart语法快速上手
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-12-27 11:48:08 / 修改时间：11:52:36" itemprop="dateCreated datePublished" datetime="2022-12-27T11:48:08+08:00">2022-12-27</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/flutter/" itemprop="url" rel="index"><span itemprop="name">flutter</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="一-几个重要概念"><a href="#一-几个重要概念" class="headerlink" title="一. 几个重要概念"></a>一. 几个重要概念</h2><p>在学习 Dart 语言时, 先要清楚以下几个事实和概念：</p>
+<ul>
+<li>Dart 语句是以分号 <code>;</code> 结尾的。</li>
+<li>任何保存在变量中的都是一个对象，并且所有的对象都是对应一个类的实例。无论是数字，函数和 <code>null</code> 都是对象。所有对象继承自 Object 类。</li>
+<li>尽管 Dart 是强类型的，但是 Dart 可以推断类型，所以类型注释是可选的。 如果要明确说明不需要任何类型， 需要使用特殊类型 dynamic 。</li>
+<li>Dart 支持泛型，如 <code>List &lt;int&gt;</code>（整数列表）或 <code>List &lt;dynamic&gt;</code>（任何类型的对象列表）。</li>
+<li>Dart 支持顶级函数，例如 <code>main()</code> ，同样函数绑定在类或对象上（分别是静态函数和实例函数）。以及支持函数内创建函数（ 嵌套或局部函数）。</li>
+<li>Dart 支持顶级变量，同样变量绑定在类或对象上（静态变量和实例变量）。实例变量有时称为字段或属性。</li>
+<li>与 Java 不同，Dart 没有关键字 <code>public</code> ， <code>protected</code> 和 <code>private</code> 。如果标识符以下划线 <code>_</code> 开头，则它相对于库是私有的。</li>
+<li>标识符以字母或下划线 <code>_</code> 开头，后跟任意字母和数字组合。</li>
+</ul>
+<p>二. Dart关键字</p>
+<p>Dart 语言关键字列表如下：</p>
+<table>
+<thead>
+<tr>
+<th>else</th>
+<th>import</th>
+<th>static</th>
+<th>assert</th>
+<th>enum</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>in</td>
+<td>uper</td>
+<td>async</td>
+<td>export</td>
+<td>interface</td>
+</tr>
+<tr>
+<td>switch</td>
+<td>await</td>
+<td>extends</td>
+<td>is</td>
+<td>sync</td>
+</tr>
+<tr>
+<td>break</td>
+<td>external</td>
+<td>library</td>
+<td>this</td>
+<td>case</td>
+</tr>
+<tr>
+<td>factory</td>
+<td>mixin</td>
+<td>throw</td>
+<td>catch</td>
+<td>false</td>
+</tr>
+<tr>
+<td>new</td>
+<td>true</td>
+<td>class</td>
+<td>final</td>
+<td>null</td>
+</tr>
+<tr>
+<td>try</td>
+<td>const</td>
+<td>finally</td>
+<td>on</td>
+<td>typedef</td>
+</tr>
+<tr>
+<td>continue</td>
+<td>for</td>
+<td>operator</td>
+<td>var</td>
+<td>covariant</td>
+</tr>
+<tr>
+<td>Function</td>
+<td>part</td>
+<td>void</td>
+<td>default</td>
+<td>get</td>
+</tr>
+<tr>
+<td>rethrow</td>
+<td>while</td>
+<td>deferred</td>
+<td>hide</td>
+<td>return</td>
+</tr>
+<tr>
+<td>with</td>
+<td>do</td>
+<td>if</td>
+<td>set</td>
+<td>yield</td>
+</tr>
+</tbody></table>
+<p>使用 Dart 时应避免使用这些单词作为标识符。</p>
+<h2 id="三-入口函数"><a href="#三-入口函数" class="headerlink" title="三. 入口函数"></a>三. 入口函数</h2><p>Dart 有两种入口主函数：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"> main()&#123;</span><br><span class="line">  print(&#x27;Hello Dart!&#x27;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 加 void 表示没有返回值</span><br><span class="line">void main()&#123;</span><br><span class="line">  print(&#x27;Hello Flutter!&#x27;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="四-代码注释"><a href="#四-代码注释" class="headerlink" title="四. 代码注释"></a>四. 代码注释</h2><p>Dart 支持单行注释、多行注释和文档注释：</p>
+<ol>
+<li>单行注释：单行注释以 <code>//</code> 开始。 所有在 <code>//</code> 和改行结尾之间的内容被编译器忽略。</li>
+<li>多行注释：多行注释以 <code>/*</code> 开始， 以 <code>*/</code> 结尾。 所有在 <code>/*</code> 和 <code>*/</code> 之间的内容被编译器忽略 （不会忽略文档注释）。 多行注释可以嵌套。</li>
+<li>文档注释：文档注释可以是多行注释，也可以是单行注释，文档注释以  <code>///</code> 或者 <code>/**</code> 开始。 在连续行上使用 <code>///</code> 与多行文档注释具有相同的效果。</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">// 单行注释</span><br><span class="line">/* </span><br><span class="line"> * 多行注释</span><br><span class="line"> */ </span><br><span class="line"></span><br><span class="line">/// 文档注释</span><br><span class="line"></span><br><span class="line">/** </span><br><span class="line"> * 文档注释</span><br><span class="line"> */三、变量</span><br></pre></td></tr></table></figure>
+
+<h2 id="五-变量"><a href="#五-变量" class="headerlink" title="五. 变量"></a>五. 变量</h2><p><strong>1. 定义变量</strong></p>
+<p>Dart 中定义变量有两种方式，一种是静态类型语言常用的方式，即指定变量类型；另一种则是动态语言的常用方式，即不指定类型，由 Dart 自动类型判断，一般最好指定类型。</p>
+<p> <code>// 指定变量类型：</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">String name = &#x27;ImportV&#x27;;</span><br><span class="line"></span><br><span class="line">// 使用关键字 var ，不指定变量类型：</span><br><span class="line">var name = &#x27;ImportV&#x27;;</span><br></pre></td></tr></table></figure>
+
+<p>未初始化的变量默认值是 <code>null</code>。即使变量是数字类型默认值也是 <code>null</code>，因为在 Dart 中一切都是对象，数字类型也不例外。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">int a;</span><br><span class="line">print(a);  // 输出值为 null</span><br></pre></td></tr></table></figure>
+
+<p>\2. 动态改变变量类型</p>
+<p>如想动态改变变量的数据类型，应当使用 <code>dynamic</code> 或 <code>Object</code> 来定义变量：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">dynamic a = &#x27;Dart&#x27;;  // 也可使用 Object a = &#x27;Dart&#x27;;</span><br><span class="line">a = 2021;</span><br><span class="line">print(a);  // 输出结果为 2021</span><br></pre></td></tr></table></figure>
+
+<p>\3. 定义常量</p>
+<p>Dart 中定义常量也有两种方式，一种使用 <code>final</code> 关键字，另一种是使用 <code>const</code> 关键字。需要注意的是， <code>final</code> 定义的常量是运行时常量，而 <code>const</code> 常量则是编译时常量，也就是说 <code>final</code> 定义常量时，其值可以是一个变量，而 <code>const</code> 定义的常量，其值必须是一个字面常量值。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">final a = DateTime.now();</span><br><span class="line">print(a);  // 输出现在的时间</span><br><span class="line"></span><br><span class="line">const a = DateTime.now();</span><br><span class="line">print(a);  // 报错</span><br><span class="line"></span><br><span class="line">六. 内建类型</span><br></pre></td></tr></table></figure>
+
+<p>Dart 语言支持以下内建类型：</p>
+<p><img src="http://space.babytree-inc.com/download/attachments/30609176/640.png?version=2&modificationDate=1645091354000&api=v2" alt="img"><br>\1. Number</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">// int 必须是整型：</span><br><span class="line">int a = 123;</span><br><span class="line"></span><br><span class="line">// 从 Dart 2.0 开始，double 既可以是浮点数也可以是整型：</span><br><span class="line">double b = 12.34;</span><br><span class="line">double c = 6;    // 相当于 double c = 6.0</span><br></pre></td></tr></table></figure>
+
+<p>\2. String</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">// 用单引号或者双引号定义字符串：</span><br><span class="line">String s1 = &#x27;Hello Dart!&#x27;</span><br><span class="line">String s2 = &quot;Hello Flutter!&quot;</span><br><span class="line"></span><br><span class="line">// 当字符串有引号时：</span><br><span class="line">String s3 = &#x27;I\&#x27;m ImportV!&#x27;</span><br><span class="line">string s4 = &quot;I&#x27;m ImportV!&quot;</span><br><span class="line"></span><br><span class="line">// 使用连续三个单引号或者三个双引号实现多行字符串对象的创建：</span><br><span class="line">String s5 = &#x27;&#x27;&#x27;</span><br><span class="line">Hello Dart! </span><br><span class="line">Hello Flutter! </span><br><span class="line">Hello ImportV!</span><br><span class="line">&#x27;&#x27;&#x27;;</span><br><span class="line">// 使用 r 前缀，可以创建 “原始 raw” 字符串：</span><br><span class="line">String s6 = r&#x27;Hello Dart \n Hello Flutter!&#x27;</span><br><span class="line"></span><br><span class="line">// String -&gt; int：</span><br><span class="line">int a = int.parse(&#x27;123&#x27;);</span><br><span class="line"></span><br><span class="line">// String -&gt; double：</span><br><span class="line">double b = double.parse(&#x27;12.34&#x27;);</span><br><span class="line"></span><br><span class="line">// int -&gt; String：</span><br><span class="line">String str1 = 123.toString();</span><br><span class="line"></span><br><span class="line">// double -&gt; String：</span><br><span class="line">String str2 = 12.3456.toStringAsFixed(2);  // 括号内为要保留的小数位数</span><br><span class="line"></span><br><span class="line">// 字符串拼接，用“+”拼接，字面量字符串也可以直接写在一起：</span><br><span class="line">String s1 = &#x27;Hello Dart! &#x27; &#x27;Hello Flutter! &#x27; &#x27;Hello ImportV! &#x27;;</span><br><span class="line">String s2 = &#x27;Hello Dart! &#x27; + &#x27;Hello Flutter! &#x27; + &#x27;Hello ImportV! &#x27;;</span><br><span class="line"></span><br><span class="line">// 字符串可以通过 $&#123;expression&#125; 的方式内嵌表达式。 如果表达式是一个标识符，则 &#123;&#125; 可以省略:</span><br><span class="line">String s1 = &#x27;Hello Flutter!&#x27;;</span><br><span class="line">String s2 = &#x27;Hello Dart! $s1 Hello ImportV!&#x27;;</span><br></pre></td></tr></table></figure>
+
+<p>\3. Boolean</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">// 布尔类型默认值为null，字面量只有 true 和 false ，这两个对象都是编译时常量：</span><br><span class="line">bool b = true;</span><br></pre></td></tr></table></figure>
+
+<p>\4. List</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">// 定义列表方法一：</span><br><span class="line">List lt1 = [1, 2, 3, 4];</span><br><span class="line"></span><br><span class="line">// 定义列表方法二：</span><br><span class="line">List a = [];</span><br><span class="line">a.add(1);</span><br><span class="line">a.add(2);</span><br><span class="line">a.add(3);</span><br><span class="line"></span><br><span class="line">// 获取列表属性：</span><br><span class="line">List a = [&#x27;Dart&#x27;, &#x27;Flutter&#x27;, &#x27;ImportV&#x27;];</span><br><span class="line">print(a.length);  // 获取列表长度</span><br><span class="line">print(a.isEmpty);  // 判断列表是否为空，如果是，输出 true</span><br><span class="line">print(a.isNotEmpty);  // 判断列表是否为空，如果不是，输出 true</span><br><span class="line">print(a.reversed);  // 将列表逆序输出（翻转列表）</span><br><span class="line"></span><br><span class="line">// 列表的下标索引是从0开始的：</span><br><span class="line">List a = [1, 2, 3, 4];</span><br><span class="line">print(a[0]);</span><br><span class="line"></span><br><span class="line">// 拼接与插入：</span><br><span class="line">List a = [&#x27;Dart&#x27;, &#x27;Flutter&#x27;];</span><br><span class="line">a.add(&#x27;Android&#x27;);  // 拼接一个元素</span><br><span class="line">a.addAll([&#x27;Android&#x27;, &#x27;iOS&#x27;]);  // 拼接多个元素</span><br><span class="line">a.insert(2, &#x27;Android&#x27;);  // 插入一个元素，2 为插入位置的索引值</span><br><span class="line">a.insertAll(2, [&#x27;Android&#x27;, &#x27;iOS&#x27;]);  // 插入多个元素</span><br><span class="line"></span><br><span class="line">// 列表转字符串：</span><br><span class="line">List a = [&#x27;Dart&#x27;, &#x27;Flutter&#x27;, &#x27;Android&#x27;];</span><br><span class="line">String b = a.join(&#x27;-&gt;&#x27;);  // 此处 b 的字面量为 Dart-&gt;Flutter-&gt;Android</span><br><span class="line"></span><br><span class="line">// 字符串转列表：</span><br><span class="line">String a = &#x27;Dart-&gt;Flutter-&gt;Android&#x27;;</span><br><span class="line">List b = a.split(&#x27;-&gt;&#x27;);  // 此处 b 的字面量为 [Dart, Flutter, Android]</span><br><span class="line"></span><br><span class="line">// 指定列表类型：</span><br><span class="line">List a = &lt;String&gt;[];</span><br><span class="line">a.add(&#x27;Flutter&#x27;);</span><br><span class="line">a.add(1);  //报错</span><br><span class="line"></span><br><span class="line">// 在列表字面量前添加 const 关键字，定义一个不可改变的列表（编译时常量）：</span><br><span class="line">List a = const [1, 2, 3, 4];</span><br><span class="line">a[0] = 2;  // 报错</span><br></pre></td></tr></table></figure>
+
+<p>\5. Set</p>
+<p>Set 是没有顺序且元素不能重复的集合，因此不能通过索引去获取值。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">// 定义集合方法一：</span><br><span class="line">Set a = &#123;&#x27;Dart&#x27;, &#x27;Flutter&#x27;, &#x27;ImportV&#x27;&#125;;</span><br><span class="line"></span><br><span class="line">// 定义集合方法二</span><br><span class="line">Set a = &#123;&#125;;</span><br><span class="line">a.add(&#x27;Dart&#x27;);</span><br><span class="line">a.add(&#x27;Flutter&#x27;);</span><br><span class="line">a.add(&#x27;ImportV&#x27;);</span><br><span class="line"></span><br><span class="line">// 创建空集合：</span><br><span class="line">Set a = &#123;&#125;;  //  方法一</span><br><span class="line">var a = &lt;String&gt;&#123;&#125;;  // 方法二</span><br><span class="line">var a = &#123;&#125;;  // 这样会创建一个空的 Map，而不是 Set</span><br><span class="line"></span><br><span class="line">// 获取集合中元素的个数：</span><br><span class="line">Set a = &#123;&#x27;Dart&#x27;, &#x27;Flutter&#x27;, &#x27;ImportV&#x27;&#125;;</span><br><span class="line">print(a.length);  // 输出为 3</span><br><span class="line"></span><br><span class="line">// 创建一个不可改变的集合（编译时常量）：</span><br><span class="line">Set a = const &#123;&#x27;Dart&#x27;, &#x27;Flutter&#x27;, &#x27;ImportV&#x27;&#125;;</span><br><span class="line">a.add(&#x27;Android&#x27;);  // 报错</span><br><span class="line"></span><br><span class="line">// 列表转集合：</span><br><span class="line">List a = [&#x27;Dart&#x27;, &#x27;Flutter&#x27;, &#x27;Android&#x27;];</span><br><span class="line">print(a.toSet());</span><br><span class="line"></span><br><span class="line">// 集合转列表：</span><br><span class="line">Set a = &#123;&#x27;Dart&#x27;, &#x27;Flutter&#x27;, &#x27;Android&#x27;&#125;;</span><br><span class="line">print(a.toList());</span><br></pre></td></tr></table></figure>
+
+<p>\6. Map</p>
+<p>Map（映射）是用来关联 keys 和 values 的对象。 keys 和 values 可以是任何类型的对象。在一个 Map 对象中一个 key 只能出现一次。 但是 value 可以出现多次。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">// 定义映射方法一：</span><br><span class="line">Map a = &#123;</span><br><span class="line">// key     value</span><br><span class="line">  &#x27;first&#x27;: &#x27;Dart&#x27;,</span><br><span class="line">  &#x27;second&#x27;: &#x27;Flutter&#x27;,</span><br><span class="line">  &#x27;third&#x27;: &#x27;Android&#x27;</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">// 定义映射方法二：</span><br><span class="line">Map a = &#123;&#125;;</span><br><span class="line">a[&#x27;first&#x27;] = &#x27;Dart&#x27;;</span><br><span class="line">a[&#x27;second&#x27;] = &#x27;Flutter&#x27;;</span><br><span class="line">a[&#x27;third&#x27;] = &#x27;Android&#x27;;</span><br><span class="line"></span><br><span class="line">// 获取映射长度：</span><br><span class="line">print(a.length);</span><br><span class="line"></span><br><span class="line">// 获取指定 value 值：</span><br><span class="line">print(a[&#x27;first&#x27;]);</span><br><span class="line"></span><br><span class="line">// 在映射字面量前添加 const 关键字，定义一个不可改变的映射（编译时常量）：</span><br><span class="line">Map a = const &#123;&#x27;first&#x27;: &#x27;Dart&#x27;, &#x27;second&#x27;: &#x27;Flutter&#x27;, &#x27;third&#x27;: &#x27;Android&#x27;&#125;;</span><br><span class="line">a[&#x27;third&#x27;] = &#x27;iOS&#x27;  //报错五、运算符</span><br></pre></td></tr></table></figure>
+
+<h2 id="七-运算符"><a href="#七-运算符" class="headerlink" title="七. 运算符"></a>七. 运算符</h2><p>下面是 Dart 定义的运算符：</p>
+<p><strong>1. 算数运算符</strong></p>
+<p>除了基本的算术运算外，Dart 还支持前缀和后缀、自增和自减运算符：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">var a, b;</span><br><span class="line">a = 0;</span><br><span class="line"></span><br><span class="line">b = ++a;  // a自加1后赋值给b</span><br><span class="line">b = a++;  // a赋值给b后自加1</span><br><span class="line">b = --a;  // a自减1后赋值给b</span><br><span class="line">b = a--;  // a赋值给b后自减1</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-类型判断运算符"><a href="#2-类型判断运算符" class="headerlink" title="2. 类型判断运算符"></a>2. 类型判断运算符</h3><p>使用 <code>as</code> 运算符将对象强制转换为特定类型时，通常可以认为是 <code>is</code> 类型判定后，被判定对象调用函数的一种缩写形式。 请考虑以下代码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">if (emp is Person) &#123;</span><br><span class="line">  emp.firstName = &#x27;Bob&#x27;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>使用 as 运算符进行缩写：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(emp as Person).firstName = &#x27;Bob&#x27;;</span><br></pre></td></tr></table></figure>
+
+<p>【注意】以上代码并不是等价的。 如果 <code>emp</code> 为 <code>null</code> 或者不是 <code>Person</code> 对象， 那么第一个 <code>is</code> 的示例，后面将不执行； 第二个 <code>as</code> 的示例会抛出异常。</p>
+<h3 id="3-赋值运算符"><a href="#3-赋值运算符" class="headerlink" title="3. 赋值运算符"></a>3. 赋值运算符</h3><p>下面示例使用几个赋值和复合赋值运算符，其他使用方法类似：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">a = 123;  // 使用 = 直接为变量赋值。</span><br><span class="line"></span><br><span class="line">b ??= 456;  // 使用 ??= 运算符时，只有当 b 值为 null 时才会被赋值</span><br><span class="line"></span><br><span class="line">a *= 3;  // 赋值并做乘法运算，相当于 a = a * 3</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-逻辑运算符"><a href="#4-逻辑运算符" class="headerlink" title="4. 逻辑运算符"></a>4. 逻辑运算符</h3><p>下面是关于逻辑表达式的示例：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">if (!done &amp;&amp; (col == 0 || col == 3)) &#123;</span><br><span class="line">  // ...Do something...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-位运算符"><a href="#5-位运算符" class="headerlink" title="5. 位运算符"></a>5. 位运算符</h3><p>位运算符把数字转为二进制来运算：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">// 按位与，参与运算的两个值，如果两个相应二进位都为 1，则该位结果为 1，否则为 0</span><br><span class="line">print(a &amp; b);  // 结果为 4</span><br><span class="line"></span><br><span class="line">// 按位或，只要对应的两个二进位有一个为 1，结果位就为 1</span><br><span class="line">print(a | b);  // 结果为 14</span><br><span class="line"></span><br><span class="line">// 按位异或，当两个对应的二进位相异时，结果位为 1，否则为 0</span><br><span class="line">print(a ^ b);  // 结果为 10</span><br><span class="line"></span><br><span class="line">// 按位取反，对数据的每一个二进位，把 1 变为 0，把 0 变为 1</span><br><span class="line">print(~a);  // 结果我为 -13</span><br><span class="line"></span><br><span class="line">// 左移，把 &lt;&lt; 左边的数的各二进位左移若干位，由 &lt;&lt; 右边的数指定移动位数，高位丢弃，低位补 0</span><br><span class="line">print(a &lt;&lt; 2);  // 结果为 48，相当于乘以 2 的 2 次方</span><br><span class="line"></span><br><span class="line">// 右移，把 &lt;&lt; 左边的数的各二进位右移若干位，由 &lt;&lt; 右边的数指定移动位数</span><br><span class="line">print(a &gt;&gt; 2);  // 结果为 3，相当于除以 2 的 2 次方</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-条件表达式"><a href="#6-条件表达式" class="headerlink" title="6. 条件表达式"></a>6. 条件表达式</h3><p>Dart有两个运算符，有时可以替换 if-else 表达式， 让表达式更简洁，称为条件表达式：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">condition ? expr1 : expr2</span><br></pre></td></tr></table></figure>
+
+<p>如果条件为 <code>true</code>, 执行 <code>expr1</code> (并返回它的值)： 否则, 执行并返回 <code>expr2</code> 的值。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">expr1 ?? expr2</span><br></pre></td></tr></table></figure>
+
+<p>如果 <code>expr1</code> 不是 <code>null</code>， 返回 <code>expr1</code> 的值； 否则, 执行并返回 <code>expr2</code> 的值。</p>
+<p>如果条件判断是根据布尔值， 考虑使用第一种，如果是根据是否为 <code>null</code>，考虑使用第二种。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">var a = &#x27;Dart&#x27;;</span><br><span class="line">var b = &#x27;Flutter&#x27;;</span><br><span class="line">var c = a ?? b.toUpperCase();  // 此处 c 的字面量为 Dart</span><br></pre></td></tr></table></figure>
+
+<h3 id="7-级联运算符"><a href="#7-级联运算符" class="headerlink" title="7. 级联运算符"></a>7. 级联运算符</h3><p>级联运算符 <code>..</code> 可以实现对同一个对像进行一系列的操作。 除了调用函数外， 还可以访问同一对象上的字段属性。 这通常可以节省创建临时变量的步骤， 同时编写出更流畅的代码。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">querySelector(&#x27;#confirm&#x27;)   // 获取对象。</span><br><span class="line">  ..text = &#x27;Confirm&#x27;    // 调用成员变量。</span><br><span class="line">  ..classes.add(&#x27;important&#x27;)</span><br><span class="line">  ..onClick.listen((e) =&gt; window.alert(&#x27;Confirmed!&#x27;));</span><br></pre></td></tr></table></figure>
+
+<p>第一句调用函数 <code>querySelector()</code> ，返回获取到的对象。 获取的对象依次执行级联运算符后面的代码， 代码执行后的返回值会被忽略。</p>
+<p>上面的代码等价于：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">var button = querySelector(&#x27;#confirm&#x27;);</span><br><span class="line">button.text = &#x27;Confirm&#x27;;</span><br><span class="line">button.classes.add(&#x27;important&#x27;);</span><br><span class="line">button.onClick.listen((e) =&gt; window.alert(&#x27;Confirmed!&#x27;));</span><br></pre></td></tr></table></figure>
+
+<p>级联运算符是可以嵌套的。但要注意，在返回对象的函数中谨慎使用级联操作符。 例如，下面的代码是错误的：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">var sb = StringBuffer();</span><br><span class="line">sb.write(&#x27;foo&#x27;)</span><br><span class="line">  ..write(&#x27;bar&#x27;);   // sb.write() 函数调用返回 void， 不能在 void 对象上创建级联操作。六、流程控制语句</span><br></pre></td></tr></table></figure>
+
+<h2 id><a href="#" class="headerlink" title></a></h2><h2 id="八-流程控制语句"><a href="#八-流程控制语句" class="headerlink" title="八. 流程控制语句"></a>八. 流程控制语句</h2><p>Dart 中的流程控制语句与 Java 相似。</p>
+<p><strong>1. if - else 分支</strong></p>
+<p>和 JavaScript 不同， Dart 的判断条件必须是布尔值，不能是其他类型。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">int a = 1;</span><br><span class="line">if (a &lt; 0) &#123;</span><br><span class="line">  a++;</span><br><span class="line">&#125; else if (a &gt; 0) &#123;</span><br><span class="line">  a--;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-switch-case-语句"><a href="#2-switch-case-语句" class="headerlink" title="2. switch - case 语句"></a>2. switch - case 语句</h3><p>在 Dart 中 <code>switch</code> 语句使用 <code>==</code> 比较整数、字符串、编译时常量或者枚举类型。 比较的对象必须都是同一个类的实例（并且不可以是子类）， 类必须没有对 <code>==</code> 重写。</p>
+<p>在 <code>case</code> 语句中，每个非空的 <code>case</code> 语句结尾需要跟一个 <code>break</code> 语句。 除  <code>break</code>以外，还有可以使用 <code>continue</code>， <code>throw</code> 或者 <code>return</code>。当没有 <code>case</code> 语句匹配时，执行 <code>default</code> 代码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">var a = &#x27;yes&#x27;;</span><br><span class="line">switch (a) &#123;</span><br><span class="line">  case &#x27;yes&#x27;:</span><br><span class="line">    print(&#x27;yes&#x27;);</span><br><span class="line">    break;</span><br><span class="line">  case &#x27;no&#x27;:</span><br><span class="line">    print(&#x27;no&#x27;);</span><br><span class="line">    break;</span><br><span class="line">  default:</span><br><span class="line">    print(&#x27;fault&#x27;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-for-循环"><a href="#3-for-循环" class="headerlink" title="3. for 循环"></a>3. for 循环</h3><p>进行迭代操作，可以使用标准 for 语句。 例如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">// 计算 5 的阶乘</span><br><span class="line">int result = 1;</span><br><span class="line">for (int i = 1; i &lt; 6; i++) &#123;</span><br><span class="line">  result = result * i;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>闭包在 Dart 的 for 循环中会捕获循环的初始索引值， 来避免 JavaScript 中常见的陷阱。下面的代码输出的是 0 和 1，但是在 JavaScript 中会连续输出两个 2 ：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">var callbacks = [];</span><br><span class="line">for (var i = 0; i &lt; 2; i++) &#123;</span><br><span class="line">  callbacks.add(() =&gt; print(i));</span><br><span class="line">&#125;</span><br><span class="line">callbacks.forEach((c) =&gt; c());</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-while-和-do-while-循环"><a href="#4-while-和-do-while-循环" class="headerlink" title="4. while 和 do while 循环"></a>4. while 和 do while 循环</h3><p><code>while</code> 循环是在执行前判断执行条件，<code>do-while</code> 循环是在执行后判断执行条件：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">// 计算 5 的阶乘</span><br><span class="line">int i = 1;</span><br><span class="line">int result = 1;</span><br><span class="line">// 使用 while 循环</span><br><span class="line">while (i &lt; 6) &#123;</span><br><span class="line">  result = result * i;</span><br><span class="line">  i++;</span><br><span class="line">&#125;</span><br><span class="line">// 使用 do - while 循环</span><br><span class="line">do &#123;</span><br><span class="line">  result = result * i;</span><br><span class="line">  i++;</span><br><span class="line">&#125; while (i &lt; 6);</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-break-和-continue"><a href="#5-break-和-continue" class="headerlink" title="5. break 和 continue"></a>5. break 和 continue</h3><p>使用 <code>break</code> 停止程序循环：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">for (int i = 1; i &lt; 5; i++) &#123;</span><br><span class="line">  if (i == 3) &#123;</span><br><span class="line">    break;</span><br><span class="line">  &#125;</span><br><span class="line">  print(i);  // 输出结果为 1 2（i = 3 时循环结束）</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>使用 <code>continue</code> 跳转到下一次循环：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">for (int i = 1; i &lt; 5; i++) &#123;</span><br><span class="line">  if (i == 3) &#123;</span><br><span class="line">    continue;</span><br><span class="line">  &#125;</span><br><span class="line">  print(i);  // 输出结果为 1 2 4（i = 3 时跳到下一次循环）</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-其他循环"><a href="#6-其他循环" class="headerlink" title="6. 其他循环"></a>6. 其他循环</h3><p>使用 <code>for...in...</code> 循环：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">// 遍历数组</span><br><span class="line">List a = [&#x27;Dart&#x27;, &#x27;Flutter&#x27;, &#x27;Android&#x27;];</span><br><span class="line">for (var item in a) &#123;</span><br><span class="line">  print(item);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>使用 <code>forEach</code> 循环：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">// 遍历数组</span><br><span class="line">List a = [&#x27;Dart&#x27;, &#x27;Flutter&#x27;, &#x27;Android&#x27;];</span><br><span class="line">a.forEach((var item) &#123;</span><br><span class="line">  print(item);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h3 id="7-assert-语句"><a href="#7-assert-语句" class="headerlink" title="7. assert 语句"></a>7. assert 语句</h3><p>使用 <code>assert</code> 语句进行判断，如果 <code>assert</code> 语句中的布尔条件为 <code>false</code> ， 那么正常的程序执行流程会被中断:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">// 确认变量值不为空。</span><br><span class="line">assert(text != null);</span><br><span class="line"></span><br><span class="line">// 确认变量值小于100。</span><br><span class="line">assert(number &lt; 100);</span><br></pre></td></tr></table></figure>
+
+<p>【注意】<code>assert</code> 语句只在开发环境中有效， 在生产环境是无效的； Flutter 中的 <code>assert</code> 只在 debug 模式中有效。</p>
+<h2 id="-1"><a href="#-1" class="headerlink" title></a></h2><h2 id="九-异常处理"><a href="#九-异常处理" class="headerlink" title="九. 异常处理"></a>九. 异常处理</h2><p>Dart 代码可以抛出和捕获异常。和 Java 有所不同， Dart 中的所有异常是非检查异常。方法不会声明它们抛出的异常，也不要求捕获任何异常。</p>
+<p>Dart 提供了 <code>Exception</code> 和 <code>Error</code> 类型， 以及一些子类型，也可以定义自己的异常类型。Dart 程序可以抛出任何非 <code>null</code> 对象， 不仅限 <code>Exception</code> 和 <code>Error</code> 对象。</p>
+<h3 id="1-throw-抛出异常"><a href="#1-throw-抛出异常" class="headerlink" title="1. throw 抛出异常"></a>1. throw 抛出异常</h3><p>下面是关于抛出或者引发异常的示例：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">throw FormatException(&#x27;Expected at least 1 section&#x27;);</span><br></pre></td></tr></table></figure>
+
+<p>也可以抛出任意的对象：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">throw &#x27;Out of llamas!&#x27;;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-try…catch…finally-捕获异常"><a href="#2-try…catch…finally-捕获异常" class="headerlink" title="2. try…catch…finally 捕获异常"></a>2. try…catch…finally 捕获异常</h3><p>Dart 语言中通过指定多个 <code>catch</code> 语句，可以处理可能抛出多种类型异常的代码，并由与抛出异常类型匹配的第一个 <code>catch</code> 语句处理异常。 如果 <code>catch</code> 语句未指定类型， 则该语句可以处理任何类型的抛出对象。</p>
+<p>此外，<code>catch()</code> 函数可以指定1到2个参数， 第一个参数为抛出的异常对象， 第二个为堆栈信息。</p>
+<p>使用 <code>finally</code> 语句时，无论是否抛出异常，<code>finally</code> 中的代码都会被执行。</p>
+<p>示例代码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">try &#123;</span><br><span class="line">  print(10 ~/ 0);</span><br><span class="line">&#125; on IntegerDivisionByZeroException catch (e, s) &#123;</span><br><span class="line">  print(e);</span><br><span class="line">  print(s);</span><br><span class="line">&#125; on Exception catch (e, s) &#123;</span><br><span class="line">  print(e);</span><br><span class="line">  print(s);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>执行以上代码将输出：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">// 捕获的异常</span><br><span class="line">IntegerDivisionByZeroException  </span><br><span class="line">// 堆栈信息</span><br><span class="line">#0      int.~/ (dart:core-patch/integers.dart:22:7)  </span><br><span class="line">#1      main (file:///c:/Users/27884/Desktop/test.dart:3:14)</span><br><span class="line">#2      _startIsolate.&lt;anonymous closure&gt; (dart:isolate-patch/isolate_patch.dart:301:19)</span><br><span class="line">#3      _RawReceivePortImpl._handleMessage (dart:isolate-patch/isolate_patch.dart:168:12)</span><br><span class="line">// finally 语句后的代码执行结果</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/flutter/" rel="tag"># flutter</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/12/27/flutter/flutter-1%E5%AD%A6%E4%B9%A0%E7%9B%B8%E5%85%B3/" rel="prev" title="flutter-1学习相关">
+      <i class="fa fa-chevron-left"></i> flutter-1学习相关
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/12/28/iOS%E6%9E%B6%E6%9E%84/%E8%BD%AF%E4%BB%B6%E6%9E%B6%E6%9E%84%E6%A8%A1%E5%BC%8F/" rel="next" title="软件架构模式">
+      软件架构模式 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80-%E5%87%A0%E4%B8%AA%E9%87%8D%E8%A6%81%E6%A6%82%E5%BF%B5"><span class="nav-number">1.</span> <span class="nav-text">一. 几个重要概念</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89-%E5%85%A5%E5%8F%A3%E5%87%BD%E6%95%B0"><span class="nav-number">2.</span> <span class="nav-text">三. 入口函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B-%E4%BB%A3%E7%A0%81%E6%B3%A8%E9%87%8A"><span class="nav-number">3.</span> <span class="nav-text">四. 代码注释</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94-%E5%8F%98%E9%87%8F"><span class="nav-number">4.</span> <span class="nav-text">五. 变量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%83-%E8%BF%90%E7%AE%97%E7%AC%A6"><span class="nav-number">5.</span> <span class="nav-text">七. 运算符</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E7%B1%BB%E5%9E%8B%E5%88%A4%E6%96%AD%E8%BF%90%E7%AE%97%E7%AC%A6"><span class="nav-number">5.1.</span> <span class="nav-text">2. 类型判断运算符</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-%E8%B5%8B%E5%80%BC%E8%BF%90%E7%AE%97%E7%AC%A6"><span class="nav-number">5.2.</span> <span class="nav-text">3. 赋值运算符</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-%E9%80%BB%E8%BE%91%E8%BF%90%E7%AE%97%E7%AC%A6"><span class="nav-number">5.3.</span> <span class="nav-text">4. 逻辑运算符</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-%E4%BD%8D%E8%BF%90%E7%AE%97%E7%AC%A6"><span class="nav-number">5.4.</span> <span class="nav-text">5. 位运算符</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-%E6%9D%A1%E4%BB%B6%E8%A1%A8%E8%BE%BE%E5%BC%8F"><span class="nav-number">5.5.</span> <span class="nav-text">6. 条件表达式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-%E7%BA%A7%E8%81%94%E8%BF%90%E7%AE%97%E7%AC%A6"><span class="nav-number">5.6.</span> <span class="nav-text">7. 级联运算符</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link"><span class="nav-number">6.</span> <span class="nav-text"></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AB-%E6%B5%81%E7%A8%8B%E6%8E%A7%E5%88%B6%E8%AF%AD%E5%8F%A5"><span class="nav-number">7.</span> <span class="nav-text">八. 流程控制语句</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-switch-case-%E8%AF%AD%E5%8F%A5"><span class="nav-number">7.1.</span> <span class="nav-text">2. switch - case 语句</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-for-%E5%BE%AA%E7%8E%AF"><span class="nav-number">7.2.</span> <span class="nav-text">3. for 循环</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-while-%E5%92%8C-do-while-%E5%BE%AA%E7%8E%AF"><span class="nav-number">7.3.</span> <span class="nav-text">4. while 和 do while 循环</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-break-%E5%92%8C-continue"><span class="nav-number">7.4.</span> <span class="nav-text">5. break 和 continue</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-%E5%85%B6%E4%BB%96%E5%BE%AA%E7%8E%AF"><span class="nav-number">7.5.</span> <span class="nav-text">6. 其他循环</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-assert-%E8%AF%AD%E5%8F%A5"><span class="nav-number">7.6.</span> <span class="nav-text">7. assert 语句</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#-1"><span class="nav-number">8.</span> <span class="nav-text"></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B9%9D-%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86"><span class="nav-number">9.</span> <span class="nav-text">九. 异常处理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-throw-%E6%8A%9B%E5%87%BA%E5%BC%82%E5%B8%B8"><span class="nav-number">9.1.</span> <span class="nav-text">1. throw 抛出异常</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-try%E2%80%A6catch%E2%80%A6finally-%E6%8D%95%E8%8E%B7%E5%BC%82%E5%B8%B8"><span class="nav-number">9.2.</span> <span class="nav-text">2. try…catch…finally 捕获异常</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="不会飞的小白"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">不会飞的小白</p>
+  <div class="site-description" itemprop="description">一只iOS程序猿，会陆陆续续的把之前的一些总结搬到这里。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">49</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/liujiaboy" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;liujiaboy" rel="noopener" target="_blank"><i class="github fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:alan129@163.com" title="E-Mail → mailto:alan129@163.com" rel="noopener" target="_blank"><i class="envelope fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/1768698000" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;u&#x2F;1768698000" rel="noopener" target="_blank"><i class="weibo fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="rss fa-fw"></i></a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">不会飞的小白</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

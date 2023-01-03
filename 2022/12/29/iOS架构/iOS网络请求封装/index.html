@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"liujiaboy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="网络层能提供的大致功能大家其实都比较清楚，无非是get、post等方式的API请求，还有文件上传下载，更大型的app会提供各种参数控制，如缓存、重试机制，安全策略等。网络层的好坏更多体现在设计上，如何给app提供给友好的调用方式，在这个基础上再提供更多的小功能小接口。 一、离散型API和集约型API 1.从上层来说其实所有的请求都是集约型API请求，因为都需要走AFNetworking，把参数扔过">
+<meta property="og:type" content="article">
+<meta property="og:title" content="iOS网络请求封装">
+<meta property="og:url" content="http://liujiaboy.github.io/2022/12/29/iOS%E6%9E%B6%E6%9E%84/iOS%E7%BD%91%E7%BB%9C%E8%AF%B7%E6%B1%82%E5%B0%81%E8%A3%85/index.html">
+<meta property="og:site_name" content="不会飞的小白">
+<meta property="og:description" content="网络层能提供的大致功能大家其实都比较清楚，无非是get、post等方式的API请求，还有文件上传下载，更大型的app会提供各种参数控制，如缓存、重试机制，安全策略等。网络层的好坏更多体现在设计上，如何给app提供给友好的调用方式，在这个基础上再提供更多的小功能小接口。 一、离散型API和集约型API 1.从上层来说其实所有的请求都是集约型API请求，因为都需要走AFNetworking，把参数扔过">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-12-29T06:49:59.000Z">
+<meta property="article:modified_time" content="2022-12-29T08:44:31.464Z">
+<meta property="article:author" content="不会飞的小白">
+<meta property="article:tag" content="架构">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://liujiaboy.github.io/2022/12/29/iOS%E6%9E%B6%E6%9E%84/iOS%E7%BD%91%E7%BB%9C%E8%AF%B7%E6%B1%82%E5%B0%81%E8%A3%85/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>iOS网络请求封装 | 不会飞的小白</title><meta name="robots" content="noindex">
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">不会飞的小白</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Stay Hungry, Stay Foolish</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://liujiaboy.github.io/2022/12/29/iOS%E6%9E%B6%E6%9E%84/iOS%E7%BD%91%E7%BB%9C%E8%AF%B7%E6%B1%82%E5%B0%81%E8%A3%85/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="不会飞的小白">
+      <meta itemprop="description" content="一只iOS程序猿，会陆陆续续的把之前的一些总结搬到这里。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="不会飞的小白">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          iOS网络请求封装
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-12-29 14:49:59 / 修改时间：16:44:31" itemprop="dateCreated datePublished" datetime="2022-12-29T14:49:59+08:00">2022-12-29</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">架构</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>网络层能提供的大致功能大家其实都比较清楚，无非是get、post等方式的API请求，还有文件上传下载，更大型的app会提供各种参数控制，如缓存、重试机制，安全策略等。网络层的好坏更多体现在设计上，如何给app提供给友好的调用方式，在这个基础上再提供更多的小功能小接口。</p>
+<p><strong>一、离散型API和集约型API</strong></p>
+<p>1.从上层来说其实所有的请求都是集约型API请求，因为都需要走AFNetworking，把参数扔过去，把返回结果拿到。对于一些小型APP来说，只有简单的网络请求，甚至没有图片，视频处理的APP来说，对安全，对数据，对APP的崩溃率，对性能关注度不高的APP来说，集约型API是很简单的网络请求方式。</p>
+<p>2.离散型API的作用：其实就是抽象一层，减少业务层的代码量。对于大型APP，希望能为每个网络请求做更多的定制化策略的APP来说，网络层会提供很多的控制接口给业务APP，通过离散型API设计，就可以让这部分控制放在网络层，而不侵入业务代码。所以可以认为离散型API其实是对网络层请求又做了一层封装而已。</p>
+<p>3.离散型API的最大好处：就是可以把部分网络策略的代码从业务代码中分离，可以在非业务代码部分做更多的控制。（比如分页处理，比如缓存控制，比如取消哪个请求（之前的请求还是新请求）），比如多参数，对返回数据，对失败结果的AOP监控），离散型API可以说是让业务抽象出了一个请求管理类，以便加以控制。如果是集约型API，对一些策略处理起来，代码就写的很恶心。</p>
+<p>4.离散型API和集约型API的选择</p>
+<p> 1.对于大型APP来说，可见必须要有离散型API请求。</p>
+<p> 2.但是对于大多数网络请求来说，也只是简单的网络请求，每个api都强制做一层离散型封装，这增加了太多的重复代码。</p>
+<p>​    3.离散型是必须要存在的，为了控制和减少业务层代码。</p>
+<p> 4.即使是集约型为了组件化，也应该只依赖网络框架，否则组件化难以实施。</p>
+<p>结论：集约型和离散型可以并存。但是集约型只能依赖网络库，如果又希望做一些控制，那就必须走离散型封装的方式。如果能够解决不必要的封装问题，可以考虑只用离散型，比如通过模板，或者其他快速的方式。但是如果不能快速生成离散型代码，可以考虑集约和离散并存。</p>
+<p><strong>二、代理和block</strong></p>
+<p>1.block和代理都可以作为回调，block更灵活，内部可以做各种控制，代码紧凑，写起来顺手。入参返回和失败都在一起。block会对内部对象强引用，而且bock回调通常是类方法或者单例方法，如果控制器释放，block可能还没释放，会导致问题。关于casa提到的block难以追踪不太理解，尤其在网络层这方面block难以追踪吗？</p>
+<p>2.代理则单独为请求开了一个方法，而且方法名称一致，可以让代码层次更清晰，让整体代码维护性更好。但是对多层次请求，由于代理已经界定了他们各个方法的角色，所以依赖调用写起来就比较难看（结果回调里有请求参数和请求发起）。</p>
+<p>3.block对写代码来说更顺手，够直接访问上下文，这样类中不需要存储临时数据，使用 block 的代码通常会在同一个地方，这样读代码也连贯。delegate  更重一些，需要实现接口，它的方法分离开来，很多时候需要存储一些临时数据，另外相关的代码会被分离到各处，没有 block 好读。</p>
+<p>结论：应该优先使用 block。而有两个情况可以考虑 delegate。有多个相关方法。假如每个方法都设置一个 block, 这样会更麻烦。2. 为了避免循环引用，也可以使用 delegate。</p>
+<p><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/29023547">https://www.zhihu.com/question/29023547</a></p>
+<p><strong>三、多服务器场景支持</strong></p>
+<p>1.自身有多个服务器域名调用</p>
+<p>对应的api的path也不相同</p>
+<p>多服务器场景需要支持什么？</p>
+<p>每个服务器的baseURl不同</p>
+<p>每个服务器的path不同</p>
+<p>每个服务器的公共参数可能不同</p>
+<p>每个服务器的安全策略也可能不同</p>
+<p>每个服务器的请求策略可能也不同</p>
+<p>每个服务器成功失败的全局处理可能不同</p>
+<p>3.因此需要暴露给外界设置多个服务的接口，每个服务目前可能需要包含</p>
+<p>baseurl</p>
+<p>公共参数字段defaultParams</p>
+<p>securityPolicy</p>
+<p>requestPolicy</p>
+<p>结论：初始化的时候，允许根据服务作为key去设置不同服务的全局配置，request中传入服务的key，从而取得不同服务的配置。</p>
+<h3 id="1-1-1功能需求"><a href="#1-1-1功能需求" class="headerlink" title="1.1.1功能需求"></a>1.1.1功能需求</h3><ul>
+<li>Http GET POST UPDATE  DELETE 操作支持</li>
+<li>restful API 访问支持</li>
+<li>文件上传、下载、进度展示支持</li>
+<li>异步、同步访问方式支持</li>
+<li>WebSocket支持</li>
+<li>HttpDns支持 (待定)</li>
+<li>网络数据缓冲</li>
+<li>网络访问工具集：ping,mock数据，网络连接状态工具 ……</li>
+<li>网络访问Log管理</li>
+<li>通用数据结构封装</li>
+<li>加密、安全、签名、证书验证支持</li>
+<li>参数和数据校验支持</li>
+<li>重试机制</li>
+<li>token过期的通知</li>
+<li>文件校验</li>
+</ul>
+<h3 id="1-1-2设计需求"><a href="#1-1-2设计需求" class="headerlink" title="1.1.2设计需求"></a>1.1.2设计需求</h3><p>   (1)BAFNetwork使用离散型API调用，每个API请求有一个唯一的请求类管理，有利于组件独立和管理。</p>
+<p>   (2)BAFNetwork支持block和代理两种response数据回调管理方式。</p>
+<p>   (3)BAFNetwork支持通过config配置模块传入公共参数。</p>
+<p>   (4)BAFNetwork支持字典入参请求发起方式。</p>
+<p>   (5)默认返回服务器下发原始数据给App使用，BAFNetwork提供一个洗数据的reformer机制给App使用。</p>
+<p>   (6)为支持多服务器场景，BAFNetwork提供服务器地址设置给APP请求时设置。</p>
+<p>   (7)BAFNetwork提供灵活的配置工具，提供给业务App使用，包括默认网络错误提示文案，网络不可达提示等提示配置、环境开关，日志开关配置、请求管理配置、策略配置。</p>
+<h2 id="1-2-RESTful-API"><a href="#1-2-RESTful-API" class="headerlink" title="1.2 RESTful API"></a>1.2 RESTful API</h2><h3 id="1-2-1-RESTful-请求的构成"><a href="#1-2-1-RESTful-请求的构成" class="headerlink" title="1.2.1 RESTful 请求的构成"></a>1.2.1 RESTful 请求的构成</h3><p>(1) Request 地址 URL</p>
+<p>(2) Request Header 信息</p>
+<p>(3) Request 参数</p>
+<p>(4) Request 返回结果 (状态, 数据, 通知)</p>
+<h3 id="1-2-2-RESTful-API-方法"><a href="#1-2-2-RESTful-API-方法" class="headerlink" title="1.2.2 RESTful API 方法"></a>1.2.2 RESTful API 方法</h3><p>(1) GET 获取某资源</p>
+<p>(2) PUT&#x2F;POST 创建某资源</p>
+<p>(3) DELETE 删除某资源</p>
+<p>(4) PATCH&#x2F;UPDATE 更新某资源</p>
+<p>当前BabyTree的应用中基本使用的是前两种方法，对于更新某资源也使用POST方法</p>
+<h3 id="1-2-3-同步、异步请求方式的处理"><a href="#1-2-3-同步、异步请求方式的处理" class="headerlink" title="1.2.3 同步、异步请求方式的处理"></a>1.2.3 同步、异步请求方式的处理</h3><p>(1) 异步请求方式支持</p>
+<p>(2) 同步请求方式支持</p>
+<h2 id="1-3-文件上传、下载"><a href="#1-3-文件上传、下载" class="headerlink" title="1.3 文件上传、下载"></a>1.3 文件上传、下载</h2><h3 id="1-3-1-文件服务器"><a href="#1-3-1-文件服务器" class="headerlink" title="1.3.1 文件服务器"></a>1.3.1 文件服务器</h3><p>(1) 七牛Server：存放图片</p>
+<p>(2) 内部Server：配置文件、APP包、音乐，…..</p>
+<p>要求：在统一的API基础上，自动选择server进行文件上传下载</p>
+<h3 id="1-3-2-上传、下载进度管理"><a href="#1-3-2-上传、下载进度管理" class="headerlink" title="1.3.2 上传、下载进度管理"></a>1.3.2 上传、下载进度管理</h3><p>提供给APP相关进度的API，供业务APP UI使用</p>
+<h3 id="1-3-3-批量上传、下载管理"><a href="#1-3-3-批量上传、下载管理" class="headerlink" title="1.3.3 批量上传、下载管理"></a>1.3.3 批量上传、下载管理</h3><p>-提供APP文件集合上传</p>
+<p>-提供APP文件目录上传</p>
+<p>-提供APP文件集合下载</p>
+<p>-下载后文件的存储管理</p>
+<h3 id="1-3-4-上传、下载进度、状态查询"><a href="#1-3-4-上传、下载进度、状态查询" class="headerlink" title="1.3.4 上传、下载进度、状态查询"></a>1.3.4 上传、下载进度、状态查询</h3><p>-提供给APP可根据输入的信息查询上传、下载文件状态、进度的API</p>
+<!-- flag of hidden posts -->
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%9E%B6%E6%9E%84/" rel="tag"># 架构</a>
+          </div>
+
+        
+
+
+        
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-1%E5%8A%9F%E8%83%BD%E9%9C%80%E6%B1%82"><span class="nav-number">1.</span> <span class="nav-text">1.1.1功能需求</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-2%E8%AE%BE%E8%AE%A1%E9%9C%80%E6%B1%82"><span class="nav-number">2.</span> <span class="nav-text">1.1.2设计需求</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-2-RESTful-API"><span class="nav-number"></span> <span class="nav-text">1.2 RESTful API</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-1-RESTful-%E8%AF%B7%E6%B1%82%E7%9A%84%E6%9E%84%E6%88%90"><span class="nav-number">1.</span> <span class="nav-text">1.2.1 RESTful 请求的构成</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-2-RESTful-API-%E6%96%B9%E6%B3%95"><span class="nav-number">2.</span> <span class="nav-text">1.2.2 RESTful API 方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-3-%E5%90%8C%E6%AD%A5%E3%80%81%E5%BC%82%E6%AD%A5%E8%AF%B7%E6%B1%82%E6%96%B9%E5%BC%8F%E7%9A%84%E5%A4%84%E7%90%86"><span class="nav-number">3.</span> <span class="nav-text">1.2.3 同步、异步请求方式的处理</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-3-%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E3%80%81%E4%B8%8B%E8%BD%BD"><span class="nav-number"></span> <span class="nav-text">1.3 文件上传、下载</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-1-%E6%96%87%E4%BB%B6%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="nav-number">1.</span> <span class="nav-text">1.3.1 文件服务器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-2-%E4%B8%8A%E4%BC%A0%E3%80%81%E4%B8%8B%E8%BD%BD%E8%BF%9B%E5%BA%A6%E7%AE%A1%E7%90%86"><span class="nav-number">2.</span> <span class="nav-text">1.3.2 上传、下载进度管理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-3-%E6%89%B9%E9%87%8F%E4%B8%8A%E4%BC%A0%E3%80%81%E4%B8%8B%E8%BD%BD%E7%AE%A1%E7%90%86"><span class="nav-number">3.</span> <span class="nav-text">1.3.3 批量上传、下载管理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-4-%E4%B8%8A%E4%BC%A0%E3%80%81%E4%B8%8B%E8%BD%BD%E8%BF%9B%E5%BA%A6%E3%80%81%E7%8A%B6%E6%80%81%E6%9F%A5%E8%AF%A2"><span class="nav-number">4.</span> <span class="nav-text">1.3.4 上传、下载进度、状态查询</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="不会飞的小白"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">不会飞的小白</p>
+  <div class="site-description" itemprop="description">一只iOS程序猿，会陆陆续续的把之前的一些总结搬到这里。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">49</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/liujiaboy" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;liujiaboy" rel="noopener" target="_blank"><i class="github fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:alan129@163.com" title="E-Mail → mailto:alan129@163.com" rel="noopener" target="_blank"><i class="envelope fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/1768698000" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;u&#x2F;1768698000" rel="noopener" target="_blank"><i class="weibo fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="rss fa-fw"></i></a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">不会飞的小白</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
