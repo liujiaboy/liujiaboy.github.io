@@ -164,6 +164,662 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://liujiaboy.github.io/2021/04/18/OC%E5%8E%9F%E7%90%86/oc-4-%E7%B1%BB%E7%9A%84%E6%9C%AC%E8%B4%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="不会飞的小白">
+      <meta itemprop="description" content="一只iOS程序猿，会陆陆续续的把之前的一些总结搬到这里。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="不会飞的小白">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/04/18/OC%E5%8E%9F%E7%90%86/oc-4-%E7%B1%BB%E7%9A%84%E6%9C%AC%E8%B4%A8/" class="post-title-link" itemprop="url">4.类的本质</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-04-18 13:39:47" itemprop="dateCreated datePublished" datetime="2021-04-18T13:39:47+08:00">2021-04-18</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-12-24 17:13:15" itemprop="dateModified" datetime="2022-12-24T17:13:15+08:00">2022-12-24</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/OC%E5%8E%9F%E7%90%86/" itemprop="url" rel="index"><span itemprop="name">OC原理</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="1-对象、类对象、元类"><a href="#1-对象、类对象、元类" class="headerlink" title="1. 对象、类对象、元类"></a>1. 对象、类对象、元类</h1><h2 id="1-1-isa指向、superClass指向"><a href="#1-1-isa指向、superClass指向" class="headerlink" title="1.1 isa指向、superClass指向"></a>1.1 isa指向、superClass指向</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">/** //先把这里的协议注释掉，用到的时候再打开</span><br><span class="line">@protocol PersonProtocol &lt;NSObject&gt;</span><br><span class="line"></span><br><span class="line">@property (nonatomic, copy) NSString *p_address;</span><br><span class="line"></span><br><span class="line">- (void)p_func1;</span><br><span class="line">+ (void)p_func1;</span><br><span class="line"></span><br><span class="line">@end</span><br><span class="line">*/</span><br><span class="line"></span><br><span class="line">@interface Person : NSObject</span><br><span class="line">&#123;</span><br><span class="line">    NSString *_hobby;</span><br><span class="line">    CGFloat _height;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">@property (nonatomic, copy) NSString *name;</span><br><span class="line">@property (nonatomic) int age;</span><br><span class="line"></span><br><span class="line">- (void)func1;</span><br><span class="line">- (void)func2;</span><br><span class="line">+ (void)func3;</span><br><span class="line">+ (void)func4;</span><br><span class="line"></span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@interface Teacher : Person</span><br><span class="line"></span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">// 然后执行，直接打断点。</span><br><span class="line">Person *p = [[Person alloc] init];</span><br><span class="line">Teacher *t = [[Teacher alloc] init];</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>我们根据述代码进行分析，isa指针的指向。</p>
+<blockquote>
+<p>注意，这里是用的是模拟器</p>
+</blockquote>
+<h2 id="1-2-实例对象的isa"><a href="#1-2-实例对象的isa" class="headerlink" title="1.2 实例对象的isa"></a>1.2 实例对象的isa</h2><p>首先我们先看Person的实例p的isa指向情况</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">// 首先打印一下p的内存情况</span><br><span class="line">(lldb) po p</span><br><span class="line">&lt;Person: 0x1006460b0&gt;</span><br><span class="line">// 输出p指针的情况</span><br><span class="line">(lldb) x/4gx p</span><br><span class="line">0x1006460b0: 0x011d8001000083f9 0x0000000000000000</span><br><span class="line">0x1006460c0: 0x0000000000000000 0x0000000000000000</span><br><span class="line"></span><br><span class="line">(lldb) p p 0x011d8001000083f9</span><br><span class="line">(long) $6 = 1791002988741</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>这里拿到p指针指向的内存情况，我们知道第一块内存区域存放的是isa指针，直接打印的话，发现就是一串数字，啥也看不出来。还记得上一章中object_getClass反向验证isa指向最后的”&amp;”运算吗？<code>0x011d8001000083f9</code>这个值就是isa-&gt;bits，我们用它与<code>ISA_MASK</code>进行&amp;运算。因为这里是用的真机，所以<code>ISA_MASK = 0x00007ffffffffff8</code>，如果是用Mac或者模拟器，根据芯片类型判断是否是ARM64架构还是x86，然后使用对应的值进行换算。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">// p/x输出内存的16进制</span><br><span class="line">(lldb) p/x 0x011d8001000083f9 &amp; 0x00007ffffffffff8</span><br><span class="line">(long) $2 = 0x00000001000083f8</span><br><span class="line"></span><br><span class="line">// 这里po就是Person类</span><br><span class="line">(lldb) po 0x00000001000083f8</span><br><span class="line">Person</span><br></pre></td></tr></table></figure>
+
+<p>打印出来是Person。所以isa指向的就是Person类。那我们做一下验证，直接通过<code>object_getClass</code>方法来找一下Person这个类。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(lldb) p/x object_getClass(p)</span><br><span class="line">(Class) $12 = 0x00000001000083f8 Person</span><br></pre></td></tr></table></figure>
+
+<p>是不是发现，Person类的内存地址是一样的。如果再实例化一个p1，看p1-&gt;isa指向的和p-&gt;isa指向的是否是同一个Person类的内存地址。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">// 直接使用object_getClass获取类对象。</span><br><span class="line">lldb) p/x object_getClass([Person alloc])</span><br><span class="line">(Class) $26 = 0x00000001000083f8 Person</span><br></pre></td></tr></table></figure>
+<p>答案是肯定的，Person类在内存中只有一份，也就是说所有的类对象在内存中都只有一份。</p>
+<h2 id="1-3-类对象的isa"><a href="#1-3-类对象的isa" class="headerlink" title="1.3 类对象的isa"></a>1.3 类对象的isa</h2><p>接下来，我们继续寻找Person类对象的isa指向情况。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">(lldb) p 0x000001a10018d0c5</span><br><span class="line">(long) $6 = 1791002988741</span><br><span class="line"></span><br><span class="line">(lldb) x/4gx 0x00000001000083f8</span><br><span class="line">0x1000083f8: 0x00000001000083d0 0x000000010036a140</span><br><span class="line">0x100008408: 0x0000000100645d60 0x0001803000000003</span><br><span class="line"></span><br><span class="line">(lldb) p/x 0x00000001000083d0 &amp; 0x00007ffffffffff8</span><br><span class="line">(long) $4 = 0x00000001000083d0</span><br><span class="line">(lldb) po 0x00000001000083d0</span><br><span class="line">Person</span><br></pre></td></tr></table></figure>
+<p>发现Person类对象的isa指向的还是Person，但是这个Person所在的内存地址与Person类对象不一样。</p>
+<p>这里就出现了元类的概念（Meta Class）。</p>
+<h2 id="1-4-元类的isa"><a href="#1-4-元类的isa" class="headerlink" title="1.4 元类的isa"></a>1.4 元类的isa</h2><p>我们继续寻找元类的isa</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">// 0x00000001000083d0是Person元类所在的内存</span><br><span class="line">(lldb) x/4gx 0x00000001000083d0</span><br><span class="line">0x1000083d0: 0x000000010036a0f0 0x000000010036a0f0</span><br><span class="line">0x1000083e0: 0x0000000100714d10 0x0002e03100000003</span><br><span class="line"></span><br><span class="line">(lldb) p/x 0x000000010036a0f0 &amp; 0x00007ffffffffff8</span><br><span class="line">(long) $9 = 0x000000010036a0f0</span><br><span class="line">(lldb) po 0x000000010036a0f0</span><br><span class="line">NSObject</span><br><span class="line"></span><br><span class="line">// 拿到NSObject的地址继续x/4gx</span><br><span class="line">(lldb) x/4gx 0x000000010036a0f0</span><br><span class="line">0x10036a0f0: 0x000000010036a0f0 0x000000010036a140</span><br><span class="line">0x10036a100: 0x00000001007877b0 0x0003e03100000007</span><br></pre></td></tr></table></figure>
+
+<p>使用相同的方法找到元类的<code>isa</code>指向的是<code>NSObject</code>，这个<code>NSObject</code>是类对象吗？</p>
+<p>对<code>NSObject</code>继续<code>x/4gx</code>发现<code>isa</code>锁指向的内存地址是一样的。</p>
+<p>我们通过<code>object_getClass([[NSObject alloc] init])</code>来看看<code>NSObject</code>类对象的内存</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">// 获取NSObject类的地址，与p/x NSObject.class效果一致</span><br><span class="line">(lldb) p/x object_getClass([NSObject alloc])</span><br><span class="line">(Class) $13 = 0x000000010036a140 NSObject</span><br><span class="line"></span><br><span class="line">(lldb) x/4gx 0x000000010036a140</span><br><span class="line">0x10036a140: 0x000000010036a0f0 0x0000000000000000</span><br><span class="line">0x10036a150: 0x0000000100786740 0x0002801000000003</span><br><span class="line"></span><br><span class="line">// 从这里开始，就已经跟上面的内存地址重复了</span><br><span class="line">(lldb) p/x 0x000000010036a0f0 &amp; 0x00007ffffffffff8</span><br><span class="line">(long) $14 = 0x000000010036a0f0</span><br><span class="line">(lldb) po 0x000000010036a0f0</span><br><span class="line">NSObject</span><br></pre></td></tr></table></figure>
+
+<p>到这里，是不是看明白了点啥？<code>NSObject</code>类对象也有指向<code>NSObject</code>的元类，<code>Person</code>的元类的<code>isa</code>指向的是<code>NSObject</code>的元类。</p>
+<h3 id="1-5-使用相同的办法查看Teacher的isa"><a href="#1-5-使用相同的办法查看Teacher的isa" class="headerlink" title="1.5 使用相同的办法查看Teacher的isa"></a>1.5 使用相同的办法查看Teacher的isa</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">// 这里使用简单的方式，直接使用Teacher类</span><br><span class="line">(lldb) x/4gx Teacher.class</span><br><span class="line">0x100008380: 0x00000001000083a8 0x00000001000083f8</span><br><span class="line">0x100008390: 0x0000000100362370 0x0000803000000000</span><br><span class="line"></span><br><span class="line">(lldb) p/x 0x00000001000083a8 &amp; 0x00007ffffffffff8</span><br><span class="line">(long) $18 = 0x00000001000083a8</span><br><span class="line"></span><br><span class="line">(lldb) po 0x00000001000083a8</span><br><span class="line">Teacher</span><br><span class="line"></span><br><span class="line">(lldb) x/4gx 0x00000001000083a8</span><br><span class="line">0x1000083a8: 0x000000010036a0f0 0x00000001000083d0</span><br><span class="line">0x1000083b8: 0x0000000101138140 0x0001e03100000003</span><br><span class="line"></span><br><span class="line">(lldb) p/x 0x000000010036a0f0 &amp; 0x00007ffffffffff8</span><br><span class="line">(long) $20 = 0x000000010036a0f0</span><br><span class="line">// 这里又指向了NSObject</span><br><span class="line">(lldb) po 0x000000010036a0f0</span><br><span class="line">NSObject</span><br></pre></td></tr></table></figure>
+
+<p>看到这里应该发现了点东西吧。实例对象的isa-&gt;类对象的isa-&gt;NSObject的isa，中间类对象与继承没有一丢丢关系。</p>
+<h3 id="1-6-类的继承链"><a href="#1-6-类的继承链" class="headerlink" title="1.6 类的继承链"></a>1.6 类的继承链</h3><p>上面我们查看了isa的走向，接下来看一下继承链。首先看一下类的继承关系。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">void testSuperClass(void)&#123;</span><br><span class="line">    Teacher *t = [Teacher alloc];</span><br><span class="line">    Person  *p = [Person alloc];</span><br><span class="line">    </span><br><span class="line">    NSLog(@&quot;%@&quot;,class_getSuperclass(Teacher.class));</span><br><span class="line">    NSLog(@&quot;%@&quot;,class_getSuperclass(Person.class));</span><br><span class="line">    NSLog(@&quot;%@&quot;,class_getSuperclass(NSObject.class));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里输出一下对应类的<code>superclass</code>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Person</span><br><span class="line">NSObject</span><br><span class="line">(null)</span><br></pre></td></tr></table></figure>
+
+<p>从打印出来的信息可以看到:</p>
+<ul>
+<li>Teacher   -&gt; superclass &#x3D; Person</li>
+<li>Person    -&gt; superClass &#x3D; NSObject</li>
+<li>NSObject  -&gt; superClass &#x3D; null</li>
+</ul>
+<h3 id="1-7-元类的继承链"><a href="#1-7-元类的继承链" class="headerlink" title="1.7 元类的继承链"></a>1.7 元类的继承链</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">void testNSObject(void) &#123;</span><br><span class="line">    // NSObject实例对象</span><br><span class="line">    NSObject *object1 = [NSObject alloc];</span><br><span class="line">    // NSObject类</span><br><span class="line">    Class cls = object_getClass(object1);</span><br><span class="line">    // NSObject元类</span><br><span class="line">    Class metaClass = object_getClass(cls);</span><br><span class="line">    // NSObject根元类</span><br><span class="line">    Class rootMetaClass = object_getClass(metaClass);</span><br><span class="line">    // NSObject根根元类</span><br><span class="line">    Class rootRootMetaClass = object_getClass(rootMetaClass);</span><br><span class="line">    NSLog(@&quot;\n%p 实例对象\n%p 类\n%p 元类\n%p 根元类\n%p 根根元类&quot;,object1,cls,metaClass,rootMetaClass,rootRootMetaClass);</span><br><span class="line">    </span><br><span class="line">    // Person元类</span><br><span class="line">    Class pMetaClass = object_getClass(Person.class);</span><br><span class="line">    Class psuperClass = class_getSuperclass(pMetaClass);</span><br><span class="line">    NSLog(@&quot;%@ - %p&quot;,pMetaClass,pMetaClass);</span><br><span class="line">    NSLog(@&quot;%@ - %p&quot;,psuperClass,psuperClass);</span><br><span class="line">    </span><br><span class="line">    // Teacher -&gt; Person -&gt; NSObject</span><br><span class="line">    // 元类也有一条继承链</span><br><span class="line">    Class tMetaClass = object_getClass(Teacher.class);</span><br><span class="line">    Class tsuperClass = class_getSuperclass(tMetaClass);</span><br><span class="line">    NSLog(@&quot;%@ - %p&quot;,tMetaClass,tMetaClass);</span><br><span class="line">    NSLog(@&quot;%@ - %p&quot;,tsuperClass,tsuperClass);</span><br><span class="line">    </span><br><span class="line">    // NSObject 根类特殊情况</span><br><span class="line">    Class nsuperClass = class_getSuperclass(NSObject.class);</span><br><span class="line">    NSLog(@&quot;%@ - %p&quot;,nsuperClass,nsuperClass);</span><br><span class="line">    // 根元类 -&gt; NSObject</span><br><span class="line">    Class rnsuperClass = class_getSuperclass(metaClass);</span><br><span class="line">    NSLog(@&quot;%@ - %p&quot;,rnsuperClass,rnsuperClass);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>接下来看一下输出结果：</p>
+<ol>
+<li><p>首先输出的NSObject的isa走位。NSObject实例对象 -&gt; 类 -&gt; 元类</p>
+ <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">0x10124ba40 实例对象</span><br><span class="line">0x10036a140 类</span><br><span class="line">0x10036a0f0 元类</span><br><span class="line">0x10036a0f0 根元类</span><br><span class="line">0x10036a0f0 根根元类</span><br></pre></td></tr></table></figure>
+<p> 从这里的输出结果可以进一步判断出NSObject类对象的元类指向它自己。</p>
+</li>
+<li><p>Person类对象的元类 -&gt; super</p>
+ <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">// Person类对象的元类</span><br><span class="line">Person - 0x100008498</span><br><span class="line">// Person类对象的元类 -&gt; super</span><br><span class="line">NSObject - 0x10036a0f0</span><br></pre></td></tr></table></figure>
+<p> 从地址的打印信息可以看出来，person类的元类的super指向的是NSObject类的元类。</p>
+</li>
+<li><p>Teacher元类</p>
+ <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">// Teacher类对象的元类</span><br><span class="line">Teacher - 0x100008470</span><br><span class="line">// Teacher类对象的元类 -&gt; super</span><br><span class="line">Person - 0x100008498</span><br></pre></td></tr></table></figure>
+<p> 从这里可以看出来，Teacher元类的super指向的Person的元类，地址信息都是相同的。</p>
+</li>
+</ol>
+<p>从上面的流程可以看到，类的继承关系和对应元类的继承关系是相对应的。可以用一张图完美的诠释isa的走向和super的指向。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><img src="isa_metaclass.png"></p>
+<ul>
+<li>每个实例对象的isa指针指向与之对应的类对象(Class)。</li>
+<li>每个类对象(Class)都有一个isa指针指向一个唯一的元类(Meta Class)。</li>
+<li>每一个元类(Meta Class)的isa指针都指向最上层的元类(Meta Class)（图中的NSObject的Meta Class）。最上层的元类(Meta Class)的isa指针指向自己，形成一个回路。</li>
+<li>每一个元类(Meta Class)的Super Class指向它原本Class的Super Class的Meta Class。最上层的Meta Class的Super Class指向NSObject Class本身。</li>
+<li>最上层的NSObject Class的Super Class指向nil。</li>
+<li>只有Class才有继承关系，实例对象与实例对象不存在继承关系。</li>
+<li>每一个类对象(Class)在内存中都只有一份。</li>
+</ul>
+<h1 id="2-通过源码分析"><a href="#2-通过源码分析" class="headerlink" title="2. 通过源码分析"></a>2. 通过源码分析</h1><p>接下来我们从objc的源码上分析这些都是什么东西。</p>
+<h2 id="2-1-实例对象-id（Instance）"><a href="#2-1-实例对象-id（Instance）" class="headerlink" title="2.1 实例对象 id（Instance）"></a>2.1 实例对象 id（Instance）</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/// A pointer to an instance of a class.</span><br><span class="line">typedef struct objc_object *id;</span><br></pre></td></tr></table></figure>
+<p>id 这个struct的定义本身就带了 个 ＊, 所以我们在使用其他NSObject类型的实例时需要在前加上 ＊, 使 id 时却不用 。</p>
+<p>什么是objc_object?</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">/// Represents an instance of a class. </span><br><span class="line">struct objc_object &#123;</span><br><span class="line">    Class isa  OBJC_ISA_AVAILABILITY;</span><br><span class="line">&#125;; </span><br></pre></td></tr></table></figure>
+<p>这个时候我们知道Objective-C中的object在最后会被转换成C的结构体, 在这个struct中有 个 isa 指针,指向它的类别 Class。 </p>
+<h2 id="2-2-类对象-Class"><a href="#2-2-类对象-Class" class="headerlink" title="2.2 类对象 Class"></a>2.2 类对象 Class</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/// An opaque type that represents an Objective-C class.</span><br><span class="line">typedef struct objc_class *Class;</span><br></pre></td></tr></table></figure>
+
+<p>Class的本质就是一个<code>objc_class</code>的结构体。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">// 注意，这个源码是被简化之后的。</span><br><span class="line">struct objc_class : objc_object &#123;</span><br><span class="line">  </span><br><span class="line">    // Class ISA;</span><br><span class="line">    Class superclass;</span><br><span class="line">    cache_t cache;             // formerly cache pointer and vtable</span><br><span class="line">    class_data_bits_t bits;    // class_rw_t * plus custom rr/alloc flags</span><br><span class="line"></span><br><span class="line">    Class getSuperclass() const &#123;</span><br><span class="line">        return superclass;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    void setSuperclass(Class newSuperclass) &#123;</span><br><span class="line">        superclass = newSuperclass;</span><br><span class="line">    &#125;</span><br><span class="line">    // 用这个是无法获取rw_t，只能通过内存偏移获取bits，然后再获取rw_t</span><br><span class="line">    class_rw_t *data() const &#123;</span><br><span class="line">        return bits.data();</span><br><span class="line">    &#125;</span><br><span class="line">    void setData(class_rw_t *newData) &#123;</span><br><span class="line">        bits.setData(newData);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    bool isRootClass() &#123;</span><br><span class="line">        return getSuperclass() == nil;</span><br><span class="line">    &#125;</span><br><span class="line">    bool isRootMetaclass() &#123;</span><br><span class="line">        return ISA() == (Class)this;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>看到这个结构体，大家可能会觉得不对，这个源码是错的，不是我们经常看到的，里头没有那些我们常说的变量，methodLists、ivars等等。<br>大家看仔细了哦，下面这个实现基本都是大家常看到的：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">struct objc_class &#123;  </span><br><span class="line">    ...</span><br><span class="line">    struct objc_ivar_list * _Nullable ivars                  OBJC2_UNAVAILABLE;</span><br><span class="line">    struct objc_method_list * _Nullable * _Nullable methodLists                    OBJC2_UNAVAILABLE;</span><br><span class="line">    struct objc_cache * _Nonnull cache                       OBJC2_UNAVAILABLE;</span><br><span class="line">    struct objc_protocol_list * _Nullable protocols          OBJC2_UNAVAILABLE;</span><br><span class="line">&#125; OBJC2_UNAVAILABLE</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>里头确实有ivars、methodLists等，但是这个是<code>OBJC2_UNAVAILABLE</code>（我们目前使用的Objective-C的版本是2.0版本）。其内部确实有这些东西的，我们一步步去探究。</p>
+<p>继续回到上面的结构体，发现ISA变量被注释掉了，其实也没有影响的，因为<code>objc_class</code> 继承自 <code>objc_object</code>（内部有isa变量）。那我们的属性、方法是存放在哪了呢？</p>
+<p>通过查看源码，我们看到有这么一个属性<code>class_data_bits_t bits;</code>，这个东西里可能存放着我们需要的东西。稍后我们做验证。</p>
+<h2 id="2-3-元类-Meta-Class"><a href="#2-3-元类-Meta-Class" class="headerlink" title="2.3 元类 Meta Class"></a>2.3 元类 Meta Class</h2><p>OC中一切皆为对象<br>Class在设计中本身也是一个对象,也有superclass。而这个Class对应的类我们叫“元类”（Meta Class）。也就是说Class中有一个isa指向的是Meta Class。</p>
+<h1 id="3-验证属性、方法、协议存在的位置"><a href="#3-验证属性、方法、协议存在的位置" class="headerlink" title="3 验证属性、方法、协议存在的位置"></a>3 验证属性、方法、协议存在的位置</h1><h2 id="3-1-验证之前的准备-源码"><a href="#3-1-验证之前的准备-源码" class="headerlink" title="3.1 验证之前的准备 - 源码"></a>3.1 验证之前的准备 - 源码</h2><p>在2.2小结我们说了属性、方法、等可能存在于<code>class_data_bits_t</code>这个结构体内部，我们查看它的源码：</p>
+<h3 id="3-1-1-class-data-bits-t"><a href="#3-1-1-class-data-bits-t" class="headerlink" title="3.1.1 class_data_bits_t"></a>3.1.1 class_data_bits_t</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">struct class_data_bits_t &#123;</span><br><span class="line">    friend objc_class;</span><br><span class="line"></span><br><span class="line">    // Values are the FAST_ flags above.</span><br><span class="line">    uintptr_t bits;</span><br><span class="line">    </span><br><span class="line">public:</span><br><span class="line"></span><br><span class="line">    class_rw_t* data() const &#123;</span><br><span class="line">        return (class_rw_t *)(bits &amp; FAST_DATA_MASK);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    ...</span><br><span class="line">    </span><br><span class="line">    const class_ro_t *safe_ro() const &#123;</span><br><span class="line">        class_rw_t *maybe_rw = data();</span><br><span class="line">        if (maybe_rw-&gt;flags &amp; RW_REALIZED) &#123;</span><br><span class="line">            // maybe_rw is rw</span><br><span class="line">            return maybe_rw-&gt;ro();</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            // maybe_rw is actually ro</span><br><span class="line">            return (class_ro_t *)maybe_rw;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    ...</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>在public的方法中有<code>class_rw_t* data()</code>这个方法，我们进一步探索：</p>
+<h3 id="3-1-2-class-rw-t"><a href="#3-1-2-class-rw-t" class="headerlink" title="3.1.2 class_rw_t"></a>3.1.2 class_rw_t</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">struct class_rw_t &#123;</span><br><span class="line">    // Be warned that Symbolication knows the layout of this structure.</span><br><span class="line">    uint32_t flags;</span><br><span class="line">    uint16_t witness;</span><br><span class="line">#if SUPPORT_INDEXED_ISA</span><br><span class="line">    uint16_t index;</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">    explicit_atomic&lt;uintptr_t&gt; ro_or_rw_ext;</span><br><span class="line"></span><br><span class="line">    Class firstSubclass;</span><br><span class="line">    Class nextSiblingClass;</span><br><span class="line"></span><br><span class="line">    const method_array_t methods() const &#123;</span><br><span class="line">        auto v = get_ro_or_rwe();</span><br><span class="line">        if (v.is&lt;class_rw_ext_t *&gt;()) &#123;</span><br><span class="line">            return v.get&lt;class_rw_ext_t *&gt;(&amp;ro_or_rw_ext)-&gt;methods;</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            return method_array_t&#123;v.get&lt;const class_ro_t *&gt;(&amp;ro_or_rw_ext)-&gt;baseMethods()&#125;;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    const property_array_t properties() const &#123;</span><br><span class="line">        auto v = get_ro_or_rwe();</span><br><span class="line">        if (v.is&lt;class_rw_ext_t *&gt;()) &#123;</span><br><span class="line">            return v.get&lt;class_rw_ext_t *&gt;(&amp;ro_or_rw_ext)-&gt;properties;</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            return property_array_t&#123;v.get&lt;const class_ro_t *&gt;(&amp;ro_or_rw_ext)-&gt;baseProperties&#125;;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    const protocol_array_t protocols() const &#123;</span><br><span class="line">        auto v = get_ro_or_rwe();</span><br><span class="line">        if (v.is&lt;class_rw_ext_t *&gt;()) &#123;</span><br><span class="line">            return v.get&lt;class_rw_ext_t *&gt;(&amp;ro_or_rw_ext)-&gt;protocols;</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            return protocol_array_t&#123;v.get&lt;const class_ro_t *&gt;(&amp;ro_or_rw_ext)-&gt;baseProtocols&#125;;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>确实如我们所说的，这里确实存在着我们想要的东西：methods()、properties()、protocols()等。</p>
+<p>那我们该怎么获取到这些数据，来证明这些就是我们想要的东西呢？</p>
+<h3 id="3-1-3-内存偏移"><a href="#3-1-3-内存偏移" class="headerlink" title="3.1.3 内存偏移"></a>3.1.3 内存偏移</h3><p>我们知道在c语言中，一个数组，获取数组中的某个元素的值有多种方法：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">int a[] = &#123;1,2,3&#125;;</span><br><span class="line">printf(&quot;index 1 = %d - %d&quot;, a[1], *(a+1));</span><br></pre></td></tr></table></figure>
+
+<p>比如上面的代码，我们可以直接输出某个元素的下标，也可以通过内存地址来偏移进行读取，同样，我们也可以采取地址偏移来获取<code>objc_class-&gt;bits</code>的值。</p>
+<p>需要偏移多少呢？</p>
+<p>第一个变量是Class，这是一个结构体，内部有一个isa指针，所以这是8个字节。<br>第二个变量是cache_t，我们进源码看一下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">struct cache_t &#123;</span><br><span class="line">private:</span><br><span class="line">    explicit_atomic&lt;uintptr_t&gt; _bucketsAndMaybeMask;    // 8</span><br><span class="line">    union &#123;</span><br><span class="line">        struct &#123;</span><br><span class="line">            explicit_atomic&lt;mask_t&gt;    _maybeMask;      // 4</span><br><span class="line">#if __LP64__</span><br><span class="line">            uint16_t                   _flags;          // 2</span><br><span class="line">#endif</span><br><span class="line">            uint16_t                   _occupied;       // 2</span><br><span class="line">        &#125;;</span><br><span class="line">        explicit_atomic&lt;preopt_cache_t *&gt; _originalPreoptCache; // 8</span><br><span class="line">    &#125;;</span><br><span class="line">...   </span><br><span class="line">... </span><br><span class="line"></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>其实这些就能算出来我们需要多少字节，我已经标好了。静态变量和方法是没有算在结构体内部的哈，而且cache_t内部有一个共用体，所以其所占用的空间一共是8，再加上<code>_bucketsAndMaybeMask</code>变量一共是16个字节。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Class ISA;              // 8</span><br><span class="line">Class superclass;       // 8</span><br><span class="line">cache_t cache;          // 16</span><br><span class="line">class_data_bits_t bits;</span><br></pre></td></tr></table></figure>
+<p>所以8+8+16 &#x3D; 32个字节。</p>
+<p>也就是我们获取到的<code>objc_class</code>的isa指针，然后偏移32个字节，也就是<code>0x20</code>。当然也可以直接通过lldb输出<code>sizeOf(cache_t)</code>来获取。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(lldb) p sizeof(cache_t)</span><br><span class="line">(unsigned long) $4 = 16</span><br></pre></td></tr></table></figure>
+
+<p>我们做一下验证，看看属性在哪。其实需要注意的一点是，我们要获取的是类对象，从类对象中查看我们的变量、方法和协议等，而不是从实例对象中获取，因为实例对象是已经在内存中了，比如属性已经有了具体的值了。</p>
+<h3 id="3-1-4-method-array-t"><a href="#3-1-4-method-array-t" class="headerlink" title="3.1.4 method_array_t"></a>3.1.4 method_array_t</h3><p>我们继续跟踪源码，查看<code>method_array_t</code>是个啥。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">class method_array_t : </span><br><span class="line">    public list_array_tt&lt;method_t, method_list_t, method_list_t_authed_ptr&gt;</span><br><span class="line">&#123;</span><br><span class="line">    typedef list_array_tt&lt;method_t, method_list_t, method_list_t_authed_ptr&gt; Super;</span><br><span class="line"></span><br><span class="line"> public:</span><br><span class="line">    method_array_t() : Super() &#123; &#125;</span><br><span class="line">    method_array_t(method_list_t *l) : Super(l) &#123; &#125;</span><br><span class="line"></span><br><span class="line">    const method_list_t_authed_ptr&lt;method_list_t&gt; *beginCategoryMethodLists() const &#123;</span><br><span class="line">        return beginLists();</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    const method_list_t_authed_ptr&lt;method_list_t&gt; *endCategoryMethodLists(Class cls) const;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>我们猜测我们想要的数据是在<code>method_list_t</code>中，而<code>method</code>就是我们的每一个的方法等结构：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">struct method_t &#123;</span><br><span class="line">    struct big &#123;</span><br><span class="line">        SEL name;</span><br><span class="line">        const char *types;</span><br><span class="line">        MethodListIMP imp;</span><br><span class="line">    &#125;;</span><br><span class="line">    // 中间代码有删减</span><br><span class="line">public:</span><br><span class="line">    big &amp;big() const &#123;</span><br><span class="line">        ASSERT(!isSmall());</span><br><span class="line">        return *(struct big *)this;</span><br><span class="line">    &#125;</span><br><span class="line">    // 中间代码有删减</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+<h3 id="3-1-5-property-array-t"><a href="#3-1-5-property-array-t" class="headerlink" title="3.1.5 property_array_t"></a>3.1.5 property_array_t</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">class property_array_t : </span><br><span class="line">    public list_array_tt&lt;property_t, property_list_t, RawPtr&gt;</span><br><span class="line">&#123;</span><br><span class="line">    typedef list_array_tt&lt;property_t, property_list_t, RawPtr&gt; Super;</span><br><span class="line"></span><br><span class="line"> public:</span><br><span class="line">    property_array_t() : Super() &#123; &#125;</span><br><span class="line">    property_array_t(property_list_t *l) : Super(l) &#123; &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">// 同methods方法，我们看一下property_t</span><br><span class="line">struct property_t &#123;</span><br><span class="line">    const char *name;</span><br><span class="line">    const char *attributes;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-1-6-protocol-array-t"><a href="#3-1-6-protocol-array-t" class="headerlink" title="3.1.6 protocol_array_t"></a>3.1.6 protocol_array_t</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">class protocol_array_t : </span><br><span class="line">    public list_array_tt&lt;protocol_ref_t, protocol_list_t, RawPtr&gt;</span><br><span class="line">&#123;</span><br><span class="line">    typedef list_array_tt&lt;protocol_ref_t, protocol_list_t, RawPtr&gt; Super;</span><br><span class="line"></span><br><span class="line"> public:</span><br><span class="line">    protocol_array_t() : Super() &#123; &#125;</span><br><span class="line">    protocol_array_t(protocol_list_t *l) : Super(l) &#123; &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">typedef uintptr_t protocol_ref_t;  // protocol_t *, but unremapped</span><br></pre></td></tr></table></figure>
+
+<p>这三个分别对应<code>methods()、properties()、protocols()</code>方法，里头也一个共同点就是<code>protocol_array_t</code>。那我们重点看一下list_array_tt的结构。</p>
+<h3 id="3-1-7-list-array-tt"><a href="#3-1-7-list-array-tt" class="headerlink" title="3.1.7 list_array_tt"></a>3.1.7 list_array_tt</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">class list_array_tt &#123;</span><br><span class="line">    struct array_t &#123;</span><br><span class="line">        uint32_t count;</span><br><span class="line">        Ptr&lt;List&gt; lists[0];</span><br><span class="line"></span><br><span class="line">        static size_t byteSize(uint32_t count) &#123;</span><br><span class="line">            return sizeof(array_t) + count*sizeof(lists[0]);</span><br><span class="line">        &#125;</span><br><span class="line">        size_t byteSize() &#123;</span><br><span class="line">            return byteSize(count);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line"> protected:</span><br><span class="line">    // 这是一个迭代器</span><br><span class="line">    class iterator &#123;</span><br><span class="line">        const Ptr&lt;List&gt; *lists;</span><br><span class="line">        const Ptr&lt;List&gt; *listsEnd;</span><br><span class="line">        typename List::iterator m, mEnd;</span><br><span class="line"></span><br><span class="line">        ...</span><br><span class="line">        // 迭代器相关的方法</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line"> public:</span><br><span class="line">    union &#123;</span><br><span class="line">        Ptr&lt;List&gt; list;</span><br><span class="line">        uintptr_t arrayAndFlag;</span><br><span class="line">    &#125;;</span><br><span class="line">    </span><br><span class="line">    ...</span><br><span class="line">    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>从<code>list_array_tt</code>结构体大概的可以看出来，<code>list_array_tt</code>只是一个list的封装。以<code>property_array_t</code>为例：</p>
+<p><code>list_array_tt&lt;property_t, property_list_t, RawPtr&gt;</code>就是一个存放了<code>property_t</code>类型的数组。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">union &#123;</span><br><span class="line">    Ptr&lt;List&gt; list;</span><br><span class="line">    uintptr_t arrayAndFlag;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>这个<code>union</code>共用体才是一个list_array_tt对外暴露的真是结构，一会我们通过lldb进行验证。</p>
+<h1 id="4-lldb-验证属性存放的位置"><a href="#4-lldb-验证属性存放的位置" class="headerlink" title="4 lldb 验证属性存放的位置"></a>4 lldb 验证属性存放的位置</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">(lldb) x/6gx Person.class</span><br><span class="line">0x1000083f8: 0x00000001000083d0 0x000000010036a140</span><br><span class="line">0x100008408: 0x00000001006176b0 0x0001803000000003</span><br><span class="line">0x100008418: 0x00000001012042e4 0x00000001000b9970</span><br><span class="line"></span><br><span class="line">// 通过指针偏移0x20，也就是0x1000083f8+0x20，加上强制转换</span><br><span class="line">(lldb) p (class_data_bits_t *)0x100008418</span><br><span class="line">(class_data_bits_t *) $1 = 0x0000000100008418</span><br><span class="line"></span><br><span class="line">// 拿到变量bits之后，通过class_data_bits_t -&gt; data()函数获取rw_t</span><br><span class="line">(lldb) p $1-&gt;data()</span><br><span class="line">(class_rw_t *) $2 = 0x00000001012042e0</span><br><span class="line"></span><br><span class="line">// 看一下class_rw_t都有哪些值</span><br><span class="line">(lldb) p *$2</span><br><span class="line">(class_rw_t) $4 = &#123;</span><br><span class="line">  flags = 2156396544</span><br><span class="line">  witness = 1</span><br><span class="line">  ro_or_rw_ext = &#123;</span><br><span class="line">    std::__1::atomic&lt;unsigned long&gt; = &#123;</span><br><span class="line">      Value = 4295000480</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  firstSubclass = Teacher</span><br><span class="line">  nextSiblingClass = NSBinder</span><br><span class="line">&#125;</span><br><span class="line">// 如果有Subclass，则会有firstSubclass=Teacher，如果没有子类则是nil</span><br><span class="line"></span><br><span class="line">// 我们在class_rw_t中已经查看过源码，可以通过properties()获取属性列表</span><br><span class="line">(lldb) p $2-&gt;properties()</span><br><span class="line">(const property_array_t) $5 = &#123;</span><br><span class="line">  list_array_tt&lt;property_t, property_list_t, RawPtr&gt; = &#123;</span><br><span class="line">     = &#123;</span><br><span class="line">      list = &#123;</span><br><span class="line">        ptr = 0x0000000100008320</span><br><span class="line">      &#125;</span><br><span class="line">      arrayAndFlag = 4295000864</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>结合我们上面分析的结果，<code>property_array_t</code>输出的数据与上方<code>list_array_tt</code>内部的<code>union</code>共用体的结构是一直的。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">// 获取属性列表</span><br><span class="line">(lldb) p $5.list</span><br><span class="line">(const RawPtr&lt;property_list_t&gt;) $6 = &#123;</span><br><span class="line">  ptr = 0x0000000100008320</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// </span><br><span class="line">(lldb) p $6.ptr</span><br><span class="line">(property_list_t *const) $7 = 0x0000000100008320</span><br><span class="line">(lldb) p *$7</span><br><span class="line">(property_list_t) $8 = &#123;</span><br><span class="line">  entsize_list_tt&lt;property_t, property_list_t, 0, PointerModifierNop&gt; = (entsizeAndFlags = 16, count = 2)</span><br><span class="line">&#125;</span><br><span class="line">// $8也就是我们的ptr内存储的列表</span><br></pre></td></tr></table></figure>
+
+<p>但是<code>entsize_list_tt</code>又是什么类型？我们又该通过那种方式来获取我们最后想要的property呢？</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">struct entsize_list_tt &#123;</span><br><span class="line">    uint32_t entsizeAndFlags;</span><br><span class="line">    uint32_t count;</span><br><span class="line">    // </span><br><span class="line">    Element&amp; getOrEnd(uint32_t i) const &#123; </span><br><span class="line">        ASSERT(i &lt;= count);</span><br><span class="line">        return *PointerModifier::modify(*this, (Element *)((uint8_t *)this + sizeof(*this) + i*entsize()));</span><br><span class="line">    &#125;</span><br><span class="line">    // 注意。这里有一个 【&amp;】符号，调用getOrEnd，返回的是一个指针，进行转换</span><br><span class="line">    Element&amp; get(uint32_t i) const &#123; </span><br><span class="line">        ASSERT(i &lt; count);</span><br><span class="line">        return getOrEnd(i);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在<code>entsize_list_tt</code>内部有get方法，来获取其中的元素。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">(lldb) p $8.get(0)</span><br><span class="line">(property_t) $9 = (name = &quot;name&quot;, attributes = &quot;T@\&quot;NSString\&quot;,C,N,V_name&quot;)</span><br><span class="line">(lldb) p $8.get(1)</span><br><span class="line">(property_t) $10 = (name = &quot;age&quot;, attributes = &quot;Ti,N,V_age&quot;)</span><br><span class="line">(lldb) </span><br><span class="line">(lldb) p $8.get(2)</span><br><span class="line">Assertion failed: (i &lt; count), function get, file objc4-818.2/runtime/objc-runtime-new.h, line 624.</span><br><span class="line">error: Execution was interrupted, reason: signal SIGABRT.</span><br><span class="line">The process has been returned to the state before expression evaluation.</span><br></pre></td></tr></table></figure>
+
+<p>到这里，我们就输出了我们定义的2个属性，但是变量却没有在这里提现出来。我们继续看ivar存放在哪。</p>
+<h1 id="5-lldb-成员变量"><a href="#5-lldb-成员变量" class="headerlink" title="5. lldb 成员变量"></a>5. lldb 成员变量</h1><p>从上面我们知道属性都存放在<code>class_rw_t</code>中，在查看<code>class_data_bits_t</code>源码的时候，也有看到<code>class_ro_t</code>。那ivar会不会就在这里呢。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">// class_data_bits_t 内部</span><br><span class="line"></span><br><span class="line">const class_ro_t *safe_ro() const &#123;</span><br><span class="line">    class_rw_t *maybe_rw = data();</span><br><span class="line">    if (maybe_rw-&gt;flags &amp; RW_REALIZED) &#123;</span><br><span class="line">        // maybe_rw is rw</span><br><span class="line">        return maybe_rw-&gt;ro();</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        // maybe_rw is actually ro</span><br><span class="line">        return (class_ro_t *)maybe_rw;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">struct class_ro_t &#123;</span><br><span class="line">    uint32_t flags;</span><br><span class="line">    uint32_t instanceStart;</span><br><span class="line">    uint32_t instanceSize;</span><br><span class="line">#ifdef __LP64__</span><br><span class="line">    uint32_t reserved;</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">    union &#123;</span><br><span class="line">        const uint8_t * ivarLayout;</span><br><span class="line">        Class nonMetaclass;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    explicit_atomic&lt;const char *&gt; name;</span><br><span class="line">    // With ptrauth, this is signed if it points to a small list, but</span><br><span class="line">    // may be unsigned if it points to a big list.</span><br><span class="line">    void *baseMethodList;</span><br><span class="line">    protocol_list_t * baseProtocols;</span><br><span class="line">    // 这里存放的是ivars</span><br><span class="line">    const ivar_list_t * ivars;</span><br><span class="line"></span><br><span class="line">    const uint8_t * weakIvarLayout;</span><br><span class="line">    property_list_t *baseProperties;</span><br><span class="line">    </span><br><span class="line">    ...</span><br><span class="line">    ...</span><br><span class="line">    </span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+
+<p>有了获取property的经验，这里就方便多了，我们按照相同的方式来获取。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">// $1 (class_data_bits_t *) </span><br><span class="line">(lldb) p $1-&gt;safe_ro()</span><br><span class="line">(const class_ro_t *) $11 = 0x00000001000081a0</span><br><span class="line">(lldb) p *$11</span><br><span class="line">(const class_ro_t) $12 = &#123;</span><br><span class="line">  flags = 0</span><br><span class="line">  instanceStart = 8</span><br><span class="line">  instanceSize = 40</span><br><span class="line">  reserved = 0</span><br><span class="line">   = &#123;</span><br><span class="line">    ivarLayout = 0x0000000000000000</span><br><span class="line">    nonMetaclass = nil</span><br><span class="line">  &#125;</span><br><span class="line">  name = &#123;</span><br><span class="line">    std::__1::atomic&lt;const char *&gt; = &quot;Person&quot; &#123;</span><br><span class="line">      Value = 0x0000000100003edc &quot;Person&quot;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  baseMethodList = 0x00000001000081e8</span><br><span class="line">  baseProtocols = 0x0000000000000000</span><br><span class="line">  ivars = 0x0000000100008298</span><br><span class="line">  weakIvarLayout = 0x0000000000000000</span><br><span class="line">  baseProperties = 0x0000000100008320</span><br><span class="line">  _swiftMetadataInitializer_NEVER_USE = &#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>从打印中的内容可以大致的猜测ivar应该存放在ivars。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line">(lldb) p $11.ivars</span><br><span class="line">(const ivar_list_t *const) $13 = 0x0000000100008298</span><br><span class="line">  Fix-it applied, fixed expression was: </span><br><span class="line">    $11-&gt;ivars</span><br><span class="line">(lldb) p $11-&gt;ivars</span><br><span class="line">(const ivar_list_t *const) $14 = 0x0000000100008298</span><br><span class="line">(lldb) p *$14</span><br><span class="line">(const ivar_list_t) $15 = &#123;</span><br><span class="line">  entsize_list_tt&lt;ivar_t, ivar_list_t, 0, PointerModifierNop&gt; = (entsizeAndFlags = 32, count = 4)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 与property list是相同的结构</span><br><span class="line">(lldb) p $15.get(0)</span><br><span class="line">(ivar_t) $16 = &#123;</span><br><span class="line">  offset = 0x0000000100008360</span><br><span class="line">  name = 0x0000000100003f06 &quot;_hobby&quot;</span><br><span class="line">  type = 0x0000000100003f63 &quot;@\&quot;NSString\&quot;&quot;</span><br><span class="line">  alignment_raw = 3</span><br><span class="line">  size = 8</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $15.get(1)</span><br><span class="line">(ivar_t) $17 = &#123;</span><br><span class="line">  offset = 0x0000000100008368</span><br><span class="line">  name = 0x0000000100003f0d &quot;_height&quot;</span><br><span class="line">  type = 0x0000000100003f6f &quot;d&quot;</span><br><span class="line">  alignment_raw = 3</span><br><span class="line">  size = 8</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $15.get(2)</span><br><span class="line">(ivar_t) $18 = &#123;</span><br><span class="line">  offset = 0x0000000100008370</span><br><span class="line">  name = 0x0000000100003f15 &quot;_age&quot;</span><br><span class="line">  type = 0x0000000100003f71 &quot;i&quot;</span><br><span class="line">  alignment_raw = 2</span><br><span class="line">  size = 4</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $15.get(3)</span><br><span class="line">(ivar_t) $19 = &#123;</span><br><span class="line">  offset = 0x0000000100008378</span><br><span class="line">  name = 0x0000000100003f1a &quot;_name&quot;</span><br><span class="line">  type = 0x0000000100003f63 &quot;@\&quot;NSString\&quot;&quot;</span><br><span class="line">  alignment_raw = 3</span><br><span class="line">  size = 8</span><br><span class="line">&#125;</span><br><span class="line">(lldb) </span><br></pre></td></tr></table></figure>
+
+<p>到这里，我们也获取到了变量的位置，也说明了定义的属性会默认生成带下划线的同名变量。</p>
+<p>接下来就是方法了。</p>
+<h1 id="6-实例方法"><a href="#6-实例方法" class="headerlink" title="6. 实例方法"></a>6. 实例方法</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">(lldb) p $2-&gt;methods()</span><br><span class="line">(const method_array_t) $20 = &#123;</span><br><span class="line">  list_array_tt&lt;method_t, method_list_t, method_list_t_authed_ptr&gt; = &#123;</span><br><span class="line">     = &#123;</span><br><span class="line">      list = &#123;</span><br><span class="line">        ptr = 0x00000001000081e8</span><br><span class="line">      &#125;</span><br><span class="line">      arrayAndFlag = 4295000552</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 与属性一致</span><br><span class="line">(lldb) p $20.list</span><br><span class="line">(const method_list_t_authed_ptr&lt;method_list_t&gt;) $21 = &#123;</span><br><span class="line">  ptr = 0x00000001000081e8</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $21.ptr</span><br><span class="line">(method_list_t *const) $22 = 0x00000001000081e8</span><br><span class="line">(lldb) p *$22</span><br><span class="line">(method_list_t) $23 = &#123;</span><br><span class="line">  entsize_list_tt&lt;method_t, method_list_t, 4294901763, method_t::pointer_modifier&gt; = (entsizeAndFlags = 27, count = 7)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">(lldb) p $23.get(0)</span><br><span class="line">(method_t) $24 = &#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们按照属性的方式继续输出，结果<code>$23.get(0)</code>输出的确实空内容。</p>
+<p>在说method_t时，结构体内部有<code>big()</code>的方法：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">(lldb) p $23.get(0).big()</span><br><span class="line">(method_t::big) $26 = &#123;</span><br><span class="line">  name = &quot;func1&quot;</span><br><span class="line">  types = 0x0000000100003f5b &quot;v16@0:8&quot;</span><br><span class="line">  imp = 0x0000000100003c90 (AL-Objc`-[Person func1])</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $23.get(1).big()</span><br><span class="line">(method_t::big) $27 = &#123;</span><br><span class="line">  name = &quot;func2&quot;</span><br><span class="line">  types = 0x0000000100003f5b &quot;v16@0:8&quot;</span><br><span class="line">  imp = 0x0000000100003cc0 (AL-Objc`-[Person func2])</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $23.get(2).big()</span><br><span class="line">(method_t::big) $28 = &#123;</span><br><span class="line">  name = &quot;name&quot;</span><br><span class="line">  types = 0x0000000100003f53 &quot;@16@0:8&quot;</span><br><span class="line">  imp = 0x0000000100003cf0 (AL-Objc`-[Person name])</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $23.get(3).big()</span><br><span class="line">(method_t::big) $29 = &#123;</span><br><span class="line">  name = &quot;setName:&quot;</span><br><span class="line">  types = 0x0000000100003f73 &quot;v24@0:8@16&quot;</span><br><span class="line">  imp = 0x0000000100003d20 (AL-Objc`-[Person setName:])</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $23.get(4).big()</span><br><span class="line">(method_t::big) $30 = &#123;</span><br><span class="line">  name = &quot;age&quot;</span><br><span class="line">  types = 0x0000000100003f7e &quot;i16@0:8&quot;</span><br><span class="line">  imp = 0x0000000100003d50 (AL-Objc`-[Person age])</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $23.get(5).big()</span><br><span class="line">(method_t::big) $31 = &#123;</span><br><span class="line">  name = &quot;setAge:&quot;</span><br><span class="line">  types = 0x0000000100003f86 &quot;v20@0:8i16&quot;</span><br><span class="line">  imp = 0x0000000100003d70 (AL-Objc`-[Person setAge:])</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $23.get(6).big()</span><br><span class="line">Assertion failed: (i &lt; count), function get, file objc4-818.2/runtime/objc-runtime-new.h, line 624.</span><br><span class="line">error: Execution was interrupted, reason: signal SIGABRT.</span><br><span class="line">The process has been returned to the state before expression evaluation.</span><br><span class="line">(lldb) </span><br></pre></td></tr></table></figure>
+
+<p>我们在类中声明的方法都在<code>method_list_t</code>中，这里有我们自己声明的方法，还有属性自动生成的set和get方法。</p>
+<p>发现这里并没有我们的类方法。因为类方法在元类里。</p>
+<h1 id="7-类方法"><a href="#7-类方法" class="headerlink" title="7. 类方法"></a>7. 类方法</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><span class="line">(lldb) x/4gx Person.class</span><br><span class="line">0x1000083f8: 0x00000001000083d0 0x000000010036a140</span><br><span class="line">0x100008408: 0x00000001006176b0 0x0001803000000003</span><br><span class="line"></span><br><span class="line">// 获取元类</span><br><span class="line">(lldb) p 0x00000001000083d0 &amp; 0x00007ffffffffff8</span><br><span class="line">(long) $33 = 4295001040</span><br><span class="line">(lldb) po $33</span><br><span class="line">Person</span><br><span class="line"></span><br><span class="line">(lldb) x/6gx $33</span><br><span class="line">0x1000083d0: 0x000000010036a0f0 0x000000010036a0f0</span><br><span class="line">0x1000083e0: 0x00000001006959d0 0x0002e03100000003</span><br><span class="line">0x1000083f0: 0x0000000101204304 0x00000001000083d0</span><br><span class="line">// 获取元类的bits</span><br><span class="line">(lldb) p (class_data_bits_t *)0x1000083f0</span><br><span class="line">(class_data_bits_t *) $34 = 0x00000001000083f0</span><br><span class="line">(lldb) p $34-&gt;data()</span><br><span class="line">(class_rw_t *) $35 = 0x0000000101204300</span><br><span class="line">(lldb) p *$35</span><br><span class="line">(class_rw_t) $36 = &#123;</span><br><span class="line">  flags = 2684878849</span><br><span class="line">  witness = 1</span><br><span class="line">  ro_or_rw_ext = &#123;</span><br><span class="line">    std::__1::atomic&lt;unsigned long&gt; = &#123;</span><br><span class="line">      Value = 4302330705</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  firstSubclass = 0x00000001000083a8</span><br><span class="line">  nextSiblingClass = 0x00007fff883ac410</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $35-&gt;methods()</span><br><span class="line">(const method_array_t) $37 = &#123;</span><br><span class="line">  list_array_tt&lt;method_t, method_list_t, method_list_t_authed_ptr&gt; = &#123;</span><br><span class="line">     = &#123;</span><br><span class="line">      list = &#123;</span><br><span class="line">        ptr = 0x0000000100008168</span><br><span class="line">      &#125;</span><br><span class="line">      arrayAndFlag = 4295000424</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $37.list</span><br><span class="line">(const method_list_t_authed_ptr&lt;method_list_t&gt;) $38 = &#123;</span><br><span class="line">  ptr = 0x0000000100008168</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $38.ptr</span><br><span class="line">(method_list_t *const) $39 = 0x0000000100008168</span><br><span class="line">(lldb) p *$39</span><br><span class="line">(method_list_t) $40 = &#123;</span><br><span class="line">  entsize_list_tt&lt;method_t, method_list_t, 4294901763, method_t::pointer_modifier&gt; = (entsizeAndFlags = 27, count = 2)</span><br><span class="line">&#125;</span><br><span class="line">// count = 2告诉我们有2个</span><br><span class="line"></span><br><span class="line">(lldb) p $40.get(0).big()</span><br><span class="line">(method_t::big) $41 = &#123;</span><br><span class="line">  name = &quot;func3&quot;</span><br><span class="line">  types = 0x0000000100003f5b &quot;v16@0:8&quot;</span><br><span class="line">  imp = 0x0000000100003c00 (AL-Objc`+[Person func3])</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $40.get(1).big()</span><br><span class="line">(method_t::big) $42 = &#123;</span><br><span class="line">  name = &quot;func4&quot;</span><br><span class="line">  types = 0x0000000100003f5b &quot;v16@0:8&quot;</span><br><span class="line">  imp = 0x0000000100003c30 (AL-Objc`+[Person func4])</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $40.get(2).big()</span><br><span class="line">Assertion failed: (i &lt; count), function get, file objc4-818.2/runtime/objc-runtime-new.h, line 624.</span><br><span class="line">error: Execution was interrupted, reason: signal SIGABRT.</span><br><span class="line">The process has been returned to the state before expression evaluation.</span><br><span class="line">(lldb) </span><br></pre></td></tr></table></figure>
+
+<p>这里是获取类方法所在的位置。</p>
+<h1 id="8-协议"><a href="#8-协议" class="headerlink" title="8 协议"></a>8 协议</h1><p>属性、变量、方法都已经有所了解，接下来看一下协议。把我们一开始注释的协议打开，重新运行。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">(lldb) x/6gx Person.class</span><br><span class="line">0x1000088d0: 0x00000001000088a8 0x000000010036a140</span><br><span class="line">0x1000088e0: 0x0000000100362370 0x0000803400000000</span><br><span class="line">0x1000088f0: 0x0000000100604204 0x00000001000b9970</span><br><span class="line">(lldb) p (class_data_bits_t *)0x1000088f0</span><br><span class="line">(class_data_bits_t *) $4 = 0x00000001000088f0</span><br><span class="line">(lldb) p $4-&gt;data()</span><br><span class="line">(class_rw_t *) $5 = 0x0000000100604200</span><br><span class="line">(lldb) p $5-&gt;protocols()</span><br><span class="line">(const protocol_array_t) $6 = &#123;</span><br><span class="line">  list_array_tt&lt;unsigned long, protocol_list_t, RawPtr&gt; = &#123;</span><br><span class="line">     = &#123;</span><br><span class="line">      list = &#123;</span><br><span class="line">        ptr = 0x0000000100008560</span><br><span class="line">      &#125;</span><br><span class="line">      arrayAndFlag = 4295001440</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $6.list</span><br><span class="line">(const RawPtr&lt;protocol_list_t&gt;) $7 = &#123;</span><br><span class="line">  ptr = 0x0000000100008560</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $7.ptr</span><br><span class="line">(protocol_list_t *const) $8 = 0x0000000100008560</span><br><span class="line">(lldb) p *$8</span><br><span class="line">(protocol_list_t) $9 = (count = 1, list = protocol_ref_t [] @ 0x00007ff5f7e1e9f8)</span><br><span class="line">(lldb) </span><br></pre></td></tr></table></figure>
+
+<p>到此时，就不知道怎么处理，我们看一下<code>protocol_list_t</code>。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">struct protocol_list_t &#123;</span><br><span class="line">    // count is pointer-sized by accident.</span><br><span class="line">    uintptr_t count;</span><br><span class="line">    protocol_ref_t list[0]; // variable-size</span><br><span class="line"></span><br><span class="line">    ...</span><br><span class="line">    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这就是其内部的主要结构。我们用<code>list[0]</code>打印一下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(lldb) p $9.list[0]</span><br><span class="line">(protocol_ref_t) $11 = 4295002464</span><br></pre></td></tr></table></figure>
+
+<p>上面我们已经说过<code>protocol_ref_t</code>只是一个定义:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">typedef uintptr_t protocol_ref_t;  // protocol_t *, but unremapped</span><br></pre></td></tr></table></figure>
+<p>接下来强转一下，看是否可以转成<code>protocol_t *</code>类型。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">(lldb) p (protocol_t *)$11</span><br><span class="line">(protocol_t *) $12 = 0x0000000100008960</span><br><span class="line"></span><br><span class="line">// 我们查看protocol_t内部的结构有demangledName()方法.</span><br><span class="line">(lldb) p $12-&gt;demangledName()</span><br><span class="line">(const char *) $13 = 0x0000000100003b51 &quot;PersonProtocol&quot;</span><br></pre></td></tr></table></figure>
+
+<p>到这里呢，协议存放的位置也找到了。</p>
+<h1 id="9-补充添加协议之后"><a href="#9-补充添加协议之后" class="headerlink" title="9. 补充添加协议之后"></a>9. 补充添加协议之后</h1><h2 id="9-1-多了4个属性"><a href="#9-1-多了4个属性" class="headerlink" title="9.1 多了4个属性"></a>9.1 多了4个属性</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">(lldb) p $5-&gt;properties()</span><br><span class="line">(const property_array_t) $15 = &#123;</span><br><span class="line">  list_array_tt&lt;property_t, property_list_t, RawPtr&gt; = &#123;</span><br><span class="line">     = &#123;</span><br><span class="line">      list = &#123;</span><br><span class="line">        ptr = 0x0000000100008710</span><br><span class="line">      &#125;</span><br><span class="line">      arrayAndFlag = 4295001872</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $15.list</span><br><span class="line">(const RawPtr&lt;property_list_t&gt;) $16 = &#123;</span><br><span class="line">  ptr = 0x0000000100008710</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $16.ptr</span><br><span class="line">(property_list_t *const) $17 = 0x0000000100008710</span><br><span class="line">(lldb) p *$17</span><br><span class="line">(property_list_t) $18 = &#123;</span><br><span class="line">  entsize_list_tt&lt;property_t, property_list_t, 0, PointerModifierNop&gt; = (entsizeAndFlags = 16, count = 7)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>添加协议之后，又返回去重新打印了一下属性列表，发现这里变成了7个。明明之前只有2个属性</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">// 之前打印的数据</span><br><span class="line">(property_list_t) $8 = &#123;</span><br><span class="line">  entsize_list_tt&lt;property_t, property_list_t, 0, PointerModifierNop&gt; = (entsizeAndFlags = 16, count = 2)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>再加上协议中定义的一个，加起来也才3个，为什么会变成7个？这7个又是哪个属性？</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">(lldb) p $18.get(0)</span><br><span class="line">(property_t) $19 = (name = &quot;name&quot;, attributes = &quot;T@\&quot;NSString\&quot;,C,N,V_name&quot;)</span><br><span class="line">(lldb) p $18.get(1)</span><br><span class="line">(property_t) $20 = (name = &quot;age&quot;, attributes = &quot;Ti,N,V_age&quot;)</span><br><span class="line">(lldb) p $18.get(2)</span><br><span class="line">(property_t) $21 = (name = &quot;p_address&quot;, attributes = &quot;T@\&quot;NSString\&quot;,C,N&quot;)</span><br><span class="line">(lldb) p $18.get(3)</span><br><span class="line">(property_t) $22 = (name = &quot;hash&quot;, attributes = &quot;TQ,R&quot;)</span><br><span class="line">(lldb) p $18.get(4)</span><br><span class="line">(property_t) $23 = (name = &quot;superclass&quot;, attributes = &quot;T#,R&quot;)</span><br><span class="line">(lldb) p $18.get(5)</span><br><span class="line">(property_t) $24 = (name = &quot;description&quot;, attributes = &quot;T@\&quot;NSString\&quot;,R,C&quot;)</span><br><span class="line">(lldb) p $18.get(6)</span><br><span class="line">(property_t) $25 = (name = &quot;debugDescription&quot;, attributes = &quot;T@\&quot;NSString\&quot;,R,C&quot;)</span><br></pre></td></tr></table></figure>
+
+<p>发现，添加了协议之后，会增加<code>hash、superclass、description、debugDescription</code>4个属性。是因为我们定义的协议都遵循<code>&lt;NSObject&gt;</code>协议，在<code>&lt;NSObject&gt;</code>协议内部有这4个属性的声明。</p>
+<h2 id="9-2-方法找不到了"><a href="#9-2-方法找不到了" class="headerlink" title="9.2 方法找不到了"></a>9.2 方法找不到了</h2><p>我们按照上面获取方法等顺序，结果在最后</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">p $2-&gt;methods()</span><br><span class="line">(const method_array_t) $3 = &#123;</span><br><span class="line">  list_array_tt&lt;method_t, method_list_t, method_list_t_authed_ptr&gt; = &#123;</span><br><span class="line">     = &#123;</span><br><span class="line">      list = &#123;</span><br><span class="line">        ptr = 0x0000000100722d01</span><br><span class="line">      &#125;</span><br><span class="line">      arrayAndFlag = 4302449921</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $3.list</span><br><span class="line">(const method_list_t_authed_ptr&lt;method_list_t&gt;) $4 = &#123;</span><br><span class="line">  ptr = 0x0000000100722d01</span><br><span class="line">&#125;</span><br><span class="line">(lldb) p $4.ptr</span><br><span class="line">(method_list_t *const) $5 = 0x0000000100722d01</span><br><span class="line">(lldb) p *$6</span><br><span class="line">(method_list_t) $7 = &#123;</span><br><span class="line">  entsize_list_tt&lt;method_t, method_list_t, 4294901763, method_t::pointer_modifier&gt; = (entsizeAndFlags = 0, count = 2281701376)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们在第6节的时候，输出过</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">(lldb) p *$22</span><br><span class="line">(method_list_t) $23 = &#123;</span><br><span class="line">  entsize_list_tt&lt;method_t, method_list_t, 4294901763, method_t::pointer_modifier&gt; = (entsizeAndFlags = 27, count = 7)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>一共有7个，但是这里怎么变成了这么大的一个值？？？<br>有知道的大佬，欢迎指导，谢谢。</p>
+<h1 id="总结-1"><a href="#总结-1" class="headerlink" title="总结"></a>总结</h1><ul>
+<li>实例对象、类对象、元类。一切皆为对象，主要因为objc_object这个结构体。</li>
+<li>isa的走位图，superClass的指向</li>
+<li>属性、变量，实例方法、类方法的存放<ul>
+<li>属性、变量的区别，存放的位置</li>
+<li>实例方法放在类对象的列表；类方法的存放在元类的方法列表</li>
+</ul>
+</li>
+<li>添加协议之后<ul>
+<li>多了4个属性</li>
+<li>方法找不到了，待补充</li>
+</ul>
+</li>
+</ul>
+<p>这里我们以name的get方法为例子，说明一下这都是什么意思：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">- (NSString *)getName;</span><br><span class="line">&#123;(struct objc_selector *)&quot;name&quot;, &quot;@16@0:8&quot;, (void *)_I_Person_name&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="function_table.png"></p>
+<blockquote>
+<p>@16@0:8</p>
+</blockquote>
+<ul>
+<li>‘@’：第一个@表示返回值，对象</li>
+<li>‘16’：16个字节</li>
+<li>‘@’：第二个@表示对象类型(id)</li>
+<li>‘0’：我们知道@表示对象，0表示从0开始，占8个字节</li>
+<li>‘:’：SEL，方法明</li>
+<li>‘8’：表示从8开始，占8个字节，满足一共16个字节</li>
+</ul>
+<p>sel 和 imp<br>sel：方法名<br>imp：方法实现。函数指针地址</p>
+<h1 id="总结-2"><a href="#总结-2" class="headerlink" title="总结"></a>总结</h1><ul>
+<li>实例对象、类对象、元类。一切皆为对象，主要因为objc_object这个结构体。</li>
+<li>isa的走位图，superClass的指向</li>
+<li>属性、变量，实例方法、类方法的存放<ul>
+<li>属性、变量的区别，存放的位置</li>
+<li>实例方法放在类对象的列表；类方法的存放在元类的方法列表</li>
+</ul>
+</li>
+<li>sel、imp的区别</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://liujiaboy.github.io/2021/04/17/OC%E5%8E%9F%E7%90%86/oc-2-%E5%86%85%E5%AD%98%E5%AF%B9%E9%BD%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="不会飞的小白">
+      <meta itemprop="description" content="一只iOS程序猿，会陆陆续续的把之前的一些总结搬到这里。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="不会飞的小白">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/04/17/OC%E5%8E%9F%E7%90%86/oc-2-%E5%86%85%E5%AD%98%E5%AF%B9%E9%BD%90/" class="post-title-link" itemprop="url">oc-2-内存对齐</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-04-17 18:34:07" itemprop="dateCreated datePublished" datetime="2021-04-17T18:34:07+08:00">2021-04-17</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-12-24 17:13:15" itemprop="dateModified" datetime="2022-12-24T17:13:15+08:00">2022-12-24</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/OC%E5%8E%9F%E7%90%86/" itemprop="url" rel="index"><span itemprop="name">OC原理</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="calloc"><a href="#calloc" class="headerlink" title="calloc"></a>calloc</h1><p>在上一节中，我们知道开辟空间会用到<code>calloc</code>这个函数，那我们就追一下这个函数的内部逻辑。</p>
+<p>但是发现<code>calloc</code>这个方法没有办法继续下一步追踪了，如图：</p>
+<p><img src="calloc-1.jpg"></p>
+<p>我们发现<code>calloc</code>定义在<code>malloc/_malloc.h</code>文件下，我们也找到了对应的<a target="_blank" rel="noopener" href="https://opensource.apple.com/tarballs/libmalloc/">源码</a>。我这里用的是一份可运行的源码。</p>
+<p>接下来，直接上代码，在main函数中：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">// 开辟40个字节的空间</span><br><span class="line">void *p = calloc(1, 40);</span><br><span class="line">NSLog(@&quot;%lu&quot;,malloc_size(p));</span><br></pre></td></tr></table></figure>
+
+<p>直接运行，查看<code>malloc.c -&gt; calloc</code>的内部实现。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">void *</span><br><span class="line">calloc(size_t num_items, size_t size)</span><br><span class="line">&#123;</span><br><span class="line">	return _malloc_zone_calloc(default_zone, num_items, size, MZ_POSIX);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到<code>calloc</code>只是调用了<code>_malloc_zone_calloc</code>方法，其它啥也没做，这里需要注意的是，<code>default_zone</code>参数，它是一个虚拟的默认zone，通过它可以做一些事情，如下：</p>
+<h2 id="malloc-zone-calloc"><a href="#malloc-zone-calloc" class="headerlink" title="_malloc_zone_calloc"></a>_malloc_zone_calloc</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">static void *</span><br><span class="line">_malloc_zone_calloc(malloc_zone_t *zone, size_t num_items, size_t size,</span><br><span class="line">		malloc_zone_options_t mzo)</span><br><span class="line">&#123;</span><br><span class="line">	MALLOC_TRACE(TRACE_calloc | DBG_FUNC_START, (uintptr_t)zone, num_items, size, 0);</span><br><span class="line"></span><br><span class="line">	void *ptr;</span><br><span class="line">	if (malloc_check_start) &#123;</span><br><span class="line">		internal_check();</span><br><span class="line">	&#125;</span><br><span class="line">	ptr = zone-&gt;calloc(zone, num_items, size);</span><br><span class="line"></span><br><span class="line">	if (os_unlikely(malloc_logger)) &#123;</span><br><span class="line">		malloc_logger(MALLOC_LOG_TYPE_ALLOCATE | MALLOC_LOG_TYPE_HAS_ZONE | MALLOC_LOG_TYPE_CLEARED, (uintptr_t)zone,</span><br><span class="line">				(uintptr_t)(num_items * size), 0, (uintptr_t)ptr, 0);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	MALLOC_TRACE(TRACE_calloc | DBG_FUNC_END, (uintptr_t)zone, num_items, size, (uintptr_t)ptr);</span><br><span class="line">	if (os_unlikely(ptr == NULL)) &#123;</span><br><span class="line">		malloc_set_errno_fast(mzo, ENOMEM);</span><br><span class="line">	&#125;</span><br><span class="line">	return ptr;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>calloc</code>直接调用的是<code>_malloc_zone_calloc</code>。我们看一下这个函数的实现。通过返回值，我们确定重点代码应该与<code>ptr</code>有关。所以<code>_malloc_zone_calloc</code>精简如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">static void *</span><br><span class="line">_malloc_zone_calloc(malloc_zone_t *zone, size_t num_items, size_t size,</span><br><span class="line">		malloc_zone_options_t mzo)</span><br><span class="line">&#123;</span><br><span class="line">	MALLOC_TRACE(TRACE_calloc | DBG_FUNC_START, (uintptr_t)zone, num_items, size, 0);</span><br><span class="line"></span><br><span class="line">	void *ptr;</span><br><span class="line">	// ptr初始化，这里打一个断点</span><br><span class="line">	ptr = zone-&gt;calloc(zone, num_items, size);</span><br><span class="line"></span><br><span class="line">	return ptr;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行到这里，发现<code>zone-&gt;calloc</code>进去是一个函数的声明，有没有下文了。这是，我们用lldb调试，打印一下数据：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(lldb) p zone-&gt;calloc</span><br><span class="line">(void *(*)(_malloc_zone_t *, size_t, size_t)) $0 = 0x00000001002f4b93 (.dylib`default_zone_calloc at malloc.c:385)</span><br></pre></td></tr></table></figure>
+
+<p>感觉发现了新大陆：<code>default_zone_calloc</code>在<code>malloc.c</code>文件的第385行。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">static void *</span><br><span class="line">default_zone_calloc(malloc_zone_t *zone, size_t num_items, size_t size)</span><br><span class="line">&#123;</span><br><span class="line">	zone = runtime_default_zone();</span><br><span class="line">	</span><br><span class="line">	return zone-&gt;calloc(zone, num_items, size);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>到这里，又有一个<code>zone</code>。这个才是创建的runtime时的default zone。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">MALLOC_NOEXPORT malloc_zone_t* lite_zone = NULL;</span><br><span class="line"></span><br><span class="line">MALLOC_ALWAYS_INLINE</span><br><span class="line">static inline malloc_zone_t *</span><br><span class="line">runtime_default_zone() &#123;</span><br><span class="line">  // lite_zone = null，所以会执行创建</span><br><span class="line">	return (lite_zone) ? lite_zone : inline_malloc_default_zone();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">⬇️</span><br><span class="line"></span><br><span class="line">static inline malloc_zone_t *</span><br><span class="line">inline_malloc_default_zone(void)</span><br><span class="line">&#123;</span><br><span class="line">    // 只创建一次，内部是一个os_once</span><br><span class="line">    _malloc_initialize_once();</span><br><span class="line">    // malloc_report(ASL_LEVEL_INFO, &quot;In inline_malloc_default_zone with %d %d\n&quot;, malloc_num_zones, malloc_has_debug_zone);</span><br><span class="line">    // 可以看到malloc_zones是一个(malloc_zone_t **)类型的数据</span><br><span class="line">    // malloc_zone_t **malloc_zones = (malloc_zone_t **)0xdeaddeaddeaddead;</span><br><span class="line">    return malloc_zones[0];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里看一下<code>malloc_zones</code>的内容：</p>
+<p><img src="malloc_zones.png"></p>
+<h2 id="malloc-zone-t"><a href="#malloc-zone-t" class="headerlink" title="_malloc_zone_t"></a>_malloc_zone_t</h2><p>上面的大部分内容都是围绕着<code>_malloc_zone_t</code>展开的。</p>
+<p>这里可以看到<code>malloc_zones[0]</code>的元素就是一个<code>malloc_zone_t *</code>类型的数据，根据lldb打印出来的数据和查看到的内容可以看到<code>malloc_zone_t</code>中存放的就是一些我们在开辟空间时需要调用的方法。</p>
+<p>看一下<code>_malloc_zone_t</code>结构体</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">#define MALLOC_ZONE_FN_PTR(fn) fn</span><br><span class="line"></span><br><span class="line">typedef struct _malloc_zone_t &#123;</span><br><span class="line">    /* Only zone implementors should depend on the layout of this structure;</span><br><span class="line">    Regular callers should use the access functions below */</span><br><span class="line">    void	*reserved1;	/* RESERVED FOR CFAllocator DO NOT USE */</span><br><span class="line">    void	*reserved2;	/* RESERVED FOR CFAllocator DO NOT USE */</span><br><span class="line">    size_t 	(* MALLOC_ZONE_FN_PTR(size))(struct _malloc_zone_t *zone, const void *ptr); </span><br><span class="line">    void 	*(* MALLOC_ZONE_FN_PTR(malloc))(struct _malloc_zone_t *zone, size_t size);</span><br><span class="line">    void 	*(* MALLOC_ZONE_FN_PTR(calloc))(struct _malloc_zone_t *zone, size_t num_items, size_t size); </span><br><span class="line">    void 	*(* MALLOC_ZONE_FN_PTR(valloc))(struct _malloc_zone_t *zone, size_t size); /* same as malloc, but block returned is set to zero and is guaranteed to be page aligned */</span><br><span class="line">    void 	(* MALLOC_ZONE_FN_PTR(free))(struct _malloc_zone_t *zone, void *ptr);</span><br><span class="line">    void 	*(* MALLOC_ZONE_FN_PTR(realloc))(struct _malloc_zone_t *zone, void *ptr, size_t size);</span><br><span class="line">    void 	(* MALLOC_ZONE_FN_PTR(destroy))(struct _malloc_zone_t *zone);</span><br><span class="line">    const char	*zone_name;</span><br><span class="line">    </span><br><span class="line">    ...</span><br><span class="line">    </span><br><span class="line">    boolean_t (* MALLOC_ZONE_FN_PTR(claimed_address))(struct _malloc_zone_t *zone, void *ptr);</span><br><span class="line">&#125; malloc_zone_t;</span><br></pre></td></tr></table></figure>
+
+<p>结构体中的数据与我们图片上的内容是一样的，定义了很多的方法。以<code>calloc</code>为例。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">void 	*(* MALLOC_ZONE_FN_PTR(calloc))(struct _malloc_zone_t *zone, size_t num_items, size_t size);</span><br><span class="line"></span><br><span class="line">转换之后的方法为：</span><br><span class="line"></span><br><span class="line">calloc(_malloc_zone_t *zone, size_tnum_items, size_t size) &#123;</span><br><span class="line">    // 调用.dylib中的方法，nano_malloc.c : 878</span><br><span class="line">    nano_calloc(zone, num_items, size);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们也可以用同样的方式打印一下看看：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(lldb) po zone-&gt;calloc</span><br><span class="line">(.dylib`nano_calloc at nano_malloc.c:878)</span><br></pre></td></tr></table></figure>
+
+<p>打印出来的信息已经很全面了，同样告诉我们了<code>nano_calloc</code>方法在<code>nano_malloc.c</code>文件中。</p>
+<h2 id="nano-calloc"><a href="#nano-calloc" class="headerlink" title="nano_calloc"></a>nano_calloc</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">static void *</span><br><span class="line">nano_calloc(nanozone_t *nanozone, size_t num_items, size_t size)</span><br><span class="line">&#123;</span><br><span class="line">	size_t total_bytes;</span><br><span class="line">   // alloc之前需要先判断申请的空间大小是否合理</span><br><span class="line">	if (calloc_get_size(num_items, size, 0, &amp;total_bytes)) &#123;</span><br><span class="line">		return NULL;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">  // 如果获取到的大小在系统约定的最大值范围内则，直接进行malloc。</span><br><span class="line">	if (total_bytes &lt;= NANO_MAX_SIZE) &#123;</span><br><span class="line">	   // 所以一定会走这里</span><br><span class="line">		void *p = _nano_malloc_check_clear(nanozone, total_bytes, 1);</span><br><span class="line">		if (p) &#123;</span><br><span class="line">			return p;</span><br><span class="line">		&#125; else &#123;</span><br><span class="line">			/* FALLTHROUGH to helper zone */</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	malloc_zone_t *zone = (malloc_zone_t *)(nanozone-&gt;helper_zone);</span><br><span class="line">	// 如果初始化失败，则继续执行。</span><br><span class="line">	return zone-&gt;calloc(zone, 1, total_bytes);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在<code>nano_calloc</code>中，我们同样的先看返回值，最底部的是又继续调用了<code>zone-&gt;calloc</code>，感觉不太对，上面就找到了还有一个返回<code>p</code>的位置。运行也确实会走到这里。</p>
+<p>接下来就是重点了哈~</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">static void *</span><br><span class="line">_nano_malloc_check_clear(nanozone_t *nanozone, size_t size, boolean_t cleared_requested)</span><br><span class="line">&#123;</span><br><span class="line">	MALLOC_TRACE(TRACE_nano_malloc, (uintptr_t)nanozone, size, cleared_requested, 0);</span><br><span class="line"></span><br><span class="line">	void *ptr;</span><br><span class="line">	size_t slot_key;   // 插槽的key</span><br><span class="line">	// 获取真正的内存大小，以及slot_key</span><br><span class="line">	size_t slot_bytes = segregated_size_to_fit(nanozone, size, &amp;slot_key); // Note slot_key is set here</span><br><span class="line">	// 拿到插槽的index</span><br><span class="line">	mag_index_t mag_index = nano_mag_index(nanozone);</span><br><span class="line">  //  </span><br><span class="line">	nano_meta_admin_t pMeta = &amp;(nanozone-&gt;meta_data[mag_index][slot_key]);</span><br><span class="line"></span><br><span class="line">	ptr = OSAtomicDequeue(&amp;(pMeta-&gt;slot_LIFO), offsetof(struct chained_block_s, next));</span><br><span class="line">	if (ptr) &#123;</span><br><span class="line">		// 这里都是error的判断</span><br><span class="line">	&#125; else &#123;</span><br><span class="line">	   // 死循环获取内存指针，拿到返回</span><br><span class="line">		ptr = segregated_next_block(nanozone, pMeta, slot_bytes, mag_index);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	if (cleared_requested &amp;&amp; ptr) &#123;</span><br><span class="line">		memset(ptr, 0, slot_bytes); // TODO: Needs a memory barrier after memset to ensure zeroes land first?</span><br><span class="line">	&#125;</span><br><span class="line">	return ptr;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<p>接下来看一下开辟空间的算法：segregated_size_to_fit</p>
+<h2 id="segregated-size-to-fit"><a href="#segregated-size-to-fit" class="headerlink" title="segregated_size_to_fit"></a>segregated_size_to_fit</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">static MALLOC_INLINE size_t</span><br><span class="line">segregated_size_to_fit(nanozone_t *nanozone, size_t size, size_t *pKey)</span><br><span class="line">&#123;</span><br><span class="line">	size_t k, slot_bytes;</span><br><span class="line"></span><br><span class="line">	if (0 == size) &#123;</span><br><span class="line">		size = NANO_REGIME_QUANTA_SIZE; // Historical behavior</span><br><span class="line">	&#125;</span><br><span class="line">	k = (size + NANO_REGIME_QUANTA_SIZE - 1) &gt;&gt; SHIFT_NANO_QUANTUM; // round up and shift for number of quanta</span><br><span class="line">	slot_bytes = k &lt;&lt; SHIFT_NANO_QUANTUM;							// multiply by power of two quanta size</span><br><span class="line">	*pKey = k - 1;													// Zero-based!</span><br><span class="line"></span><br><span class="line">	return slot_bytes;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个算法在上一节中计算<code>alignedInstanceSize</code>类似。这里的主要逻辑是先右移4位，再左移4位。相当于把后4位抹零。拿我们开辟空间传进来的40为例计算一下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">(size + NANO_REGIME_QUANTA_SIZE - 1) = 40 + 15 -1</span><br><span class="line">54 -&gt; 0011 0110</span><br><span class="line">&gt;&gt; 4  0000 0011         // 右移4位</span><br><span class="line">&lt;&lt; 4  0011 0000 = 48    // 左移4位</span><br></pre></td></tr></table></figure>
+
+<p>这里计算出来的大小就是48。而<code>slot_key=47</code>。之后就是获取内存指针。</p>
+<p><img src="calloc-2.jpg"></p>
+<p>这就是<code>calloc</code>的流程，同时，再一次验证了，iOS在内存中是16字节对齐。</p>
+<h1 id="结构体的内存对齐"><a href="#结构体的内存对齐" class="headerlink" title="结构体的内存对齐"></a>结构体的内存对齐</h1><p>结构体内存对齐3打原则：</p>
+<blockquote>
+<ol>
+<li>数据成员对⻬规则：结构体(struct)的数据成员，第一个数据成员放在offset为0的地方，以后每个数据成员存储的起始位置要从该成员大小或者成员的子成员大小(只要该成员有子成员，比如说是数组，结构体等)的整数倍开始(比如int为4字节,则要从4的整数倍地址开始存储。</li>
+<li>结构体作为成员：如果一个结构里有某些结构体成员，则结构体成员要从其内部最大元素大小的整数倍地址开始存储。(struct a里存有struct b，b里有char，int, double等元素，那b应该从8的整数倍开始存储)</li>
+<li>收尾工作：结构体的总大小，也就是sizeof的结果，必须是其内部最大成员的整数倍。不足的要补⻬。</li>
+</ol>
+</blockquote>
+<p>开始代码之前，先了解一下各种数据类型所占的内存大小：</p>
+<p><img src="calloc-3.jpg"></p>
+<p>接下来上代码，看看结构体的内存：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">struct Struct1 &#123;</span><br><span class="line">    double a;   </span><br><span class="line">    char b;     </span><br><span class="line">    int c;      </span><br><span class="line">    short d;    </span><br><span class="line">&#125;str1;</span><br><span class="line"></span><br><span class="line">struct Struct2 &#123;</span><br><span class="line">    double a; </span><br><span class="line">    int b;    </span><br><span class="line">    char c;   </span><br><span class="line">    short d;  </span><br><span class="line">&#125;str2;</span><br><span class="line"></span><br><span class="line">NSLog(@&quot;str1 = %lu, str2-%lu&quot;,sizeof(str1),sizeof(str2));</span><br></pre></td></tr></table></figure>
+
+<p>输出的结果很明白的哈。<code> str1 = 24, str2-16</code></p>
+<p>我们分析一下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">struct Struct1 &#123;</span><br><span class="line">    double a;   // 8 (0-7)</span><br><span class="line">    char b;     // 1 [8 1] (8)</span><br><span class="line">    int c;      // 4 [9 10 11 12] 9不是4的整数倍(12 13 14 15)</span><br><span class="line">    short d;    // 2 [16 17]</span><br><span class="line">&#125;str1;</span><br><span class="line"></span><br><span class="line">// 内部需要的大小为: 17</span><br><span class="line">// 最大属性 : 8</span><br><span class="line">// 结构体整数倍: 24</span><br><span class="line"></span><br><span class="line">struct Struct2 &#123;</span><br><span class="line">    double a;   //8 (0-7)</span><br><span class="line">    int b;      //4 (8 9 10 11)</span><br><span class="line">    char c;     //1 (12)</span><br><span class="line">    short d;    //2 (13 14) 13不是2的整数倍，从14开始(14 15)</span><br><span class="line">&#125;str2;</span><br><span class="line"></span><br><span class="line">// 内部需要的大小为: 15</span><br><span class="line">// 最大属性 : 8</span><br><span class="line">// 结构体整数倍: 16</span><br><span class="line">NSLog(@&quot;str1 = %lu, str2-%lu&quot;,sizeof(str1),sizeof(str2));</span><br></pre></td></tr></table></figure>
+
+<p>如果结构体内部套用结构体呢？</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">struct Struct3 &#123;</span><br><span class="line">    double a;   //8 (0-7)</span><br><span class="line">    int b;      //4 (8 9 10 11)</span><br><span class="line">    char c;     //1 (12)</span><br><span class="line">    struct Struct2 str_2;   // 13 14 15 (16 - 31)</span><br><span class="line">&#125;str3;</span><br><span class="line"></span><br><span class="line">NSLog(@&quot;str3 = %lu&quot;, sizeof(str3));</span><br></pre></td></tr></table></figure>
+
+<p>按照内存对齐第二条原则，结构体成员从其内部最大成员的size的整数倍开始。c的位置是12，接下来的位置是13，不满足8的整数倍。所以按照原则，前面补齐，从16位开始。所以str3结构体的大小为32。</p>
+<h1 id="对象的内存对齐"><a href="#对象的内存对齐" class="headerlink" title="对象的内存对齐"></a>对象的内存对齐</h1><p>老样子，先看代码哈：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">@interface Person : NSObject</span><br><span class="line"></span><br><span class="line">@property (nonatomic, copy) NSString *name;</span><br><span class="line">@property (nonatomic, assign) int age;</span><br><span class="line">@property (nonatomic, assign) int score;</span><br><span class="line">@property (nonatomic, assign) long height;</span><br><span class="line">@property (nonatomic) char c1;</span><br><span class="line">@property (nonatomic) char c2;</span><br><span class="line"></span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">main() &#123;</span><br><span class="line"></span><br><span class="line">Person *person = [Person alloc];</span><br><span class="line">person.name = @&quot;name&quot;;</span><br><span class="line">person.age = 18;</span><br><span class="line">person.score = 20;</span><br><span class="line">person.height = 180;</span><br><span class="line">person.c1 = &#x27;a&#x27;;</span><br><span class="line">person.c2 = &#x27;b&#x27;;</span><br><span class="line"></span><br><span class="line">NSLog(@&quot;%@ - %lu - %lu - %lu&quot;,person,sizeof(person),class_getInstanceSize([Person class]),malloc_size((__bridge const void *)(person)));</span><br><span class="line">        </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们在NSLog上打个断点。有时间的话，可以把属性先注释掉，从0开始，一个属性一个属性的加起来看输出的是什么结果。</p>
+<ol>
+<li><p>po 这里直接输出person指向的对象的内存地址。</p>
+ <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(lldb) po person</span><br><span class="line">&lt;Person: 0x600002adbcf0&gt;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>这里有一个需要介绍的点，上一章中有用到x person命令，输出的内容与<code>View Memory</code>中显示的是一致的。而<code>x/8gx</code>就是进行排序。8代表的是输出8组内存。如果是4那就是输出4组内容。每一块都是8个字节。</p>
+ <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">(lldb) x/8gx person</span><br><span class="line">0x600002adbcf0: 0x0000000103930808 0x0000001200006261</span><br><span class="line">0x600002adbd00: 0x0000000000000014 0x000000010392b038</span><br><span class="line">0x600002adbd10: 0x00000000000000b4 0x0000000000000000</span><br><span class="line">0x600002adbd20: 0x0000c1c5c19bbd20 0x00000000000007fb</span><br></pre></td></tr></table></figure>
+<p> 0x600002adbcf0：是person指向的首地址。后面存放的都是属性的值。内存都是连续的。</p>
+</li>
+<li><p>我们分别输出内存里的内容。</p>
+ <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">(lldb) po 0x0000000103930808</span><br><span class="line">Person  // isa指针</span><br><span class="line"></span><br><span class="line">(lldb) po 0x00000012</span><br><span class="line">18</span><br><span class="line"></span><br><span class="line">(lldb) 0x61是十进制的97 -&gt; a</span><br><span class="line"></span><br><span class="line">(lldb) po 0x0000000000000014</span><br><span class="line">20</span><br><span class="line"></span><br><span class="line">(lldb) po 0x000000010392b038</span><br><span class="line">name</span><br><span class="line"></span><br><span class="line">(lldb) po 0x00000000000000b4</span><br><span class="line">180</span><br></pre></td></tr></table></figure>
+<p> 0x0000001200006261：这一块地址上内容是被拆开的。我们知道int是4个字节，char是1个字节，所以前面的几位是int的值，后面的再进行拆分，分别是两个char类型的数据。</p>
+<p> 苹果在内存上也是做了足够多的优化，虽然在内存上是16个字节对齐的，以空间换时间，提高读取效率，但是在内部实现上，还是进行了大量的优化，这样做的目的是最大限度的节约内存同时保证数据的安全性，但是一定要注意的是，属性是按8个字节对齐的。</p>
+<p> 但是为啥两个int类型的数据没有放在一起呢？可能是系统内部做的优化，可以试一下，把所有的char类型注释掉，两个int类型的数据就会存放在一起。可能是会将char类型的数据优先进行填充吧。另外可以多试一下，3个char类型的会怎么样，等等…</p>
+</li>
+<li><p>最后输出的结果是</p>
+ <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;Person: 0x600002adbcf0&gt; - 8 - 40 - 48</span><br></pre></td></tr></table></figure>
+<p> 我们分析一下输出的内容：</p>
+<ul>
+<li>person：当前的类对象，存放的指针，指向的内存地址。</li>
+<li>sizeof(person)：person存放的就是一个指针，8个字节。</li>
+<li>class_getInstanceSize([Person class])：这个类真正需要的空间。属性是8个字节对齐的。</li>
+<li>malloc_size((__bridge const void *)(person))：内存中需要开辟的空间。内存空间是16个字节对齐的。</li>
+</ul>
+</li>
+</ol>
+<h2 id="float、double"><a href="#float、double" class="headerlink" title="float、double"></a>float、double</h2><p>加如改变其中的一个属性位double类型的，又会是什么情况呢？我这里把上面的height改为了double类型。看一下输出结果</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">(lldb) x/8gx person</span><br><span class="line">0x600000045530: 0x000000010626d808 0x0000001200006261</span><br><span class="line">0x600000045540: 0x0000000000000014 0x0000000106268038</span><br><span class="line">0x600000045550: 0x4066800000000000 0x0000000000000000</span><br><span class="line">0x600000045560: 0x0000000000000000 0x0000000000000000</span><br><span class="line">(lldb) po 0x4066800000000000</span><br><span class="line">4640537203540230144</span><br></pre></td></tr></table></figure>
+
+<p>诶~~~ 怎么没有输出180呢？是因为对于float、double类型的数据，系统会做一次特殊的转换处理。我们没有办法直接从内存中读出double类型的值。</p>
+<p>但是我们可以通过转化double类型的数据来看是否位上面对应的值。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(lldb) p/x (double)180.0</span><br><span class="line">(double) $4 = 0x4066800000000000</span><br></pre></td></tr></table></figure>
+<p>转换后，发现正好是对应的数据。</p>
+<p>这里当然有读取浮点数的方法<code>p/f [0x000000123]</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(lldb) p/f 0x4066800000000000</span><br><span class="line">(long) $5 = 180</span><br></pre></td></tr></table></figure>
+<p>这就是内存补齐的内容</p>
+<h1 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h1><ul>
+<li>calloc的流程。</li>
+<li>结构体的对齐规则。</li>
+<li>类对象的属性是8个字节对齐的，但是在内存空间是16个字节对齐。</li>
+<li>x&#x2F;4gx的使用</li>
+</ul>
+<h1 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h1><p><a target="_blank" rel="noopener" href="https://opensource.apple.com/tarballs/libmalloc/">libmalloc源码</a><br><a target="_blank" rel="noopener" href="https://opensource.apple.com/tarballs/">苹果更多源码</a></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://liujiaboy.github.io/2021/04/17/OC%E5%8E%9F%E7%90%86/oc-1-alloc-init-new/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="不会飞的小白">
+      <meta itemprop="description" content="一只iOS程序猿，会陆陆续续的把之前的一些总结搬到这里。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="不会飞的小白">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/04/17/OC%E5%8E%9F%E7%90%86/oc-1-alloc-init-new/" class="post-title-link" itemprop="url">OC-1-alloc、init、new</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-04-17 09:20:25" itemprop="dateCreated datePublished" datetime="2021-04-17T09:20:25+08:00">2021-04-17</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-12-24 17:13:15" itemprop="dateModified" datetime="2022-12-24T17:13:15+08:00">2022-12-24</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/OC%E5%8E%9F%E7%90%86/" itemprop="url" rel="index"><span itemprop="name">OC原理</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="1-先看一个问题"><a href="#1-先看一个问题" class="headerlink" title="1. 先看一个问题"></a>1. 先看一个问题</h1><p>我们先看一段代码，打印一下输出结果。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Person *p1 = [Person alloc];</span><br><span class="line">Person *p2 = [p1 init];</span><br><span class="line">Person *p3 = [p1 init];</span><br><span class="line">NSLog(@&quot;%@ - %p - %p&quot;,p1,p1,&amp;p1);</span><br><span class="line">NSLog(@&quot;%@ - %p - %p&quot;,p2,p2,&amp;p2);</span><br><span class="line">NSLog(@&quot;%@ - %p - %p&quot;,p3,p3,&amp;p3);</span><br></pre></td></tr></table></figure>
+
+<p>看输出结果</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;Person: 0x600000c40470&gt; - 0x600000c40470 - 0x7ffee9114068</span><br><span class="line">&lt;Person: 0x600000c40470&gt; - 0x600000c40470 - 0x7ffee9114060</span><br><span class="line">&lt;Person: 0x600000c40470&gt; - 0x600000c40470 - 0x7ffee9114058</span><br></pre></td></tr></table></figure>
+
+<p>前两个打印的都是当前对象的指针地址，而最后一个为啥会不一样？<br>首先需要明白p和&amp;p的区别：p是当前变量指向的地址。&amp;p是存放当前变量所在的地址。<br>这里第一个%p打印就是[Person alloc]生成的地址。第二个%p是存放的是指向【生成的对象】的地址。</p>
+<p>也就是当前alloc生成一个对象开辟了一块内存空间。p1、p2、p3分别开辟一块地址指向alloc开辟的空间。</p>
+<p><img src="oc-address.png"></p>
+<p>我们可以通过汇编模式或者符号断点查看源码所在的位置。这里不细说了，比较简单。最后定位的源码位置在<code>libobjc.A.dylib-&gt;objc_init</code>。</p>
+<h1 id="2-alloc的执行过程"><a href="#2-alloc的执行过程" class="headerlink" title="2. alloc的执行过程"></a>2. alloc的执行过程</h1><p>那我们接下来要看alloc是怎么执行的。需要看objc的源码。<a target="_blank" rel="noopener" href="https://opensource.apple.com/tarballs/objc4/">objc4源码</a>是可以直接下载的。我们这里用的是最新的818.2版本的。</p>
+<p>通过一系列风骚的操作，我们让源码可以运行起来。通过断点和源码我们分析一下alloc的执行过程。</p>
+<h2 id="2-1-objc-rootAlloc"><a href="#2-1-objc-rootAlloc" class="headerlink" title="2.1 _objc_rootAlloc"></a>2.1 _objc_rootAlloc</h2><p>在main.m中，创建一个对象，打上断点。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Person *p = [Person alloc];</span><br><span class="line">Person *p1 = [p init];</span><br></pre></td></tr></table></figure>
+
+<p>这里只是alloc的最基本的方法。没有什么代码量</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">+ (id)alloc &#123;</span><br><span class="line">    return _objc_rootAlloc(self);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">id _objc_rootAlloc(Class cls)</span><br><span class="line">&#123;</span><br><span class="line">    return callAlloc(cls, false/*checkNil*/, true/*allocWithZone*/);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-2-callAlloc"><a href="#2-2-callAlloc" class="headerlink" title="2.2 callAlloc"></a>2.2 callAlloc</h2><p>这里是核心代码。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">static ALWAYS_INLINE id</span><br><span class="line">callAlloc(Class cls, bool checkNil, bool allocWithZone=false)</span><br><span class="line">&#123;</span><br><span class="line">#if __OBJC2__ // 是个宏定义</span><br><span class="line">    // slowpath表示括号内的条件可能性教小</span><br><span class="line">    if (slowpath(checkNil &amp;&amp; !cls)) return nil;</span><br><span class="line">    // fastpath表示括号内的条件可能性教大</span><br><span class="line">    // 如果有自定义的allocWithZone（hasCustomAWZ）</span><br><span class="line">    if (fastpath(!cls-&gt;ISA()-&gt;hasCustomAWZ())) &#123;</span><br><span class="line">        return _objc_rootAllocWithZone(cls, nil);   // 1.</span><br><span class="line">    &#125;</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">    // No shortcuts available. 根据传进来的参数判断</span><br><span class="line">    if (allocWithZone) &#123;                            // 2. </span><br><span class="line">        return ((id(*)(id, SEL, struct _NSZone *))objc_msgSend)(cls, @selector(allocWithZone:), nil);</span><br><span class="line">    &#125;</span><br><span class="line">    return ((id(*)(id, SEL))objc_msgSend)(cls, @selector(alloc)); // 3.</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>该处内容是现阶段alloc执行的代码</li>
+<li>根据<code>callAlloc</code>调用传进来的参数判断，基本都会执行【1】。</li>
+<li>通过消息发送，执行<code>alloc</code>，这里有个很有意思的点，源码跑起来就能知道。</li>
+</ol>
+<h2 id="2-3-objc-rootAllocWithZone"><a href="#2-3-objc-rootAllocWithZone" class="headerlink" title="2.3 _objc_rootAllocWithZone"></a>2.3 _objc_rootAllocWithZone</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">id</span><br><span class="line">_objc_rootAllocWithZone(Class cls, malloc_zone_t *zone __unused)</span><br><span class="line">&#123;</span><br><span class="line">    // allocWithZone under __OBJC2__ ignores the zone parameter</span><br><span class="line">    return _class_createInstanceFromZone(cls, 0, nil,</span><br><span class="line">                                         OBJECT_CONSTRUCT_CALL_BADALLOC);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-4-class-createInstanceFromZone"><a href="#2-4-class-createInstanceFromZone" class="headerlink" title="2.4 _class_createInstanceFromZone"></a>2.4 _class_createInstanceFromZone</h2><p>这里是重中之重。alloc的流程都在这里完美的展示出来。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line">static ALWAYS_INLINE id</span><br><span class="line">_class_createInstanceFromZone(Class cls, size_t extraBytes, void *zone,</span><br><span class="line">                              int construct_flags = OBJECT_CONSTRUCT_NONE,</span><br><span class="line">                              bool cxxConstruct = true,</span><br><span class="line">                              size_t *outAllocatedSize = nil)</span><br><span class="line">&#123;</span><br><span class="line">    ASSERT(cls-&gt;isRealized());</span><br><span class="line"></span><br><span class="line">    // Read class&#x27;s info bits all at once for performance</span><br><span class="line">    bool hasCxxCtor = cxxConstruct &amp;&amp; cls-&gt;hasCxxCtor();</span><br><span class="line">    bool hasCxxDtor = cls-&gt;hasCxxDtor();</span><br><span class="line">    bool fast = cls-&gt;canAllocNonpointer();</span><br><span class="line">    size_t size;</span><br><span class="line"></span><br><span class="line">    // 1. 既然要生成一个对象，首先要做的就是开辟空间，但是要开辟多少？</span><br><span class="line">    // 由对象的ivars决定。在iOS中，字节是8自己对齐，而内存是16字节对齐，所以小于16字节会补齐</span><br><span class="line">    size = cls-&gt;instanceSize(extraBytes);</span><br><span class="line">    if (outAllocatedSize) *outAllocatedSize = size;</span><br><span class="line"></span><br><span class="line">    id obj;</span><br><span class="line">    if (zone) &#123;</span><br><span class="line">        obj = (id)malloc_zone_calloc((malloc_zone_t *)zone, 1, size);</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        // 2. 算出来需要多少空间，这里进行开辟</span><br><span class="line">        obj = (id)calloc(1, size);</span><br><span class="line">    &#125;</span><br><span class="line">    // 极少数情况下，obj会创建失败</span><br><span class="line">    if (slowpath(!obj)) &#123;</span><br><span class="line">        if (construct_flags &amp; OBJECT_CONSTRUCT_CALL_BADALLOC) &#123;</span><br><span class="line">            return _objc_callBadAllocHandler(cls);</span><br><span class="line">        &#125;</span><br><span class="line">        return nil;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    if (!zone &amp;&amp; fast) &#123;</span><br><span class="line">        // 3. 空间有了，这里进行对象关联</span><br><span class="line">        obj-&gt;initInstanceIsa(cls, hasCxxDtor);</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        // Use raw pointer isa on the assumption that they might be</span><br><span class="line">        // doing something weird with the zone or RR.</span><br><span class="line">        obj-&gt;initIsa(cls);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    if (fastpath(!hasCxxCtor)) &#123;</span><br><span class="line">        return obj;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    construct_flags |= OBJECT_CONSTRUCT_FREE_ONFAILURE;</span><br><span class="line">    return object_cxxConstructFromClass(obj, cls, construct_flags);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-4-1-cls-gt-instanceSize"><a href="#2-4-1-cls-gt-instanceSize" class="headerlink" title="2.4.1 cls-&gt;instanceSize"></a>2.4.1 cls-&gt;instanceSize</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">inline size_t instanceSize(size_t extraBytes) const &#123;</span><br><span class="line">    // 有缓存的情况下</span><br><span class="line">    if (fastpath(cache.hasFastInstanceSize(extraBytes))) &#123;</span><br><span class="line">        return cache.fastInstanceSize(extraBytes);</span><br><span class="line">    &#125;</span><br><span class="line">    // 新开辟</span><br><span class="line">    size_t size = alignedInstanceSize() + extraBytes;</span><br><span class="line">    // CF requires all objects be at least 16 bytes.</span><br><span class="line">    if (size &lt; 16) size = 16;</span><br><span class="line">    return size;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<p>如果有缓存的情况下，则会执行fastInstanceSize。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">size_t fastInstanceSize(size_t extra) const</span><br><span class="line">&#123;</span><br><span class="line">    ASSERT(hasFastInstanceSize(extra));</span><br><span class="line"></span><br><span class="line">    if (__builtin_constant_p(extra) &amp;&amp; extra == 0) &#123;</span><br><span class="line">        return _flags &amp; FAST_CACHE_ALLOC_MASK16;</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        size_t size = _flags &amp; FAST_CACHE_ALLOC_MASK;</span><br><span class="line">        // remove the FAST_CACHE_ALLOC_DELTA16 that was added</span><br><span class="line">        // by setFastInstanceSize</span><br><span class="line">        // 内存对齐是16字节</span><br><span class="line">        return align16(size + extra - FAST_CACHE_ALLOC_DELTA16);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">// 新开辟空间时计算对象所在空间</span><br><span class="line">// Class&#x27;s ivar size rounded up to a pointer-size boundary.</span><br><span class="line">uint32_t alignedInstanceSize() const &#123;</span><br><span class="line">    return word_align(unalignedInstanceSize());</span><br><span class="line">&#125;</span><br><span class="line">// 8字节对齐</span><br><span class="line">static inline size_t word_align(size_t x) &#123;</span><br><span class="line">    // 通过算法得到8字节的倍数</span><br><span class="line">    return (x + WORD_MASK) &amp; ~WORD_MASK;</span><br><span class="line">&#125;</span><br><span class="line">// 16字节对齐 fastInstanceSize</span><br><span class="line">static inline size_t align16(size_t x) &#123;</span><br><span class="line">    // 通过算法得到16字节的倍数</span><br><span class="line">    return (x + size_t(15)) &amp; ~size_t(15);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里举例说明一下算法：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">// WORD_MASK = 7</span><br><span class="line">(x + 7) &amp; ~7;</span><br><span class="line">// x = 2, x + 7 = 9   -&gt; 0000 1001  ⬇️   x=10 17 = 0001 0001</span><br><span class="line">// 7 = 0000 0111 -&gt; !7 = 1111 1000  ⬇️        !7 = 1111 1000</span><br><span class="line">//              9 &amp; !7 = 0000 1000 = 8  (17 &amp; !7 = 0001 0000 = 16)</span><br></pre></td></tr></table></figure>
+
+<p>所以：<code>word_align</code>计算出来的都是8的倍数。<br>     <code>align16</code>计算出来的都是16的倍数。</p>
+<p>这里需要注意的是在ARM64下，内存开辟都是16个字节进行对齐的。所以计算的大小的都是16的倍数。</p>
+<h3 id="2-4-2-calloc"><a href="#2-4-2-calloc" class="headerlink" title="2.4.2 calloc"></a>2.4.2 calloc</h3><p>calloc申请开辟内存，返回地址指针。</p>
+<h3 id="2-4-3-obj-gt-initInstanceIsa"><a href="#2-4-3-obj-gt-initInstanceIsa" class="headerlink" title="2.4.3 obj-&gt;initInstanceIsa"></a>2.4.3 obj-&gt;initInstanceIsa</h3><p>生成的对象与class进行关联。通过isa指针。（isa之后会有说明，每一个类都有一个isa指针）。</p>
+<h3 id="2-4-4-总结"><a href="#2-4-4-总结" class="headerlink" title="2.4.4 总结"></a>2.4.4 总结</h3><p><img src="oc-alloc.png"></p>
+<p>这个图很好的说明了alloc的流程。</p>
+<h1 id="3-init"><a href="#3-init" class="headerlink" title="3. init"></a>3. init</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">- (id)init &#123;</span><br><span class="line">    return _objc_rootInit(self);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">id</span><br><span class="line">_objc_rootInit(id obj)</span><br><span class="line">&#123;</span><br><span class="line">    // In practice, it will be hard to rely on this function.</span><br><span class="line">    // Many classes do not properly chain -init calls.</span><br><span class="line">    return obj;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>init其实是工厂方法，从上面的代码可以看到，只是<code>return self</code>。这里有一个重要的点，就是大部分的实现都会交给子类去重新自定义init方法。</p>
+<h1 id="4-new"><a href="#4-new" class="headerlink" title="4. new"></a>4. new</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">+ (id)new &#123;</span><br><span class="line">    return [callAlloc(self, false/*checkNil*/) init];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们看到new的实现就是执行了，callAlloc()，然后执行了init操作。与实际上的<code>[[Person alloc] init]</code>并没有什么区别。</p>
+<p>但是看到有一些博客上说，还是有区别，因为init被重写之后，调用new可能会造成少些东西。这里不能苟同哈，所有的方法调用，在OC中都是objc_msgSend，会去寻找方法列表的。所以不会存在什么不同。</p>
+<h1 id="5-扩展知识"><a href="#5-扩展知识" class="headerlink" title="5. 扩展知识"></a>5. 扩展知识</h1><p>我们已经知道了，本身写一个Person类，需要开辟16个字节的空间，那需要申请多大内存空间是由什么因素决定的？<br>我们可以试一下分别添加一个属性，两个属性，试一下。自己动手试一下哈，看看2.4.1小结处返回的size是多少。其申请内存的大小其实是成员变量说了算。</p>
+<p>我这里添加了两个NSString属性，分别赋值A和B。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">(lldb) po p</span><br><span class="line">&lt;Person: 0x600002f86cc0&gt;</span><br><span class="line">(lldb) x p</span><br><span class="line">0x600002f86cc0: 60 76 e3 06 01 00 00 00 40 20 e3 06 01 00 00 00  `v......@ ......</span><br><span class="line">0x600002f86cd0: 60 20 e3 06 01 00 00 00 00 00 00 00 00 00 00 00  ` ..............</span><br><span class="line"></span><br><span class="line">(lldb) x/4gx p</span><br><span class="line">0x600002f86cc0: 0x0000000106e37660 0x0000000106e32040</span><br><span class="line">0x600002f86cd0: 0x0000000106e32060 0x0000000000000000</span><br><span class="line">(lldb) po 0x0000000106e37660    // isa指针，指向class</span><br><span class="line">Person</span><br><span class="line">(lldb) po 0x0000000106e32040</span><br><span class="line">A</span><br><span class="line">(lldb) po 0x0000000106e32060</span><br><span class="line">B</span><br></pre></td></tr></table></figure>
+
+<p>通过<code>x p</code>命令我们可以打印出<code>p</code>的内存地址。在源码的运行过程中，断点到size计算那里，打印出来size的大小是<code>32</code>个字节。也就是会空8个字节。</p>
+<p>如果声明了4个bool值，则4个bool值则会依次放在内存中，例如：0x0000000001010101，这个就涉及到字节的对齐以及iOS系统对属性的重排（内存优化）。</p>
+<h1 id="6-真正的alloc流程"><a href="#6-真正的alloc流程" class="headerlink" title="6. 真正的alloc流程"></a>6. 真正的alloc流程</h1><p>当我们执行<code>[Person alloc]</code>的时候，直接吧断点放在<code>callAlloc-&gt;objc_msgSend</code>，则会先执行消息转发。原因是系统内部会通过llvm的函数方法把<code>alloc</code>指向到<code>objc_alloc</code>。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">// Calls [cls alloc].</span><br><span class="line">id</span><br><span class="line">objc_alloc(Class cls)</span><br><span class="line">&#123;</span><br><span class="line">    return callAlloc(cls, true/*checkNil*/, false/*allocWithZone*/);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里先执行一次<code>callAlloc(cls, true, false)</code>，注意这里的参数。然后执行到calAlloc中。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">static ALWAYS_INLINE id</span><br><span class="line">callAlloc(Class cls, bool checkNil, bool allocWithZone=false)</span><br><span class="line">&#123;</span><br><span class="line">#if __OBJC2__</span><br><span class="line">    if (slowpath(checkNil &amp;&amp; !cls)) return nil;</span><br><span class="line">    if (fastpath(!cls-&gt;ISA()-&gt;hasCustomAWZ())) &#123;</span><br><span class="line">        return _objc_rootAllocWithZone(cls, nil); //1.</span><br><span class="line">    &#125;</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">    // No shortcuts available.</span><br><span class="line">    if (allocWithZone) &#123;</span><br><span class="line">        return ((id(*)(id, SEL, struct _NSZone *))objc_msgSend)(cls, @selector(allocWithZone:), nil); // 2.</span><br><span class="line">    &#125;</span><br><span class="line">    return ((id(*)(id, SEL))objc_msgSend)(cls, @selector(alloc)); // 3.</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>通过运行，我们发现会先执行第3个return。所执行的还是<code>alloc</code>，这时候执行的才是真正的alloc。然后就可以顺着第2节的内容继续了。</p>
+<p>如图，是完整的alloc会执行两次的流程图：</p>
+<p><img src="oc-alloc-2.jpg"></p>
+<h1 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h1><ul>
+<li>alloc的流程</li>
+<li>alloc的两次执行过程</li>
+<li>init</li>
+<li>new</li>
+</ul>
+<p>有什么不对的欢迎指正。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://liujiaboy.github.io/2021/04/14/%E9%80%86%E5%90%91/ARM%E6%B1%87%E7%BC%96-3/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1471,285 +2127,10 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://liujiaboy.github.io/2020/03/10/OC%E5%85%B6%E5%AE%83/Cocoapods-can-not-used/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="不会飞的小白">
-      <meta itemprop="description" content="一只iOS程序猿，会陆陆续续的把之前的一些总结搬到这里。">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="不会飞的小白">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/03/10/OC%E5%85%B6%E5%AE%83/Cocoapods-can-not-used/" class="post-title-link" itemprop="url">Mac升级造成cocoapods不可用</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-03-10 17:00:52" itemprop="dateCreated datePublished" datetime="2020-03-10T17:00:52+08:00">2020-03-10</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-12-24 17:13:15" itemprop="dateModified" datetime="2022-12-24T17:13:15+08:00">2022-12-24</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%9D%82%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">杂记</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>Mac系统升级之后，造成pods不可用，这里找到了解决的方案，前提是已经安装了cocoapods。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo gem update --system</span><br><span class="line">sudo gem install -n /usr/local/bin cocoapods -v1.5.3</span><br><span class="line">pod setup</span><br></pre></td></tr></table></figure>
-
-<p>第一步：更新gem。<br>第二步：安装指定的cocoapods版本，我这里指定的是1.5.3<br>第三步：更新pod</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://liujiaboy.github.io/2020/03/06/Github-Hexo/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="不会飞的小白">
-      <meta itemprop="description" content="一只iOS程序猿，会陆陆续续的把之前的一些总结搬到这里。">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="不会飞的小白">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/03/06/Github-Hexo/" class="post-title-link" itemprop="url">利用Github从零开始搭建Hexo博客，可迁移</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-03-06 22:07:06" itemprop="dateCreated datePublished" datetime="2020-03-06T22:07:06+08:00">2020-03-06</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-12-24 17:13:15" itemprop="dateModified" datetime="2022-12-24T17:13:15+08:00">2022-12-24</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%9D%82%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">杂记</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h2><ol>
-<li>安装Node.js，安装完成之后可以正常使用npm命令</li>
-<li>安装hexo，<code>npm install -g hexo-cli</code></li>
-</ol>
-<h2 id="创建步奏"><a href="#创建步奏" class="headerlink" title="创建步奏"></a>创建步奏</h2><ol>
-<li><p>创建git仓库，这里需要注意一下，GitPage会默认给分配二级域名，但是当仓库名与账号组织名称一样的情况下会省略掉二级域名，所以这里创建的名称为<code>&#123;yourname&#125;.github.io</code>，一定是以<code>github.io</code>结尾的。当然也可以创建其他的。只是在之后的配置上略有不同。</p>
-</li>
-<li><p>创建仓库时使用readme进行初始化。</p>
-</li>
-<li><p>同时新建一个hexo分支，并设置为默认分支。</p>
-</li>
-<li><p>使用<code>hexo init &#123;name&#125;</code>来初始化，或者新建一个<code>&#123;name&#125;</code>文件夹，在该文件夹下，执行<code>hexo init</code>命令是一样的效果。</p>
-</li>
-<li><p>依次执行</p>
-<p> <code>hexo clean</code>：clean<br> <code>hexo g</code>：generate，编译生成HTML代码，放在根目录下的public下。<br> <code>hexo s</code>：serve，提供serve命令把博客在本地运行起来，然后点击给出的链接就可以正常的使用了，如果链接打不开，可能是端口被占用，可以使用<code>hexo s -p 端口号</code>来指定端口号。</p>
-</li>
-<li><p>我这里是用了一个比较主流的主题<a target="_blank" rel="noopener" href="https://github.com/theme-next/hexo-theme-next">next</a>，以此为例，大家喜欢什么主题自己配置就好。</p>
- <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/theme-next/hexo-theme-next themes/next</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p> 依次执行命令进行配置就好了。随后在根目录下的<code>_config.yml</code>文件里配置： <code>next</code>。</p>
-</li>
-<li><p>删除主题下的git。这里有一点要注意的，在remote远程仓库之前，要把<b>themes文件夹</b>拉下来的主题，删除对应的<b>.git</b>文件删除掉。因为外部已经有了git，内部文件夹也有git时会出现问题。</p>
-</li>
-<li><p>配置根目录下的<code>_config.yml</code>文件</p>
- <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"># Site</span><br><span class="line">title: 不会飞的小白</span><br><span class="line">subtitle: &#x27;Stay Hungry, Stay Foolish&#x27;</span><br><span class="line">description: &#x27;&#x27;</span><br><span class="line">keywords: iOS, Swift, GitHub</span><br><span class="line">author: 不会飞的小白</span><br><span class="line">language: zh-CN</span><br><span class="line">timezone: &#x27;&#x27;</span><br></pre></td></tr></table></figure>
-<p> <b>Site里头的东西，根据自身想法看着写就行。有一个需要注意的是language，它的值是根据对应的Theme中的语言相对应的。</b></p>
- <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># URL</span><br><span class="line">## If your site is put in a subdirectory, set url as &#x27;http://yoursite.com/child&#x27; and root as &#x27;/child/&#x27;</span><br><span class="line">url: http://liujiaboy.github.io/</span><br><span class="line">root: /</span><br></pre></td></tr></table></figure>
-
-<p> <b>这里也需要注意。如果添加了搜索功能或者没有按照{name}.github.io这种命名方式创建的，这里的是必须要填写的。URL：为Github Page生成后对应的地址。root：为哪一级为根目录。</b></p>
- <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"># Extensions</span><br><span class="line">## Plugins: https://hexo.io/plugins/</span><br><span class="line">## Themes: https://hexo.io/themes/</span><br><span class="line">theme: next</span><br><span class="line">#主题</span><br><span class="line"></span><br><span class="line"># Deployment</span><br><span class="line">## Docs: https://hexo.io/docs/deployment.html</span><br><span class="line">deploy:</span><br><span class="line">  type: git</span><br><span class="line">  repo: https://github.com/liujiaboy/liujiaboy.github.io.git</span><br><span class="line">  branch: master</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p> <b>这里是对应的仓库地址，type一定是 git类型，分支可以选择，我这里是master。</b></p>
-</li>
-<li><p>上面的配置完成之后，再执行<b>步奏5</b>，本地预览没问题后，可以直接走发布。而发布也就是将生成的public文件中的内容push到deploy对应的仓库的分支中。</p>
-<p> <code>hexo d</code>:deploy: 发布。<br> 如果出现问题，执行<code>npm install hexo-deployer-git</code>安装git插件。</p>
-</li>
-<li><p>这个时候，可以在根目录下，remote远程仓库了。</p>
-<p><code>git remote add origin &lt;远程版本库URL&gt;</code>。这个时候本地默认就是之前创建的<code>hexo</code>分支。</p>
-<p>执行<code>git add .</code>, <code>git commit -m&quot;xxx&quot;</code>之后，在push之前，先把远程分支上的内容pull下来。这个时候执行</p>
-<p><code>git pull origin hexo</code></p>
-<p>如果出现问题，是因为本地有提交内容无法完成merge操作。将上面的执行命令改为</p>
-<p><code>git pull origin hexo --allow-unrelated-histories</code></p>
-<p>完成merge操作之后，执行<code>git push origin hexo</code>就可以了。</p>
-</li>
-</ol>
-<p>这个时候就已经完成了整体的库都放在Github上了。默认分支hexo存放所有的数据，master分支存放Github Page需要的数据。这就可以开心的玩耍了，也不用担心换设备迁移带来的问题了。</p>
-<h2 id="hexo迁移"><a href="#hexo迁移" class="headerlink" title="hexo迁移"></a>hexo迁移</h2><ol>
-<li><p>确保当前设备已经有Node.js, hexo环境。</p>
-</li>
-<li><p>从远程仓库clone到指定文件夹。</p>
-</li>
-<li><p>在该文件夹下，执行</p>
- <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo --save</span><br></pre></td></tr></table></figure>
-<p> 这一步是必须执行的，创建hexo环境，如果在本电脑的环境下已经执行过下面两个命令，就不用重复执行了。</p>
- <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">npm install</span><br><span class="line">npm install hexo-deployer-git</span><br></pre></td></tr></table></figure>
-
-<p> 这个时候就没必要执行<code>hexo init</code>了，因为当文件夹下有内容的时候跟本执行不了，会报错。</p>
-</li>
-<li><p>如果是多设备同时开发的话，那就需要用到 <code>git pull origin hexo</code>来拉取最新数据了，但是一般情况下不会出现，毕竟自己的博客不会涉及到多人协作。</p>
-</li>
-<li><p>就可以开心的玩耍了。</p>
-</li>
-</ol>
-<h2 id="相关配置"><a href="#相关配置" class="headerlink" title="相关配置"></a>相关配置</h2><h3 id="NexT主题添加theme-next-canvas-nest几何动效"><a href="#NexT主题添加theme-next-canvas-nest几何动效" class="headerlink" title="NexT主题添加theme-next-canvas-nest几何动效"></a>NexT主题添加theme-next-canvas-nest几何动效</h3><figure class="highlight obj-c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd themes/next</span><br><span class="line">git clone https:<span class="comment">//github.com/theme-next/theme-next-canvas-nest source/lib/canvas-nest</span></span><br></pre></td></tr></table></figure>
-<p>完成上诉操作之后，再next配置文件_config.yml中配置开启canvas_nest，如果没有相关配置，直接复制代码粘贴进去就行。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">canvas_nest:</span><br><span class="line">  enable: true</span><br><span class="line">  onmobile: true # display on mobile or not</span><br><span class="line">  color: &#x27;0,0,255&#x27; # RGB values, use &#x27;,&#x27; to separate</span><br><span class="line">  opacity: 0.5 # the opacity of line: 0~1</span><br><span class="line">  zIndex: -1 # z-index property of the background</span><br><span class="line">  count: 99 # the number of lines</span><br></pre></td></tr></table></figure>
-
-<h3 id="订阅-rss"><a href="#订阅-rss" class="headerlink" title="订阅 rss"></a>订阅 rss</h3><p>博客一般都需要rss订阅，如果要开启，需要安装一个插件。安装完成会自动生成相关配置。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo-generator-feed --save</span><br></pre></td></tr></table></figure>
-<p>生成的rss对应的文件public&#x2F;atom.xml</p>
-<h3 id="创建文章"><a href="#创建文章" class="headerlink" title="创建文章"></a>创建文章</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo new &lt;文章名&gt;</span><br></pre></td></tr></table></figure>
-<p>新建一篇文章，使用markdown的格式。在一篇文章的开头，会有如下必要信息</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">---</span><br><span class="line">title: 利用Github从零开始搭建Hexo博客，可迁移</span><br><span class="line">date: 2020-03-06 22:07:06</span><br><span class="line">tags:</span><br><span class="line">    - Github</span><br><span class="line">    - hexo</span><br><span class="line"></span><br><span class="line">categories:</span><br><span class="line">    - 杂记</span><br><span class="line">---</span><br></pre></td></tr></table></figure>
-<p>其中title， date是必填的，tags就是标签，可选， categories：分类，也是可选。在next主题下，默认会生成目录。</p>
-<h3 id="创建标签页-tags"><a href="#创建标签页-tags" class="headerlink" title="创建标签页 tags"></a>创建标签页 tags</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo new page tags</span><br></pre></td></tr></table></figure>
-
-<p>也会生成类似文章的md文件，可以在头部自行添加。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">title: tags</span><br><span class="line">date: 2020-03-06 22:07:06</span><br><span class="line">type: tags</span><br><span class="line">comments: false</span><br></pre></td></tr></table></figure>
-<p>type: 指定为tags<br>comments：是否允许评论</p>
-<h3 id="分类页-categories"><a href="#分类页-categories" class="headerlink" title="分类页 categories"></a>分类页 categories</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo new page categories</span><br></pre></td></tr></table></figure>
-<p>指定type：categories</p>
-<p>hexo默认会创建<code>archives</code>类型的文件，不会默认创建tags和categories，但是创建完成这两个之后，只需要指定type类型即可，不用在文件中添加其他数据。</p>
-<h3 id="搜索页"><a href="#搜索页" class="headerlink" title="搜索页"></a>搜索页</h3><p>很多情况下需要搜索全站内容，所以有必要支持搜索。需要安装插件支持</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo-generator-searchdb --save</span><br></pre></td></tr></table></figure>
-
-<p>很多主题对应的搜索都不一样，但是搜索的插件都是必须的。这里需要修改上面提到的URL并指定root文件路径。</p>
-<h3 id="404页面"><a href="#404页面" class="headerlink" title="404页面"></a>404页面</h3><p>当页面出错的时候，就很有必要的添加一个404的错误页面。直接在根目录下创建一个404.md文件即可。也有会接入腾讯公益404广告的，自行google吧。</p>
-<p>这个只针对绑定域名的有效，GitHub默认分配的是没有效果的。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">---</span><br><span class="line">title: 404 Not Found</span><br><span class="line">date: 2020-03-06 11:06:55</span><br><span class="line">---</span><br><span class="line">&lt;center&gt;</span><br><span class="line">    对不起，您访问的页面不存在或已被删除</span><br><span class="line">&lt;/center&gt;</span><br></pre></td></tr></table></figure>
-
-<h3 id="创建about"><a href="#创建about" class="headerlink" title="创建about"></a>创建about</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo new page about</span><br></pre></td></tr></table></figure>
-
-<h3 id="使用图片"><a href="#使用图片" class="headerlink" title="使用图片"></a>使用图片</h3><ol>
-<li><p>绝对路径引用<br> 当Hexo项目中只用到少量图片时，可以将图片统一放在source&#x2F;images文件夹中，通过markdown语法访问它们。</p>
- <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">source/images/image.jpg</span><br><span class="line">// 这样就可以了</span><br><span class="line">![](/images/image.jpg)</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>相对路径引用<br> 图片除了可以放在统一的images文件夹中，还可以放在文章自己的目录中。文章的目录可以通过配置_config.yml来生成。</p>
- <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">post_asset_folder: true</span><br></pre></td></tr></table></figure>
-<p> 修改之后，执行命令<code>$ hexo new post_name</code>，在source&#x2F;_posts中会生成文章post_name.md的同时，会生成文章同名的文件夹post_name。将图片资源放在post_name中，文章就可以使用相对路径引用图片资源了。</p>
- <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">![](image.jpg)</span><br></pre></td></tr></table></figure>
-
-<p> 这个时候，可能还是不管用。那就需要下载插件了。</p>
-<ol>
-<li>在当前博客根目录下，执行<code>npm install hexo-asset-image --save</code>。</li>
-<li>找到<code>node_modules --&gt; hexo-asset-image --&gt; index.js</code>文件，找到58行代码：<code>$(this).attr(&#39;src&#39;, config.root + link + src);</code></li>
-<li>修改为：<code>$(this).attr(&#39;src&#39;, src);</code></li>
-</ol>
-</li>
-</ol>
-<h1 id="遇到的问题"><a href="#遇到的问题" class="headerlink" title="遇到的问题"></a>遇到的问题</h1><h2 id="1-默认buffer太小，push、pull失败"><a href="#1-默认buffer太小，push、pull失败" class="headerlink" title="1. 默认buffer太小，push、pull失败"></a>1. 默认buffer太小，push、pull失败</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fatal: unable to access &#x27;https://github.com/liujiaboy/liujiaboy.github.io.git/&#x27;: LibreSSL SSL_read: SSL_ERROR_SYSCALL, errno 60</span><br></pre></td></tr></table></figure>
-
-<p>解决方案：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git config --global http.postBuffer 1048576000</span><br></pre></td></tr></table></figure>
-
-<p>这中问题的原因是，大文件造成的，curl的postBuffer默认值太小，增大缓存配置就好了。</p>
-<h2 id="Error-Spawn-failed"><a href="#Error-Spawn-failed" class="headerlink" title="Error: Spawn failed"></a>Error: Spawn failed</h2><ol>
-<li>删除.deploy_git文件夹;</li>
-<li>输入git config –global core.autocrlf false</li>
-<li>然后，依次执行：<ol>
-<li>hexo clean</li>
-<li>hexo g</li>
-<li>hexo d</li>
-</ol>
-</li>
-</ol>
-<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>感谢大佬们做的总结，不一一列举了。感谢<br><a target="_blank" rel="noopener" href="https://github.com/theme-next/hexo-theme-next">next: Github</a></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/4/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><span class="page-number current">5</span>
+    <a class="extend prev" rel="prev" href="/page/4/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><span class="page-number current">5</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/6/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1817,7 +2198,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">49</span>
+          <span class="site-state-item-count">52</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>

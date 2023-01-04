@@ -164,6 +164,206 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://liujiaboy.github.io/2021/09/15/SoftWare/coderunner/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="不会飞的小白">
+      <meta itemprop="description" content="一只iOS程序猿，会陆陆续续的把之前的一些总结搬到这里。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="不会飞的小白">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/09/15/SoftWare/coderunner/" class="post-title-link" itemprop="url">coderunner使用问题</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-09-15 19:01:29" itemprop="dateCreated datePublished" datetime="2021-09-15T19:01:29+08:00">2021-09-15</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-12-24 17:13:15" itemprop="dateModified" datetime="2022-12-24T17:13:15+08:00">2022-12-24</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>CodeRunner本身是一个收费软件，功能强大，好处就不说了。在一些破解网站上可以找到破解版的，断网输入对应的激活码就能破解成功。</p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>每次重新打开，都需要重新破解。</p>
+<h2 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h2><p>猜想的是每次打开CodeRunner时都会向其主站发送消息，查看是否激活，这里就是通过直接断开链接的方式来处理。</p>
+<h3 id="step1"><a href="#step1" class="headerlink" title="step1"></a>step1</h3><p>Mac系统下打开<code>/private/etc/</code>文件，hosts是文本。</p>
+<h3 id="step2"><a href="#step2" class="headerlink" title="step2"></a>step2</h3><p>在hosts文件中，增加一行：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># CodeRunner App</span><br><span class="line">127.0.0.1 coderunnerapp.com</span><br></pre></td></tr></table></figure>
+
+<p>这样就可以验证成功了，不需要每次都重新激活。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://liujiaboy.github.io/2021/09/13/%E9%80%86%E5%90%91/nx-8-logos/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="不会飞的小白">
+      <meta itemprop="description" content="一只iOS程序猿，会陆陆续续的把之前的一些总结搬到这里。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="不会飞的小白">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/09/13/%E9%80%86%E5%90%91/nx-8-logos/" class="post-title-link" itemprop="url">nx-8-logos</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-09-13 16:27:26" itemprop="dateCreated datePublished" datetime="2021-09-13T16:27:26+08:00">2021-09-13</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-12-24 17:13:15" itemprop="dateModified" datetime="2022-12-24T17:13:15+08:00">2022-12-24</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://liujiaboy.github.io/2021/09/13/%E9%80%86%E5%90%91/nx-8-lldb/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="不会飞的小白">
+      <meta itemprop="description" content="一只iOS程序猿，会陆陆续续的把之前的一些总结搬到这里。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="不会飞的小白">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/09/13/%E9%80%86%E5%90%91/nx-8-lldb/" class="post-title-link" itemprop="url">nx-8-lldb</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-09-13 16:11:20" itemprop="dateCreated datePublished" datetime="2021-09-13T16:11:20+08:00">2021-09-13</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-12-24 17:13:15" itemprop="dateModified" datetime="2022-12-24T17:13:15+08:00">2022-12-24</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://liujiaboy.github.io/2021/09/13/%E9%80%86%E5%90%91/nx-7-hook/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1384,570 +1584,10 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://liujiaboy.github.io/2021/05/27/OC%E5%8E%9F%E7%90%86/%E5%90%AF%E5%8A%A8%E4%BC%98%E5%8C%96/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="不会飞的小白">
-      <meta itemprop="description" content="一只iOS程序猿，会陆陆续续的把之前的一些总结搬到这里。">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="不会飞的小白">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/05/27/OC%E5%8E%9F%E7%90%86/%E5%90%AF%E5%8A%A8%E4%BC%98%E5%8C%96/" class="post-title-link" itemprop="url">启动优化</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2021-05-27 21:35:54" itemprop="dateCreated datePublished" datetime="2021-05-27T21:35:54+08:00">2021-05-27</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-12-24 17:13:15" itemprop="dateModified" datetime="2022-12-24T17:13:15+08:00">2022-12-24</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/OC%E5%8E%9F%E7%90%86/" itemprop="url" rel="index"><span itemprop="name">OC原理</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h1><h2 id="虚拟内存-amp-物理内存"><a href="#虚拟内存-amp-物理内存" class="headerlink" title="虚拟内存 &amp; 物理内存"></a>虚拟内存 &amp; 物理内存</h2><p>我们在进程和物理内存之间增加一个中间层，这个中间层就是所谓的虚拟内存，主要用于解决当多个进程同时存在时，对物理内存的管理。提高了CPU的利用率，使多个进程可以同时、按需加载。</p>
-<p>所以虚拟内存其本质就是一张虚拟地址和物理地址对应关系的映射表。</p>
-<ul>
-<li>每个进程都有一个独立的虚拟内存，从0开始，大小是4G固定的，每个虚拟内存又会划分为一个一个的页（page的大小在iOS中是16K，其他的是4K），每次加载都是以页为单位加载的，进程间是无法互相访问的，保证了进程间数据的安全性。</li>
-<li>一个进程中，只有部分功能是活跃的，所以只需要将进程中活跃的页放入物理内存，避免物理内存的浪费。</li>
-<li>当CPU需要访问数据时，首先是访问虚拟内存，然后通过虚拟内存去寻找真正的物理内存，然后对相应的物理地址进行访问</li>
-<li>如果在访问时，虚拟地址的内容未加载到物理内存，会发生缺页异常（pagefault），此时需要先将数据载入到物理内存（这个过程是很快的），然后再读取。这样就避免了内存浪费</li>
-</ul>
-<p><img src="ram_map.jpg"></p>
-<h2 id="ASLR"><a href="#ASLR" class="headerlink" title="ASLR"></a>ASLR</h2><p>虚拟内存的起始地址与大小都是固定的，这意味着，当我们访问时，其数据的地址也是固定的，这会导致我们的数据非常容易被破解，为了解决这个问题，所以苹果为了解决这个问题，在iOS4.3开始引入了ASLR技术。</p>
-<p>ASLR的概念：(Address Space Layout Randomization ) 地址空间配置随机加载，是一种针对缓冲区溢出的安全保护技术，通过对堆、栈、共享库映射等线性区布局的随机化，通过增加攻击者预测目的地址的难度，防止攻击者直接定位攻击代码位置，达到阻止溢出攻击的目的的一种技术。</p>
-<p>其目的的通过利用随机方式配置数据地址空间，使某些敏感数据（例如APP登录注册、支付相关代码）配置到一个恶意程序无法事先获知的地址，令攻击者难以进行攻击。</p>
-<p>由于ASLR的存在，导致可执行文件和动态链接库在虚拟内存中的加载地址每次启动都不固定，所以需要在编译时来修复镜像中的资源指针，来指向正确的地址。即<code>正确的内存地址 = ASLR地址 + 偏移值</code></p>
-<h2 id="可执行文件"><a href="#可执行文件" class="headerlink" title="可执行文件"></a>可执行文件</h2><p>通用二进制文件是苹果公司提出的一种新的二进制文件的存储结构，可以同时存储多种架构的二进制指令，使CPU在读取该二进制文件时可以自动检测并选用合适的架构，以最理想的方式进行读取。</p>
-<p>由于通用二进制文件会同时存储多种架构，所以比单一架构的二进制文件大很多，会占用大量的磁盘空间，但由于系统会自动选择最合适的，不相关的架构代码不会占用内存空间，且执行效率高了。</p>
-<p>Mach-O文件是Mach Object文件格式的缩写，它是用于可执行文件、动态库、目标代码的文件格式。作为a.out格式的替代，Mach-O格式提供了更强的扩展性，以及更快的符号表信息访问速度。经常使用<code>MachOView</code>工具来查看Mach-O文件。</p>
-<h3 id="Mach-O的组成"><a href="#Mach-O的组成" class="headerlink" title="Mach-O的组成"></a>Mach-O的组成</h3><ul>
-<li>Header：主要是Mach-O的cpu架构，文件类型以及加载命令等信息</li>
-<li>Load Commands：描述了文件中数据的具体组织结构，不同的数据类型使用不同的加载命令表示。（通常为framework、dylib的加载）</li>
-<li>Data：数据区域<ul>
-<li>__TEXT：只读，包括函数、静态变量等</li>
-<li>__DATA：读写，可变的全局变量等</li>
-<li>__LINKEDIT：方法、变量</li>
-</ul>
-</li>
-</ul>
-<h1 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h1><p>启动的过程一般是指从用户点击app图标开始到<code>[AppDelegate didFinishLaunching</code>方法执行完成为止，其中，启动也分为冷启动和热启动</p>
-<ul>
-<li>冷启动：内存中不包含app相关数据的启动，一般我们可以通过重启手机来实现冷启动</li>
-<li>热启动：是指杀掉app进程后，数据仍然存在时的启动</li>
-</ul>
-<p>而我们这里所说的启动优化，一般是指冷启动情况下的，这种情况下的启动主要分为两部分：</p>
-<ul>
-<li>T1 ：pre-main阶段，即main函数之前，操作系统加载App可执行文件到内存，执行一系列的加载、链接等工作，简单来说，就是dyld加载过程。</li>
-<li>T2：main函数之后，即从main函数开始，到Appdelegate 的didFinishLaunching方法执行完成为止，主要是构建第一个界面，并完成渲染。</li>
-</ul>
-<p>所以，T1+T2的过程 就是 从用户点击App图标到用户能看到app主界面的过程，即需要启动优化的部分。</p>
-<h2 id="pre-main阶段"><a href="#pre-main阶段" class="headerlink" title="pre-main阶段"></a>pre-main阶段</h2><p>pre-main阶段的启动时间其实就是dyld加载过程的时间。</p>
-<p>针对main函数之前的启动时间，苹果提供了内建的测量方法，在<code>Edit Scheme -&gt; Run -&gt; Arguments -&gt; Environment Variables</code>点击【+】添加环境变量 <code>DYLD_PRINT_STATISTICS 设为 1</code>，然后运行，就可以直接打印相关数据。</p>
-<p><img src="pre_main_time.jpg"></p>
-<p>pre-main阶段一共耗时1.7s。</p>
-<ul>
-<li><code>dylib loading time</code>：主要是加载动态库，用时320.32ms</li>
-<li><code>rebase/binding time</code>：偏移修正、符号绑定耗时，耗时160.52ms<ul>
-<li><code>rebase</code>：偏移修正，任何一个app生成的二进制文件，在二进制文件内部所有的方法、函数调用，都有一个地址，这个地址是在当前二进制文件中的偏移地址。在APP运行是，每次系统都会随机分配一个ASLR（Address Space Layout Randomization，地址空间布局随机化）地址值，然后在加上偏移值就是运行时确定的内存地址。</li>
-<li><code>binding</code>：绑定，例如NSLog方法，在编译时期生成的mach-o文件中，会创建一个符号！NSLog（目前指向一个随机的地址），然后在运行时（从磁盘加载到内存中，是一个镜像文件），会将真正的地址给符号（即在内存中将地址与符号进行绑定，是dyld做的，也称为动态库符号绑定），一句话概括：绑定就是给符号赋值的过程</li>
-</ul>
-</li>
-<li><code>ObjC setup time</code>：OC类注册的耗时，OC类越多，越耗时</li>
-<li><code>initializer time</code>：执行load和构造函数的耗时</li>
-</ul>
-<h3 id="pre-main优化建议"><a href="#pre-main优化建议" class="headerlink" title="pre-main优化建议"></a>pre-main优化建议</h3><ol>
-<li>尽量减少外部动态库的使用。苹果建议自定义动态库的数量最好不要超过6个，超过6个则合并动态库。</li>
-<li>减少OC类</li>
-<li>讲不要的<code>+load</code>方法去掉，延迟到<code>+initialize</code>中</li>
-<li>尽量减少C++函数</li>
-</ol>
-<h2 id="main-阶段"><a href="#main-阶段" class="headerlink" title="main 阶段"></a>main 阶段</h2><p>在main函数之后的<code>didFinishLaunching</code>方法中，主要是执行了各种业务，有很多并不是必须在这里立即执行的，这种业务我们可以采取延迟加载，防止影响启动时间。</p>
-<p>在<code>didFinishLaunching</code>中，主要做一下几件事情：</p>
-<ol>
-<li>初始化第三方sdk</li>
-<li>app运行环境配置</li>
-<li>自定义工具的初始化等</li>
-</ol>
-<h3 id="main-阶段的优化"><a href="#main-阶段的优化" class="headerlink" title="main 阶段的优化"></a>main 阶段的优化</h3><ol>
-<li>减少启动时需要初始化的sdk等，使用懒加载或者多线程处理。</li>
-<li>优化代码，去除非必须的代码逻辑。</li>
-<li>首页UI加载最后使用纯代码，避免使用xib和storybord（需要转换，更耗时）。</li>
-<li>删除废弃的类、方法。</li>
-</ol>
-<h1 id="大招-二进制重排"><a href="#大招-二进制重排" class="headerlink" title="大招 二进制重排"></a>大招 二进制重排</h1><p><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s?__biz=MzI1MzYzMjE0MQ==&mid=2247485101&idx=1&sn=abbbb6da1aba37a04047fc210363bcc9">抖音研发实践：基于二进制文件重排的解决方案 APP启动速度提升超15%</a></p>
-<h3 id="System-Trace"><a href="#System-Trace" class="headerlink" title="System Trace"></a>System Trace</h3><p>基于Page Fault，App在冷启动过程中，会有大量的类、分类、三方等需要加载和执行，此时的产生的Page Fault所带来的的耗时是很大的。我们使用System Trace看下，在启动阶段的Page Fault的堆栈。</p>
-<p>打开<code>Instruments</code>工具，选则<code>System Trace</code>。启动之后，在第一个界面出来之后，直接停掉。</p>
-<p><img src="system_trace.jpg"></p>
-<p>可以看到PageFault有2800次。</p>
-<p>所以二进制重排要怎么重排呢？</p>
-<h2 id="二进制重排原理"><a href="#二进制重排原理" class="headerlink" title="二进制重排原理"></a>二进制重排原理</h2><p>在虚拟内存部分，我们知道，当进程访问一个虚拟内存page，而对应的物理内存不存在时，会触发缺页中断（Page Fault），因此阻塞进程。此时就需要先加载数据到物理内存，然后再继续访问。这个对性能是有一定影响的。</p>
-<p>所以我们就需要把先优先调用的方法等按照一定的顺序进行排列，这样就避免了<code>Page Falut</code>多次执行的情况。</p>
-<p><img src="%E4%BA%8C%E8%BF%9B%E5%88%B6%E9%87%8D%E6%8E%92.jpg"></p>
-<p>可以查看上面抖音的文章，通过hook，大部分的方法都可以拿到，但是block、c++、initialize等方法是没有办法hook到，最后他们提到了clang插庄。</p>
-<p>我们写一个Demo，来看一下编译的时期的顺序以及如何进行clang插庄。</p>
-<p>在<code>target -&gt; Build Setting -&gt; Write Link Map File</code>设置为YES，可以查看linkMap文件代码的执行顺序。</p>
-<h2 id="步奏"><a href="#步奏" class="headerlink" title="步奏"></a>步奏</h2><h3 id="添加编译参数"><a href="#添加编译参数" class="headerlink" title="添加编译参数"></a>添加编译参数</h3><p>在<code>Target -&gt; Build Setting -&gt; Custom Complier Flags -&gt; Other C Flags</code> 添加<br><code>-fsanitize-coverage=func,trace-pc-guard</code> 这个参数。此时编译会报错。</p>
-<p>如果存在swift混编，还需要在 <code>Other Swift Flags</code> 中加入<code>-sanitize-coverage=func</code> 和 <code>-sanitize=undefined</code>。</p>
-<h3 id="导入头文件，添加代码"><a href="#导入头文件，添加代码" class="headerlink" title="导入头文件，添加代码"></a>导入头文件，添加代码</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdint.h&gt;</span><br><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;sanitizer/coverage_interface.h&gt;</span><br><span class="line">#import &lt;dlfcn.h&gt;</span><br><span class="line">#import &lt;libkern/OSAtomic.h&gt;</span><br><span class="line"></span><br><span class="line">//原子队列，其目的是保证写入安全，线程安全</span><br><span class="line">static  OSQueueHead queue = OS_ATOMIC_QUEUE_INIT;</span><br><span class="line">//定义符号结构体，以链表的形式</span><br><span class="line">typedef struct &#123;</span><br><span class="line">    void *pc;</span><br><span class="line">    void *next;</span><br><span class="line">&#125; ALNode;</span><br><span class="line"></span><br><span class="line">void __sanitizer_cov_trace_pc_guard_init(uint32_t *start,</span><br><span class="line">                                                    uint32_t *stop) &#123;</span><br><span class="line">  static uint64_t N;  // Counter for the guards.</span><br><span class="line">  if (start == stop || *start) return;  // Initialize only once.</span><br><span class="line">  printf(&quot;INIT: %p %p\n&quot;, start, stop);</span><br><span class="line">  </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void __sanitizer_cov_trace_pc_guard(uint32_t *guard) &#123;</span><br><span class="line">    // 这个会拦截load方法，所以把这个注释掉</span><br><span class="line">    // if (!*guard) return;</span><br><span class="line">    //当前函数返回到上一个调用的地址，可以打断点通过lldb调试，使用bt命令，可以看到pc的值与0、1的关系。</span><br><span class="line">    void *PC = __builtin_return_address(0);</span><br><span class="line">    //创建结构体</span><br><span class="line">    SYNode * node = malloc(sizeof(SYNode));</span><br><span class="line">    // node赋值</span><br><span class="line">    *node = (SYNode)&#123;PC,NULL&#125;;</span><br><span class="line">    </span><br><span class="line">    // 加入结构!</span><br><span class="line">    OSAtomicEnqueue(&amp;symbolList, node, offsetof(SYNode, next));</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>当第一个页面加载完成，或者didFinishLaunching之后，调用输出，生成order_file。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">- (void)createOrderFile &#123;</span><br><span class="line">NSMutableArray&lt;NSString *&gt; * symbolNames = [NSMutableArray array];</span><br><span class="line">    while (true) &#123;</span><br><span class="line">        //offsetof 就是针对某个结构体找到某个属性相对这个结构体的偏移量</span><br><span class="line">        SymbolNode * node = OSAtomicDequeue(&amp;symboList, offsetof(SymbolNode, next));</span><br><span class="line">        if (node == NULL) break;</span><br><span class="line">        Dl_info info;</span><br><span class="line">        dladdr(node-&gt;pc, &amp;info);</span><br><span class="line">        </span><br><span class="line">        NSString * name = @(info.dli_sname);</span><br><span class="line">        </span><br><span class="line">        // 添加不是OC方法，需要添加下划线</span><br><span class="line">        BOOL isObjc = [name hasPrefix:@&quot;+[&quot;] || [name hasPrefix:@&quot;-[&quot;];</span><br><span class="line">        NSString * symbolName = isObjc ? name : [@&quot;_&quot; stringByAppendingString:name];</span><br><span class="line">        </span><br><span class="line">        //去重</span><br><span class="line">        if (![symbolNames containsObject:symbolName]) &#123;</span><br><span class="line">            [symbolNames addObject:symbolName];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    //取反</span><br><span class="line">    NSArray * symbolAry = [[symbolNames reverseObjectEnumerator] allObjects];</span><br><span class="line">    NSLog(@&quot;%@&quot;,symbolAry);</span><br><span class="line">    </span><br><span class="line">    //将结果写入到文件</span><br><span class="line">    NSString * funcString = [symbolAry componentsJoinedByString:@&quot;\n&quot;];</span><br><span class="line">    NSString * filePath = [NSTemporaryDirectory() stringByAppendingPathComponent:@&quot;lb.order&quot;];</span><br><span class="line">    NSData * fileContents = [funcString dataUsingEncoding:NSUTF8StringEncoding];</span><br><span class="line">    BOOL result = [[NSFileManager defaultManager] createFileAtPath:filePath contents:fileContents attributes:nil];</span><br><span class="line">    if (result) &#123;</span><br><span class="line">        NSLog(@&quot;%@&quot;,filePath);</span><br><span class="line">    &#125;else&#123;</span><br><span class="line">        NSLog(@&quot;文件写入出错&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="链接order-file"><a href="#链接order-file" class="headerlink" title="链接order file"></a>链接order file</h3><p>在<code>target -&gt; build setting -&gt; order file</code> 导入我们生成的<code>.order</code>文件。</p>
-<h1 id="引用："><a href="#引用：" class="headerlink" title="引用："></a>引用：</h1><p><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s?__biz=MzI1MzYzMjE0MQ==&mid=2247485101&idx=1&sn=abbbb6da1aba37a04047fc210363bcc9">抖音研发实践：基于二进制文件重排的解决方案 APP启动速度提升超15%</a></p>
-<p><img src="https://juejin.cn/post/6844904130406793224" alt="iOS 优化篇 - 启动优化之Clang插桩实现二进制重排"><br><img src="https://www.jianshu.com/p/bae1e9bddcc9" alt="iOS优化篇之App启动时间优化"></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://liujiaboy.github.io/2021/05/25/%E9%80%86%E5%90%91/nx-4-%E4%BB%A3%E7%A0%81%E6%B3%A8%E5%85%A5/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="不会飞的小白">
-      <meta itemprop="description" content="一只iOS程序猿，会陆陆续续的把之前的一些总结搬到这里。">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="不会飞的小白">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/05/25/%E9%80%86%E5%90%91/nx-4-%E4%BB%A3%E7%A0%81%E6%B3%A8%E5%85%A5/" class="post-title-link" itemprop="url">代码注入</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2021-05-25 13:55:24" itemprop="dateCreated datePublished" datetime="2021-05-25T13:55:24+08:00">2021-05-25</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-12-24 17:13:15" itemprop="dateModified" datetime="2022-12-24T17:13:15+08:00">2022-12-24</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E9%80%86%E5%90%91/" itemprop="url" rel="index"><span itemprop="name">逆向</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="代码注入"><a href="#代码注入" class="headerlink" title="代码注入"></a>代码注入</h1><p>我们按照上一章（应用重签名）的逻辑，先把程序跑起来。</p>
-<p>然后再<code>.app</code>中显示包内容，查看可执行文件。这里我们使用<code>MachOView</code>工具进行分析，这里我们主要查看的是<code>Load Commands</code>。</p>
-<p><img src="MachOView.jpg"></p>
-<p><code>Load Commands</code>：加载命令。</p>
-<p>在<code>Load Commands</code>里头，可以看到所有的Framework。点击每一个Framework可以看到这个Framework的执行路径。</p>
-<h2 id="Framework注入"><a href="#Framework注入" class="headerlink" title="Framework注入"></a>Framework注入</h2><h3 id="创建动态库"><a href="#创建动态库" class="headerlink" title="创建动态库"></a>创建动态库</h3><ol>
-<li><p>在工程中选择<code>WeChat.xcodeproj</code>，然后在工程配置页面，选择左下角的加号”+“ -&gt; ”iOS“ -&gt; search ”Framework“。</p>
-<p> <img src="add_framework.jpg"></p>
-</li>
-<li><p>创建一个类，添加<code>+(void)load</code>方法，打印一串字符串。</p>
- <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">+ (void)load &#123;</span><br><span class="line">    NSLog(@&quot;\n\n hock success...\n\n&quot;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-</li>
-<li><p>重新运行工程（使用重签名）。这个时候我们的<code>NSLog</code>并不会执行，因为并没有链接到可执行文件。</p>
-<p> 然后在项目工程<code>project</code> -&gt; <code>show in finder</code> -&gt; 找到对应的APP -&gt; 显示包内容 -&gt; Framework文件夹。可以看到我们添加的ALHook.framework。</p>
-<p> 然后重新用<code>MachOView</code>工具打开可以执行文件（需要这个可执行文件），看看是否有链接ALHook.framework。这里是没有的。</p>
-</li>
-</ol>
-<h3 id="链接动态库"><a href="#链接动态库" class="headerlink" title="链接动态库"></a>链接动态库</h3><p>通过<code>yololib</code>工具修改Mach-O文件，目的就是链接我们添加的动态库。</p>
-<p>把<code>yololib</code>工具放到我们的工程文件中，与<code>appSign.sh</code>文件同级。然后把上面debug的可执行文件也同样复制过来。</p>
-<p>然后执行下面的命令。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ ./yololib [可执行文件] Frameworks/[添加的动态库].framework/[添加的动态库的可执行文件]</span><br><span class="line"></span><br><span class="line">$ ./yololib WeChat Frameworks/ALHook.framework/ALHook</span><br></pre></td></tr></table></figure>
-
-<p>执行完命令之后，重新使用<code>MachOView</code>工具打开可执行文件。</p>
-<p><img src="MachO_ALHook.jpg"></p>
-<h3 id="重新压缩，打包ipa文件"><a href="#重新压缩，打包ipa文件" class="headerlink" title="重新压缩，打包ipa文件"></a>重新压缩，打包ipa文件</h3><ol>
-<li>重新解压<code>8.0.2.ipa</code>文件。</li>
-<li>替换<code>Payload/xx.app -&gt; 显示包内容</code>中的可执行文件，把上一部链接好的可执行文件做替换。</li>
-<li>重新压缩 <code>$ zip -ry WeChat.ipa Payload/</code>。</li>
-<li>把压缩后的ipa包重新放在工程目录APP文件夹下。</li>
-</ol>
-<h3 id="重新运行"><a href="#重新运行" class="headerlink" title="重新运行"></a>重新运行</h3><p>这个时候重新运行，就可以看到我们的NSLog了。</p>
-<p><img src="hook_success.jpg"></p>
-<h2 id="dylib注入"><a href="#dylib注入" class="headerlink" title="dylib注入"></a>dylib注入</h2><p>我们按照上一章（应用重签名）的逻辑，先把程序跑起来。</p>
-<h3 id="创建dylib"><a href="#创建dylib" class="headerlink" title="创建dylib"></a>创建dylib</h3><p>然后选择target -&gt; “+” -&gt; “macOs” -&gt; 搜索”library” -&gt; 选择”Library”，命名为”ALHook”。步奏与创建动态库类似。</p>
-<h3 id="修改ALHook"><a href="#修改ALHook" class="headerlink" title="修改ALHook"></a>修改ALHook</h3><p>在<code>ALHook</code> -&gt; “Build Setting”中配置</p>
-<ol>
-<li>base sdk改为 <code>iOS</code></li>
-<li>code signing identify 改为 <code>iOS Developer</code></li>
-</ol>
-<p>然后再文件中添加load方法，注入代码输出一串文本。</p>
-<h3 id="添加依赖-Copy-Files"><a href="#添加依赖-Copy-Files" class="headerlink" title="添加依赖 Copy Files"></a>添加依赖 Copy Files</h3><p>在当前工程中拷贝dylib。</p>
-<p><img src="add_dylib.jpg"></p>
-<p>这里需要注意的是，<code>run script</code>的顺序一定是在<code>Copy Files</code>上的，因为如果顺序反了，会导致最后才执行脚本。则把copy的dylib文件给重新覆盖掉，因为脚本文件执行的是app替换。</p>
-<h3 id="使用脚本执行"><a href="#使用脚本执行" class="headerlink" title="使用脚本执行"></a>使用脚本执行</h3><p>在上方动态库中我们是手动使用<code>/.yololib</code>工具进行链接的，这里我们使用脚本，在原来的<code>appSigh.sh</code>文件末尾添加一句代码：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># 链接手动添加的库，做代码注入</span><br><span class="line">./yololib &quot;$TARGET_APP_PATH/$APP_BINARY&quot; &quot;Frameworks/libALHook.dylib&quot;</span><br></pre></td></tr></table></figure>
-
-<h3 id="直接运行"><a href="#直接运行" class="headerlink" title="直接运行"></a>直接运行</h3><p>直接运行代码，可以在Framework中看到<code>libALHook.dylib</code>文件。</p>
-<p>运行成功之后，可以看到我们的输出。</p>
-<h1 id="代码注入流程总结"><a href="#代码注入流程总结" class="headerlink" title="代码注入流程总结"></a>代码注入流程总结</h1><ul>
-<li>Framework手动注入，是为了熟悉原理，真正操作的时候我们使用的都是脚本文件，从繁到简。</li>
-<li>Framework流程：<ol>
-<li>Xcode新建Framework。</li>
-<li>通过yololib工具是Mach-O文件链接Framework文件。<ul>
-<li>所有的Framework加载都是由DYLD加载进入内存被执行的</li>
-<li>注入成功的库路径会写入到Mach-O文件的<code>LC_LOAD_DYLIB</code>字段中</li>
-</ul>
-</li>
-</ol>
-</li>
-<li>dylib注入流程：<ol>
-<li>Xcode新建<code>dylib</code>库，然后修改”Build Setting”<ol>
-<li>base sdk改为 <code>iOS</code></li>
-<li>code signing identify 改为 <code>iOS Developer</code></li>
-</ol>
-</li>
-<li>添加依赖，<code>Copy Files</code>将dylib文件拷贝到APP包中</li>
-<li>通过yololib工具链接dylib文件。</li>
-</ol>
-</li>
-</ul>
-<p>这里需要注意的是，顺序不能错误，如下图：</p>
-<p><img src="script_framework.jpg"></p>
-<h1 id="真正的代码注入"><a href="#真正的代码注入" class="headerlink" title="真正的代码注入"></a>真正的代码注入</h1><p>我们使用Framework的形式进行注入。因为比较方便，dylib需要修改一些东西。</p>
-<p>这里也直接使用dylib中使用脚本的方式进行注入。</p>
-<h2 id="Debug-View-Hierarchy调试"><a href="#Debug-View-Hierarchy调试" class="headerlink" title="Debug View Hierarchy调试"></a>Debug View Hierarchy调试</h2><p><img src="hook_register.jpg"></p>
-<p>我们看一下图片上的内容，通过<code>Debug View Hierarchy</code>的方式，先获取到我们想要的东西。</p>
-<p>这里可以看到注册按钮的相关信息：</p>
-<ol>
-<li>是一个<code>FixTitleColorButton</code>的类，应该是封装的Button</li>
-<li>指定的target是<code>WCAccountLoginControlLogic</code>。</li>
-<li>相应的action是<code>onFirstViewRegister</code>。</li>
-</ol>
-<p>能拿到这些信息，就可以直接通过runtime的方法替换就可以直接修改了。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">+ (void)load &#123;</span><br><span class="line">    Method oldRegister = class_getInstanceMethod(objc_getClass(&quot;WCAccountLoginControlLogic&quot;), @selector(onFirstViewRegister));</span><br><span class="line">    </span><br><span class="line">    Method newRegister = class_getInstanceMethod([self class], @selector(new_register));</span><br><span class="line">    method_exchangeImplementations(oldRegister, newRegister);</span><br><span class="line">    </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)new_register &#123;</span><br><span class="line">    NSLog(@&quot;new register...&quot;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>这就把原来的注册方法给替换掉了，点击注册会输出者一串字符。</p>
-<p>接下来我们要在点击登录时，拿到用户密码，并且不影响正常的登录流程。</p>
-<h2 id="class-dump工具"><a href="#class-dump工具" class="headerlink" title="class-dump工具"></a>class-dump工具</h2><p>如果我们通过使用上面的方式，可以轻松的拿到用户名和密码，但是这是通过响应链一层层的去找的，所以也就有了这么个工具，可以直接输出OC中的类、方法、属性等内容。</p>
-<p>把<code>WeChat</code>的可执行文件拷贝出来，和<code>class-dump</code>工具放在相同目录中(也可以是其他目录)，然后执行下述命令，可以输出所有的header文件。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ./class-dump -H WeChat -o ./headers/</span><br></pre></td></tr></table></figure>
-
-<p>然后我们通过<code>Debug View Hierarchy</code>找到对应的账号密码登录页面，查看页面的class和文本框的class，进一步在输出的头文件中找。</p>
-<p><img src="hook_class_dump.jpg"></p>
-<p>我们用同样的方式继续找<code>WCAccountTextFieldItem</code>。发现在<code>WCBaseTextFieldItem</code>有一个<code>WCUITextField</code>，继承自<code>UITextField</code>也就是我们要找的文本框。</p>
-<p>在通过<code>Debug View Hierarchy</code>找到登录的点击事件。为<code>onNext</code>。能拿到这些信息，就可以操作了。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">+(void)load &#123;</span><br><span class="line">    //原始的Method</span><br><span class="line">    Method onNext = class_getInstanceMethod(objc_getClass(&quot;WCAccountMainLoginViewController&quot;), @selector(onNext));</span><br><span class="line">    </span><br><span class="line">    //添加新方法!</span><br><span class="line">    class_addMethod(objc_getClass(&quot;WCAccountMainLoginViewController&quot;), @selector(new_onNext), new_onNext, &quot;v@:&quot;);</span><br><span class="line">    //交换</span><br><span class="line">    method_exchangeImplementations(onNext, class_getInstanceMethod(objc_getClass(&quot;WCAccountMainLoginViewController&quot;), @selector(new_onNext)));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">//新的IMP</span><br><span class="line">void new_onNext(id self,SEL _cmd)&#123;</span><br><span class="line">    UITextField * pwd = (UITextField *)[[self valueForKey:@&quot;_textFieldUserPwdItem&quot;] valueForKey:@&quot;m_textField&quot;];</span><br><span class="line"></span><br><span class="line">    NSLog(@&quot;密码是:%@&quot;,pwd.text);</span><br><span class="line">    //调用回原来的逻辑!!</span><br><span class="line">    //调用原来的方法!</span><br><span class="line">    [self performSelector:@selector(new_onNext)];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>注意，这里是在原来的<code>WCAccountMainLoginViewController</code>类中添加方法，而不是用注册时的那种方法，是因为会造成crash，因为使用的是<code>exchange</code>方法交换，在<code>WCAccountMainLoginViewController</code>类执行<code>new_onNext</code>方法时找不到对应的方法。</p>
-<p>这种是使用<code>class_addMethod</code>在<code>WCAccountMainLoginViewController</code>中添加了一个方法。接下来我们使用setImp和getImp的方式。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">+(void)load&#123;</span><br><span class="line">    //原始的Method</span><br><span class="line">    old_onNext = method_getImplementation(class_getInstanceMethod(objc_getClass(&quot;WCAccountMainLoginViewController&quot;), @selector(onNext)));</span><br><span class="line">    method_setImplementation(class_getInstanceMethod(objc_getClass(&quot;WCAccountMainLoginViewController&quot;), @selector(onNext)), new_onNext);</span><br><span class="line">   </span><br><span class="line">&#125;</span><br><span class="line">// 定义原来的IMP</span><br><span class="line">IMP (*old_onNext)(id self,SEL _cmd);</span><br><span class="line"></span><br><span class="line">// 定义新的IMP</span><br><span class="line">void new_onNext(id self,SEL _cmd)&#123;</span><br><span class="line">    UITextField * pwd = (UITextField *)[[self valueForKey:@&quot;_textFieldUserPwdItem&quot;] valueForKey:@&quot;m_textField&quot;];</span><br><span class="line"></span><br><span class="line">    NSLog(@&quot;密码是:%@&quot;,pwd.text);</span><br><span class="line">    //调用回原来的逻辑!!</span><br><span class="line">    //调用原来的方法!</span><br><span class="line">    old_onNext(self,_cmd);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>这种方式相对比较清晰，然后重新运行就好了。</p>
-<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>通过Framework、Dylib注入</p>
-<ul>
-<li>Xcode自动打包Framework进入app包</li>
-<li>macho中load commands里需要有 LC_LOAD_DYLIB字段</li>
-<li>DYLD加载我们创建的Framework</li>
-<li>MethodSwizzle - Runtime中也是重点<ul>
-<li>exchange函数交换SEL和IMP的对应关系<ul>
-<li>这种方案有可能会造成crash。因为没法调用原来的方法。</li>
-</ul>
-</li>
-<li>解决方案：<ul>
-<li>添加方法列表，然后exchange或者replace</li>
-<li>getImp、setImp配合使用</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://liujiaboy.github.io/2021/05/24/OC%E5%8E%9F%E7%90%86/LLVM/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="不会飞的小白">
-      <meta itemprop="description" content="一只iOS程序猿，会陆陆续续的把之前的一些总结搬到这里。">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="不会飞的小白">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/05/24/OC%E5%8E%9F%E7%90%86/LLVM/" class="post-title-link" itemprop="url">LLVM-编译流程</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2021-05-24 21:41:15" itemprop="dateCreated datePublished" datetime="2021-05-24T21:41:15+08:00">2021-05-24</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-12-24 17:13:15" itemprop="dateModified" datetime="2022-12-24T17:13:15+08:00">2022-12-24</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/OC%E5%8E%9F%E7%90%86/" itemprop="url" rel="index"><span itemprop="name">OC原理</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="LLVM"><a href="#LLVM" class="headerlink" title="LLVM"></a>LLVM</h1><p>LLVM是架构编译器的框架系统，以C++编写而成，用于优化任意程序语言编写的程序的编译时间（compile-time）、链接时间（link-time）、运行时间（run-time）以及空闲时间（idle-time）。对开发者保持开放，并兼容已有脚本。</p>
-<h2 id="传统编译器设计"><a href="#传统编译器设计" class="headerlink" title="传统编译器设计"></a>传统编译器设计</h2><p>源码<code>Source Code</code> + 前端<code>Frontend</code> + 优化器<code>Optimizer</code> + 后端<code>Backend</code>（代码生成器 CodeGenerator）+ 机器码<code>Machine Code</code>，如下图所示</p>
-<p><img src="llvm-1.jpg"></p>
-<ul>
-<li><p>前端<code>Frontend</code>：编译器前端的任务是解析源代码（编译阶段），它会进行 词法分析、语法分析、语义分析、检查源代码是否存在错误，然后构建抽象语法树（Abstract Syntax Tree AST），LLVM的前端还会生成中间代码（intermediate representation，简称<code>IR</code>），可以理解为llvm是编译器 + 优化器， 接收的是IR中间代码，输出的还是IR，给后端，经过后端翻译成目标指令集。</p>
-</li>
-<li><p>优化器 <code>Optimizer</code>：优化器负责进行各种优化，改善代码的运行时间，例如消除冗余计算等。</p>
-</li>
-<li><p>后端<code>Backend</code>（代码生成器 Code Generator）：将代码映射到目标指令集，生成机器代码，并且进行机器代码相关的代码优化。</p>
-</li>
-</ul>
-<h2 id="iOS的编译架构"><a href="#iOS的编译架构" class="headerlink" title="iOS的编译架构"></a>iOS的编译架构</h2><p>OC、C、C++使用的编译器前端是Clang，Swift是swift，后端都是LLVM。</p>
-<p><img src="llvm-2.jpg"></p>
-<h2 id="LLVM的设计"><a href="#LLVM的设计" class="headerlink" title="LLVM的设计"></a>LLVM的设计</h2><p>当编译器决定支持多种源语言或者多种硬件架构时，LLVM最重要的地方就来了。其他的编译器如GCC，他们都非常成功，但是由于它是作为整体应用程序设计的，因此他们的用途受到了很大的限制。</p>
-<p>LLVM设计的最重要方面是，使用通用的代码表示形式（IR），它是用来在编译器中表示代码的形式，所有LLVM可以为任何编程语言独立编写前端，并且可以为任意硬件架构独立编写后端。</p>
-<p><img src="llvm-3.jpg"></p>
-<p>LLVM的设计是前后端分离的，无论前端还是后端发生变化，都不会影响另一个。</p>
-<h2 id="Clang简介"><a href="#Clang简介" class="headerlink" title="Clang简介"></a>Clang简介</h2><p>clang是LLVM项目中的一个子项目，它是基于LLVM架构图的轻量级编译器，诞生之初是为了替代GCC，提供更快的编译速度，它是负责C、C++、OC语言的编译器，属于整个LLVM架构中的 编译器前端，对于开发者来说，研究Clang可以给我们带来很多好处。</p>
-<h1 id="编译流程"><a href="#编译流程" class="headerlink" title="编译流程"></a>编译流程</h1><p>创建一个工程，在main.m中添加代码：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">#define c 3</span><br><span class="line">typedef int Demo_Int;</span><br><span class="line"></span><br><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    int a = 1;</span><br><span class="line">    Demo_Int b = 2;</span><br><span class="line">    printf(&quot;%d&quot;, a + b + c);</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>我们通过命令可以打印源码的编译流程</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ clang -ccc-print-phases main.m</span><br></pre></td></tr></table></figure>
-
-<p>流程如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">输入文件：找到源文件</span><br><span class="line">+- 0: input, &quot;main.m&quot;, objective-c</span><br><span class="line"></span><br><span class="line">预处理阶段：这个过程处理包括宏的替换，头文件的导入</span><br><span class="line">+- 1: preprocessor, &#123;0&#125;, objective-c-cpp-output</span><br><span class="line"></span><br><span class="line">编译阶段：进行词法分析、语法分析、检测语法是否正确，最终生成IR</span><br><span class="line">+- 2: compiler, &#123;1&#125;, ir</span><br><span class="line"></span><br><span class="line">后端：这里LLVM会通过一个一个的pass去优化，每个pass做一些事情，最终生成汇编代码</span><br><span class="line">+- 3: backend, &#123;2&#125;, assembler</span><br><span class="line"></span><br><span class="line">汇编代码生成目标文件</span><br><span class="line">+- 4: assembler, &#123;3&#125;, object</span><br><span class="line"></span><br><span class="line">链接：一个个&quot;xxx.0&quot;文件链接起来，再链接需要的动态库和静态库，生成可执行文件</span><br><span class="line">+- 5: linker, &#123;4&#125;, image（镜像文件）</span><br><span class="line"></span><br><span class="line">绑定：通过不同的架构，生成对应的可执行文件</span><br><span class="line">6: bind-arch, &quot;x86_64&quot;, &#123;5&#125;, image</span><br></pre></td></tr></table></figure>
-
-<h2 id="预处理阶段"><a href="#预处理阶段" class="headerlink" title="预处理阶段"></a>预处理阶段</h2><p>预处理主要是处理：</p>
-<ol>
-<li>头文件导入<ul>
-<li>包括引入的头文件中的头文件</li>
-</ul>
-</li>
-<li>宏定义，替换宏<ul>
-<li>比如上方定义的<code>#define c 3</code>，预处理后，不会看到<code>c</code>直接会用3替代。</li>
-</ul>
-</li>
-</ol>
-<p>通过命令可以查看预处理后的结果：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">// 在终端直接查看预处理的结果</span><br><span class="line">$ clang -E main.m</span><br><span class="line"></span><br><span class="line">// 把预处理的结果输出到main2.m文件中</span><br><span class="line">$ clang -E main.m &gt;&gt; main2.m</span><br></pre></td></tr></table></figure>
-
-<p>编译之后的主要代码如下，删除很多头文件的引入：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line"></span><br><span class="line">typedef int Demo_Int;</span><br><span class="line"></span><br><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    int a = 1;</span><br><span class="line">    Demo_Int b = 2;</span><br><span class="line">    printf(&quot;%d&quot;, a + b + 3;);</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<ol>
-<li>typedef 处理类型别名时，在预处理阶段<code>不会被替换掉</code>。</li>
-<li>#define 在预处理阶段<code>会被替换掉</code>。在逆向工程中，通常会被用来进行代码混淆，将核心方法等使用<code>系统相似的名称</code>，来达到代码混淆的目的，使代码更安全。</li>
-</ol>
-</blockquote>
-<h2 id="编译阶段"><a href="#编译阶段" class="headerlink" title="编译阶段"></a>编译阶段</h2><p>由<code>词法分析</code>、<code>语法分析</code>、<code>生成中级代码IR</code>等组成。</p>
-<h3 id="词法分析"><a href="#词法分析" class="headerlink" title="词法分析"></a>词法分析</h3><p>预处理完成后就会进行词法分析，这里会把代码切成一个个token，比如大小括号、等号、字符串、关键词等。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ clang -fmodules -fsyntax-only -Xclang -dump-tokens main.m</span><br></pre></td></tr></table></figure>
-
-<p><img src="llvm-4.jpg"></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">// StartOfLine：main.m文件中，第11行，第1个字符开始，是&#x27;typedef&#x27;</span><br><span class="line">typedef &#x27;typedef&#x27;	 [StartOfLine]	Loc=&lt;main.m:11:1&gt;</span><br><span class="line">// LeadingSpace： main.m文件中，第11行，从第9个字符开始</span><br><span class="line">int &#x27;int&#x27;	 [LeadingSpace]	Loc=&lt;main.m:11:9&gt;</span><br><span class="line">identifier &#x27;Demo_Int&#x27;	 [LeadingSpace]	Loc=&lt;main.m:11:13&gt;</span><br><span class="line">// 符号&quot;;&quot;，从main.m的第11行，21个字符开始</span><br><span class="line">semi &#x27;;&#x27;		Loc=&lt;main.m:11:21&gt;</span><br></pre></td></tr></table></figure>
-
-<p>如果代码中有书写错误，在词法分析时不会报错。</p>
-<h3 id="语法分析"><a href="#语法分析" class="headerlink" title="语法分析"></a>语法分析</h3><p>词法分析完成后就是语法分析，它的任务是验证语法是否正确，在词法分析的基础上将单词序列组合成各类此法短语，如程序、语句、表达式 等等，然后将所有节点组成抽象语法树（Abstract Syntax Tree &#x3D; AST），语法分析判断程序在结构上是否正确。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ clang -fmodules -fsyntax-only -Xclang -ast-dump main.m</span><br></pre></td></tr></table></figure>
-
-<p>如果导入头文件找不到，可以指定SDK</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ clang -isysroot (自己Xcode下对应SDK路径) -fmodules -fsyntax-only -Xclang -ast-dump main.m</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">$ clang -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator14.3.sdk/ -fmodules -fsyntax-only -Xclang -ast-dump main.m</span><br></pre></td></tr></table></figure>
-
-<p>这是截取了语法分析中的一部分：</p>
-<p><img src="llvm-5.jpg"></p>
-<p>这是严格的按照语法进行处理的，从代码的对齐上可以看出点东西来。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">// 头文件引入 stdio</span><br><span class="line">ImportDecl 0x7fc57905a130 &lt;main.m:9:1&gt; col:1 implicit Darwin.C.stdio</span><br><span class="line">// typedef int Demo_Int;</span><br><span class="line">|-TypedefDecl 0x7fc57905a188 &lt;line:11:1, col:13&gt; col:13 referenced Demo_Int &#x27;int&#x27;</span><br><span class="line">| `-BuiltinType 0x7fc57901b500 &#x27;int&#x27;</span><br><span class="line">// 定义了一个方法main，从13行的第1个字符开始到第18行第1个字符结束，返回int类型，有两个参数int和char **</span><br><span class="line">FunctionDecl 0x7fc57905a460 &lt;line:13:1, line:18:1&gt; line:13:5 main &#x27;int (int, const char **)&#x27;</span><br><span class="line">  // 第1个参数为int 类型，参数名是argc</span><br><span class="line">  |-ParmVarDecl 0x7fc57905a1f8 &lt;col:10, col:14&gt; col:14 argc &#x27;int&#x27;</span><br><span class="line">  // 第2个参数为char ** 类型，参数名是argv</span><br><span class="line">  |-ParmVarDecl 0x7fc57905a310 &lt;col:20, col:38&gt; col:33 argv &#x27;const char **&#x27;:&#x27;const char **&#x27;</span><br><span class="line">  // 函数的内容范围，从第13行第41个字符开始到第18行第1个字符结束，也就是两个大括号的位置，也就是函数的作用域</span><br><span class="line">  `-CompoundStmt 0x7fc578966df0 &lt;col:41, line:18:1&gt;</span><br><span class="line">    // 声明局部变量</span><br><span class="line">    |-DeclStmt 0x7fc578966688 &lt;line:14:5, col:14&gt;</span><br><span class="line">    // 局部变量为a，类型为int</span><br><span class="line">    | `-VarDecl 0x7fc578966600 &lt;col:5, col:13&gt; col:9 used a &#x27;int&#x27; cinit</span><br><span class="line">    // 局部变量a的值为1</span><br><span class="line">    |   `-IntegerLiteral 0x7fc578966668 &lt;col:13&gt; &#x27;int&#x27; 1</span><br><span class="line">    |-DeclStmt 0x7fc578966b70 &lt;line:15:5, col:19&gt;</span><br><span class="line">    | `-VarDecl 0x7fc5789666d0 &lt;col:5, col:18&gt; col:14 used b &#x27;Demo_Int&#x27;:&#x27;int&#x27; cinit</span><br><span class="line">    |   `-IntegerLiteral 0x7fc578966738 &lt;col:18&gt; &#x27;int&#x27; 2</span><br><span class="line">    // 调用了函数方法，返回int类型</span><br><span class="line">    |-CallExpr 0x7fc578966d60 &lt;line:16:5, col:27&gt; &#x27;int&#x27;</span><br><span class="line">      // 隐式转换</span><br><span class="line">    | |-ImplicitCastExpr 0x7fc578966d48 &lt;col:5&gt; &#x27;int (*)(const char *, ...)&#x27; &lt;FunctionToPointerDecay&gt;</span><br><span class="line">    | | `-DeclRefExpr 0x7fc578966b88 &lt;col:5&gt; &#x27;int (const char *, ...)&#x27; Function 0x7fc578966760 &#x27;printf&#x27; &#x27;int (const char *, ...)&#x27;</span><br><span class="line">    | |-ImplicitCastExpr 0x7fc578966da8 &lt;col:12&gt; &#x27;const char *&#x27; &lt;NoOp&gt;</span><br><span class="line">    | | `-ImplicitCastExpr 0x7fc578966d90 &lt;col:12&gt; &#x27;char *&#x27; &lt;ArrayToPointerDecay&gt;</span><br><span class="line">    // 对应的string类型转化为char[]类型，</span><br><span class="line">    | |   `-StringLiteral 0x7fc578966be8 &lt;col:12&gt; &#x27;char [3]&#x27; lvalue &quot;%d&quot;</span><br><span class="line">    // 运算表达式</span><br><span class="line">    | `-BinaryOperator 0x7fc578966ce8 &lt;col:18, line:10:11&gt; &#x27;int&#x27; &#x27;+&#x27;</span><br><span class="line">    |   |-BinaryOperator 0x7fc578966ca8 &lt;line:16:18, col:22&gt; &#x27;int&#x27; &#x27;+&#x27;</span><br><span class="line">    |   | |-ImplicitCastExpr 0x7fc578966c78 &lt;col:18&gt; &#x27;int&#x27; &lt;LValueToRValue&gt;</span><br><span class="line">    |   | | `-DeclRefExpr 0x7fc578966c08 &lt;col:18&gt; &#x27;int&#x27; lvalue Var 0x7fc578966600 &#x27;a&#x27; &#x27;int&#x27;</span><br><span class="line">    |   | `-ImplicitCastExpr 0x7fc578966c90 &lt;col:22&gt; &#x27;Demo_Int&#x27;:&#x27;int&#x27; &lt;LValueToRValue&gt;</span><br><span class="line">    |   |   `-DeclRefExpr 0x7fc578966c40 &lt;col:22&gt; &#x27;Demo_Int&#x27;:&#x27;int&#x27; lvalue Var 0x7fc5789666d0 &#x27;b&#x27; &#x27;Demo_Int&#x27;:&#x27;int&#x27;</span><br><span class="line">    |   `-IntegerLiteral 0x7fc578966cc8 &lt;line:10:11&gt; &#x27;int&#x27; 3</span><br><span class="line">    `-ReturnStmt 0x7fc578966de0 &lt;line:17:5, col:12&gt;</span><br><span class="line">      `-IntegerLiteral 0x7fc578966dc0 &lt;col:12&gt; &#x27;int&#x27; 0</span><br></pre></td></tr></table></figure>
-
-<p><code>CompoundStmt</code>：函数的作用域，大括号的开始与结束<code>&#123;&#125;</code><br><code>DeclStmt</code>：局部变量声明<br><code>CallExpr</code>：函数调用<br><code>BinaryOperator</code>：运算表达式</p>
-<p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/d21c16b8953e">AST语法树关键字解析</a><br><a target="_blank" rel="noopener" href="https://github.com/CodeLittlePrince/blog/issues/19">AST抽象语法树</a></p>
-<p>如果当我们写的代码有问题时，在编译阶段就会出现问题，比如我们在上面的代码中删除一个分号，再运行一下命令。</p>
-<p><img src="llvm-6.jpg"></p>
-<p>在语法分析阶段就会把错误清晰的暴露出来。</p>
-<h3 id="生成中级代码IR"><a href="#生成中级代码IR" class="headerlink" title="生成中级代码IR"></a>生成中级代码IR</h3><p>完成以上步骤后，就开始生成中间代码IR了，代码生成器（Code Generation）会将语法树自顶向下遍历逐步翻译成LLVM IR。</p>
-<p>可以通过下面命令生成<code>xx.ll</code>的文本文件，也就是IR代码。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">// 默认不优化</span><br><span class="line">$ clang -S -fobjc-arc -emit-llvm main.m</span><br><span class="line"></span><br><span class="line">// IR文件的优化，在Xcode中target - build setting -optimization level可以设置。</span><br><span class="line">// LLVM的优化登记分别为 -O0、 -O1 、-O2、-O3、-Os（第一个字母为大写O）</span><br><span class="line">clang -Os -S -fobjc-arc -emit-llvm main.m -o main.ll</span><br></pre></td></tr></table></figure>
-
-<p>以下是<code>IR</code>的基本语法：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">@ 全局标识</span><br><span class="line">% 局部标识</span><br><span class="line">alloca 开辟空间</span><br><span class="line">align 内存对齐</span><br><span class="line">i32 32bit，4个字节</span><br><span class="line">store 写入内存</span><br><span class="line">load 读取数据</span><br><span class="line">call 调用函数</span><br><span class="line">ret 返回</span><br></pre></td></tr></table></figure>
-
-<p>编译之后的IR代码如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">define i32 @main(i32 %0, i8** %1) #0 &#123;</span><br><span class="line">  %3 = alloca i32, align 4</span><br><span class="line">  %4 = alloca i32, align 4</span><br><span class="line">  %5 = alloca i8**, align 8</span><br><span class="line">  %6 = alloca i32, align 4</span><br><span class="line">  %7 = alloca i32, align 4</span><br><span class="line">  store i32 0, i32* %3, align 4</span><br><span class="line">  store i32 %0, i32* %4, align 4</span><br><span class="line">  store i8** %1, i8*** %5, align 8</span><br><span class="line">  store i32 1, i32* %6, align 4</span><br><span class="line">  store i32 2, i32* %7, align 4</span><br><span class="line">  %8 = load i32, i32* %6, align 4</span><br><span class="line">  %9 = load i32, i32* %7, align 4</span><br><span class="line">  %10 = add nsw i32 %8, %9</span><br><span class="line">  %11 = add nsw i32 %10, 3</span><br><span class="line">  %12 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str, i64 0, i64 0), i32 %11)</span><br><span class="line">  ret i32 0</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>优化后生成的代码就不放了，自己看吧。</p>
-<h4 id="bitcode"><a href="#bitcode" class="headerlink" title="bitcode"></a>bitcode</h4><p>在Xcode7以后，开启了bitcode，苹果会做进一步的优化，生成<code>.bc</code>的中间代码。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ clang -emit-llvm -c main.ll -o main.bc</span><br></pre></td></tr></table></figure>
-
-<h3 id="后端"><a href="#后端" class="headerlink" title="后端"></a>后端</h3><p>LLVM在后端主要是会通过一个个的Pass去优化，每个Pass做一些事情，最终生成汇编代码。</p>
-<p>按照整个llvm的流程，是通过<code>.ll</code>文件生成汇编文件：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ clang -S -fobjc-arc main.ll -o main.s</span><br></pre></td></tr></table></figure>
-
-<p>我们也可以直接使用源文件生成汇编代码：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ clang -Os -S -fobjc-arc main.m -o main.s</span><br></pre></td></tr></table></figure>
-
-<p>这里需要注意的是，在上一步中优化后得到的汇编代码与直接使用优化得到的汇编代码是一样的。</p>
-<h3 id="生成目标文件"><a href="#生成目标文件" class="headerlink" title="生成目标文件"></a>生成目标文件</h3><p>目标文件的生成，是汇编器以汇编代码作为插入，将汇编代码转换为机器代码，最后输出目标文件（object file），<code>.o</code>结尾。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">clang -fmodules -c main.s -o main.o</span><br></pre></td></tr></table></figure>
-
-<p>接下来我们看看<code>.o</code>文件中有哪些内容(main.o的符号)：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ nm -nm main.o</span><br></pre></td></tr></table></figure>
-
-<p>输出的结果为：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ nm -nm main.o</span><br><span class="line">                 (undefined) external _printf</span><br><span class="line">0000000000000000 (__TEXT,__text) external _test</span><br><span class="line">000000000000000a (__TEXT,__text) external _main</span><br></pre></td></tr></table></figure>
-
-<p><code>_printf</code>函数是一个是undefined、external类型的：</p>
-<ul>
-<li><code>undefined</code>：表示在当前文件暂时找不到符号_printf。</li>
-<li><code>external</code>：表示这个符号是外部可以访问的。</li>
-</ul>
-<p>之所以找不到，是因为没有运行，有一些动态库、静态库是需要在运行时才被链接进来的。一堆堆的<code>.o</code>文件，链接起来，最后生成我们的可以执行文件。</p>
-<h3 id="链接"><a href="#链接" class="headerlink" title="链接"></a>链接</h3><p>连接器把编译生成的<code>.o</code>文件和<code>.dyld</code>、·.a·文件链接，生成一个<code>mach-o</code>文件。</p>
-<p>其中，静态库和可执行文件合并，动态库是独立的（系统的动态库可以让所有mach-o访问的）。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">clang main.o -o main</span><br></pre></td></tr></table></figure>
-
-<p>接下来看一下生成的可执行文件<code>main</code>的符号：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ nm -nm main</span><br><span class="line">                 (undefined) external _printf (from libSystem)</span><br><span class="line">                 (undefined) external dyld_stub_binder (from libSystem)</span><br><span class="line">0000000100000000 (__TEXT,__text) [referenced dynamically] external __mh_execute_header</span><br><span class="line">0000000100003f6d (__TEXT,__text) external _test</span><br><span class="line">0000000100003f77 (__TEXT,__text) external _main</span><br><span class="line">0000000100008008 (__DATA,__data) non-external __dyld_private</span><br></pre></td></tr></table></figure>
-
-<p>可以看到，把dyld相关的库已经链接到可执行文件中了。</p>
-<p>这个时候可以直接运行这个可执行文件：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ ./main</span><br><span class="line">6%</span><br></pre></td></tr></table></figure>
-
-<p>直接可以输出结果。</p>
-<h3 id="绑定"><a href="#绑定" class="headerlink" title="绑定"></a>绑定</h3><p>通过不同的架构，生成对应的mach-o格式的可执行文件。</p>
-<p>我们可以直接通过<code>file</code>命令查看可执行文件的类型：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ file main</span><br><span class="line">main: Mach-O 64-bit executable x86_64</span><br></pre></td></tr></table></figure>
-
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><img src="llvm-7.jpg"></p>
-<h1 id="clang插件"><a href="#clang插件" class="headerlink" title="clang插件"></a>clang插件</h1><h1 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h1><p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/d21c16b8953e">AST语法树关键字解析</a><br><a target="_blank" rel="noopener" href="https://github.com/CodeLittlePrince/blog/issues/19">AST抽象语法树</a></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -2015,7 +1655,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">49</span>
+          <span class="site-state-item-count">52</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>

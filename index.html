@@ -164,6 +164,512 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://liujiaboy.github.io/2023/01/04/iOS%E6%9E%B6%E6%9E%84/iOS%E6%97%A0%E5%9F%8B%E7%82%B9%E6%95%B0%E6%8D%AESDK%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="不会飞的小白">
+      <meta itemprop="description" content="一只iOS程序猿，会陆陆续续的把之前的一些总结搬到这里。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="不会飞的小白">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/01/04/iOS%E6%9E%B6%E6%9E%84/iOS%E6%97%A0%E5%9F%8B%E7%82%B9%E6%95%B0%E6%8D%AESDK%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1/" class="post-title-link" itemprop="url">iOS无埋点数据SDK整体设计</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2023-01-04 16:52:20 / 修改时间：17:02:39" itemprop="dateCreated datePublished" datetime="2023-01-04T16:52:20+08:00">2023-01-04</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>本文为转载。</p>
+<p>作者：zerygao<br>链接：<a target="_blank" rel="noopener" href="https://www.jianshu.com/p/5f16e1de6d5a">https://www.jianshu.com/p/5f16e1de6d5a</a><br>来源：简书</p>
+<p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/69ce01e15042">iOS无埋点数据 SDK 实践之路</a><br><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/0e1f2d357e39">iOS无埋点SDK 之 RN页面的数据收集</a></p>
+<p>本篇文章是讲述 iOS 无埋点数据收集 SDK 系列的第三篇，之前的两篇文章都只是讲述了某一方面的内容，而本篇会详细介绍下 SDK 的整体设计以及各个模块的功能和实现思路。</p>
+<h2 id="SDK-的整体设计"><a href="#SDK-的整体设计" class="headerlink" title="SDK 的整体设计"></a>SDK 的整体设计</h2><p>先看一张 SDK 的整体设计图：</p>
+<p><img src="1.webp" alt="img"></p>
+<p>从上图看出，SDK 整体上主要包含 4 个部分：<strong>AOP</strong>、<strong>Event Collector</strong>、<strong>Event Cache</strong>、<strong>Event Upload</strong>。其中，每个部分是一个相对独立的功能模块，同时模块之间通过图中的方式进行通信。</p>
+<p>SDK 中的这 4 个模块各自的主要功能如下：</p>
+<ul>
+<li>AOP：提供数据收集所需要的时机，即通过 <code>Method Swizzling</code> 来 <code>hook</code> 相应类的方法，然后以 <code>Post Notification</code> 的方式提供出去。</li>
+<li>Event Collector：监听通知，针对当前事件执行相应的数据收集，并将收集的事件数据提交给缓存模块。</li>
+<li>Event Cache：负责事件数据的缓存、序列化以及读取操作，其中包括内存缓存与磁盘缓存。</li>
+<li>Event Upload：基于一定的上报策略执行对已收集的事件数据的上报。</li>
+</ul>
+<p>接下来逐个介绍上述 4 个模块的具体实现细节。</p>
+<h3 id="AOP"><a href="#AOP" class="headerlink" title="AOP"></a>AOP</h3><p>这个模块的主要功能就是提供 SDK 执行数据收集所需的时机，在实现上又可以细分为 2 个方面：</p>
+<ol>
+<li>实现 <code>AOP</code> 编程</li>
+<li><code>hook</code> 类的方法</li>
+</ol>
+<h4 id="实现-AOP-编程"><a href="#实现-AOP-编程" class="headerlink" title="实现 AOP 编程"></a>实现 <code>AOP</code> 编程</h4><p>在 iOS 中实现 <code>AOP</code> 编程的技术就是基于 Objective-C Runtime 特性的 <code>Method Swizzling</code>。而在 Github 上已经有一个很不错的实现了 AOP 的开源库-<a target="_blank" rel="noopener" href="https://link.jianshu.com/?t=https://github.com/steipete/Aspects">Aspects</a>，它的实现也是利用了 Objective-C 的消息转发机制与 <code>Method Swizzling</code> 黑魔法。</p>
+<p>但是，SDK 最终并未使用 Aspects 库，虽然 Aspects 封装的很好而且很好用，但是它并不能完全满足项目的需要，主要表现在如下 2 个方面：</p>
+<ol>
+<li>Aspects 无法 <code>hook</code> 类中不存在的方法，或者未实现的方法。</li>
+<li>Aspects 不支持 <code>hook</code> 类的类方法。</li>
+</ol>
+<p>因此，SDK 单独实现并封装了一个用于执行 <code>hook</code> 的类，其实现也是对 <code>NSObject</code> 的扩展，类似于 Aspects。</p>
+<h4 id="hook-的方法"><a href="#hook-的方法" class="headerlink" title="hook 的方法"></a><code>hook</code> 的方法</h4><p>在 <a target="_blank" rel="noopener" href="https://www.jianshu.com/p/69ce01e15042">上篇文章</a> 中简单提了一下，SDK 在实现对基本事件数据的自动收集时，主要 <code>hook</code> 的方法分为 3 类：</p>
+<ul>
+<li>系统类的方法</li>
+<li>系统类的 <code>Delegate</code> 方法</li>
+<li>自定义类的方法</li>
+</ul>
+<p>那么，接下来就详细的介绍一下，SDK 在实现对事件的收集时，具体 <code>hook</code> 了哪些类的哪些方法。</p>
+<h5 id="各类点击事件的拦截"><a href="#各类点击事件的拦截" class="headerlink" title="各类点击事件的拦截"></a>各类点击事件的拦截</h5><p>对于 SDK 来说，收集用户的所有点击的行为数据是非常重要的一部分。另外，这部分数据对于用户行为分析以及统计路径转化率时，都是至关重要的。</p>
+<p>那么 SDK 对于用户的各类点击事件的收集，主要 <code>hook</code> 了如下的一些系统类的方法：</p>
+<p><img src="2.webp" alt="img"></p>
+<p>针对上图，做一些简要的说明：</p>
+<ol>
+<li>所有的 <code>UIControl</code> 类型的控件、<code>UITabBarButton</code> 以及在导航栏上自定义添加的 <code>UIBarButtonItem</code> 的点击事件，都可以通过 <code>hook</code> 系统类<code>UIApplication</code> 的 <code>sendAction:to:from:forEvent:</code> 方法进行拦截。但是，这个方法并不能拦截到导航栏上系统自动添加的返回按钮的点击，因此 SDK 又 <code>hook</code> 了 <code>UINavigationController</code> 的 <code>navigationBar:shouldPopItem:</code> 方法来实现对它的点击的拦截。</li>
+<li>针对与手势相关的事件，SDK 首先通过 <code>hook</code> 系统类 <code>UIGestureRecognizer</code> 的 <code>initWithTarget:action:</code> 与 <code>addTarget:action:</code> 这 2 个方法拿到 target 对象与 action 方法，然后再去 <code>hook</code> target 的 action 方法，从而能够拦截到手势相关的事件。</li>
+<li>对于 UITableView、UICollectionView 某一行的点击，首先 <code>hook</code> 它们的 <code>setDelegate:</code> 方法，从而拿到 delegate 对象，然后再去 <code>hook</code> delegate 的 <code>didSelectRowAtIndexPath:</code> 方法即可。</li>
+<li>对于 RN 页面中的点击，是通过 <code>hook</code> RN 框架中的 <code>RCTUIManager</code> 类的 <code>setJSResponder:blockNativeResponder:</code> 方法，具体原因可以看 <a target="_blank" rel="noopener" href="https://www.jianshu.com/p/0e1f2d357e39">这篇文章</a> 的详细讲解。另外，为了避免 SDK 对 RN 框架产生依赖，通过 <code>NSClassFromString(@&quot;RCTUIManager&quot;)</code> 来判断当前主工程是否使用了 RN 框架，如果未获取到此类，则不执行 <code>hook</code> 操作。</li>
+<li>对于系统弹窗的点击这块，需要拦截到 <code>UIAlertView</code>、<code>UIActionSheet</code> 以及 iOS8 上新增的 <code>UIAlertController</code> 这 3 个弹窗的点击。对于前2个，只需要 <code>hook</code> 它们的 delegate 方法。而对于 <code>UIAlertController</code> 是没有提供相应的 delegate 方法的，这里可以通过 <code>hook</code> <code>UIAlertAction</code> 类的 <code>actionWithTitle:style:handler:</code> 类方法来拦截到其点击事件。</li>
+</ol>
+<h5 id="页面事件的拦截"><a href="#页面事件的拦截" class="headerlink" title="页面事件的拦截"></a>页面事件的拦截</h5><p>对于页面事件的收集，主要通过 <code>hook</code> 系统类 <code>UIViewController</code> 的生命周期方法来实现，具体看下图：</p>
+<p><img src="3.webp" alt="img"></p>
+<h5 id="滑动事件-amp-UIWebView加载事件"><a href="#滑动事件-amp-UIWebView加载事件" class="headerlink" title="滑动事件 &amp; UIWebView加载事件"></a>滑动事件 &amp; UIWebView加载事件</h5><p>对于 iOS 中的滑动事件、<code>UIWebView</code> 的加载事件的收集，SDK 主要 hook 了 <code>setDelegate:</code> 方法以及 UIScrollViewDelegate、UIWebViewDelegate 中的方法。其原理上与 UITableView 的类似。具体见下图：</p>
+<p><img src="4.webp" alt="img"></p>
+<h3 id="Event-Collector"><a href="#Event-Collector" class="headerlink" title="Event Collector"></a>Event Collector</h3><p>SDK 通过 AOP 层已经可以拿到执行各个事件的数据收集的时机，接下来就是执行真正的数据收集了，其中包括了对 点击事件的收集、页面事件的收集、滑动事件的收集等。</p>
+<p>这些要收集的事件数据中包含一些基本信息，如：eventName、appKey、eventTime、sessionId、deviceId 等。除此之外，还有一些与特定事件相关的信息，例如对于 view 的点击事件，还需要收集与 view 的相关信息；对于列表行的点击，还需要收集点击行的 indexPath 信息；而对于 webView 加载事件则需要收集其 url 与 error 等信息。</p>
+<p>接下来主要说一下 SDK 中点击事件的收集。</p>
+<p>首先，对于 <code>UIControl</code> 控件与添加了 <code>UITapGestureRecognizer</code> 的 view，在收集它们的点击事件的数据时，重点收集了 2 部分内容：pageName、viewInfo。其中，pageName 是表明点击事件发生在哪个页面，一般用 viewController 的类名表示；viewInfo 是指当前被点击的view的一些相关信息，有：viewClass、viewPath、frame、title（如果有）、viewId 等。而 viewPath 是最关键的一项信息，能够唯一标识当前 view。</p>
+<p>其次，对于导航栏上的点击事件的收集，与上面要收集的信息几乎是一样的，只是在收集 pageName 的数据时不一样。导航栏的点击事件默认的 pageName 是 UINavigationController，但是为了能够更好的分析用户行为，这里将 App 当前正在显示的页面作为其 pageName。</p>
+<p>同理，收集系统弹窗的点击事件时，也将 App 当前正在显示的页面作为其 pageName。除此之外，由于同一个页面中可能会出现多个弹窗，它们的按钮文字信息有可能一样，比如经常会用 “确定”、“取消” 等文字，这时单纯靠按钮的 title 无法区分这些不同的弹窗，为了解决这个问题，又加入了系统弹窗的标题(title、message)。</p>
+<p>最后，讲一下 SDK 中获取 viewPath 的实现逻辑，具体如下图所示：</p>
+<p><img src="5.webp" alt="img"></p>
+<h3 id="Event-Cache"><a href="#Event-Cache" class="headerlink" title="Event Cache"></a>Event Cache</h3><p>这个模块主要负责所有事件数据的存取及序列化操作，具体可分为如下 3 部分：</p>
+<ol>
+<li>采用双缓存的结构将数据存储在内存中。具体实现是，将新添加的事件数据先存储到全局数组 eventArray 中，等满足数据上报条件时，从 eventArray 中读出一部分数据并随机生成一个唯一的 eventsID，将其以 key-value 的形式存放到全局字典 popedEventDict 中，等这部分数据上传成功后再将 eventsID 对应项从 popedEventDict 中移除。</li>
+<li>在某些情况下（App 即将被杀死、程序抛出异常），将内存中的数据以文件的形式持久化存储至磁盘中，以防数据丢失。</li>
+<li>将从内存或文件中读取的数据执行 protobuf 序列化操作，以便后续的数据上传操作。</li>
+</ol>
+<p>另外，为了确保对数据存取的多线程安全，上述操作全部都放到了同一个串行队列中执行。</p>
+<h3 id="Event-Upload"><a href="#Event-Upload" class="headerlink" title="Event Upload"></a>Event Upload</h3><p>这个模块的主要功能就是根据一定的数据上报策略，上报已收集的所有事件数据。数据上报主要包括对内存数据和本地文件这2部分，下面分别介绍一下它们的上报策略与实现思路。</p>
+<h4 id="内存数据的实时上报"><a href="#内存数据的实时上报" class="headerlink" title="内存数据的实时上报"></a>内存数据的实时上报</h4><p>首先，针对内存数据的上报策略有 2 个：</p>
+<ol>
+<li>每隔 30 秒</li>
+<li>每累积 10 条数据。</li>
+</ol>
+<p>当满足上述条件之一时，会触发从内存中读取数据，并执行上传操作。对于内存数据的上传，单独创建了一个并发队列，并限制其最大并发数为 10，以防由于数据频繁时上报引起开启的线程数太多。</p>
+<h4 id="本地文件数据的上传"><a href="#本地文件数据的上传" class="headerlink" title="本地文件数据的上传"></a>本地文件数据的上传</h4><p>为了尽早的上传本地文件，以防用户卸载 App 造成本地数据的丢失，针对本地文件的上传策略有如下 3 个：</p>
+<ol>
+<li>App 冷启动</li>
+<li>App 进入前台</li>
+<li>App 进入后台</li>
+</ol>
+<p>这里创建了一个单独的串行队列，来实现对本地文件进行逐个上传，即等上一个文件上传成功后，再触发下一个文件的上传。因此，上述 3 个触发时机并不会造成文件的重复上传，并以较小的代价完成本地文件的上传。</p>
+<h3 id="数据存取与上传的实现流程"><a href="#数据存取与上传的实现流程" class="headerlink" title="数据存取与上传的实现流程"></a>数据存取与上传的实现流程</h3><p>其实上面已经讲了大致的实现思路，里面设计到了使用 GCD 队列来控制数据上传与保证多线程安全。为了更清晰的展示出这 2 部分的实现逻辑，简单画了一个流程图展示出来：</p>
+<p><img src="6.webp" alt="img"></p>
+<h2 id="END"><a href="#END" class="headerlink" title="END"></a>END</h2><p>本篇文章主要介绍了无埋点数据 SDK 的整体设计，以及各个模块的功能和实现思路，其中重点介绍了执行事件收集所需 <code>hook</code> 的具体方法，和事件数据的存取与上报功能的实现流程。如果对本文有问题，请留言评论。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://liujiaboy.github.io/2023/01/04/iOS%E6%9E%B6%E6%9E%84/iOS%E6%97%A0%E5%9F%8B%E7%82%B9%E6%95%B0%E6%8D%AESDK%E5%AE%9E%E8%B7%B5%E4%B9%8B%E8%B7%AF/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="不会飞的小白">
+      <meta itemprop="description" content="一只iOS程序猿，会陆陆续续的把之前的一些总结搬到这里。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="不会飞的小白">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/01/04/iOS%E6%9E%B6%E6%9E%84/iOS%E6%97%A0%E5%9F%8B%E7%82%B9%E6%95%B0%E6%8D%AESDK%E5%AE%9E%E8%B7%B5%E4%B9%8B%E8%B7%AF/" class="post-title-link" itemprop="url">iOS无埋点数据SDK实践之路</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2023-01-04 16:40:08 / 修改时间：16:51:23" itemprop="dateCreated datePublished" datetime="2023-01-04T16:40:08+08:00">2023-01-04</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>本文为转载。</p>
+<p>作者：zerygao<br>链接：<a target="_blank" rel="noopener" href="https://www.jianshu.com/p/69ce01e15042">https://www.jianshu.com/p/69ce01e15042</a><br>来源：简书</p>
+<p>本篇文章是基于 网易乐得无埋点数据SDK 总结而成。负责无埋点数据收集 SDK 的开发已经有半年多了，期间在组内进行过相关分享，现在觉得是时候拿出去和同行们交流下了。本篇主要讲一下SDK的整体实现思路以及关键的技术点。</p>
+<p>SDK 已经具备不需要代码埋点就能 <strong>自动的</strong>、<strong>动态可配的</strong>、<strong>全面且正确</strong> 的收集用户在使用 App 时的所有事件数据。除此之外，还单独开发了与之配合的圈选SDK，能够在 App 端完成对界面元素的圈配以及 KVC 配置的上传。而界面元素圈配的工作完全可以交给用研与产品人员来做，减轻了开发人员的工作量。</p>
+<p>SDK 已有的功能可以分为两大部分：</p>
+<ul>
+<li><strong>基本事件数据的收集</strong>：基本事件的收集是指应用冷启动事件、页面事件、用户点击事件、<code>ScrollView</code>滑动事件等，这部分全部都是自动完成的，实现思路会在第一节中介绍。</li>
+<li><strong>业务层数据的收集</strong>：业务层数据的收集是指对与业务功能相关的一些数据，例如：在用户点击提交订单按钮时，收集用户购买的物品以及订单总金额的数据。这种业务层数据的收集以往大多通过 <em>代码埋点</em> 的方式去做，本SDK则真正的实现了 <strong><code>无埋点</code></strong> 的去获取这些想要的业务数据。这部分的实现会在本文的第二节详细介绍。</li>
+</ul>
+<h2 id="SDK的整体实现思路"><a href="#SDK的整体实现思路" class="headerlink" title="SDK的整体实现思路"></a>SDK的整体实现思路</h2><p>SDK 整体采用了 AOP（Aspect-Oriented-Programming）即面向切面编程的思想，就是动态的在函数调用的前后插入数据收集的代码。在 Objective-C 中的实现是基于 <code>Runtime</code> 特性的 <code>Method Swizzling</code> 黑魔法。</p>
+<p>SDK 的数据收集功能的实现主要通过 <code>Method Swizzling</code> 来 <code>hook</code> 相应的方法。<code>hook</code>的方法大致可以分为3类：系统类的方法、系统类的<code>Delegate</code>方法、自定义类的方法。</p>
+<h3 id="系统类的方法"><a href="#系统类的方法" class="headerlink" title="系统类的方法"></a>系统类的方法</h3><p>系统类的方法是指系统框架中提供的基础类的方法，如 <code>UIApplication</code>、<code>UIViewController</code> 等。SDK 在实现某些功能时，需要<code>hook</code>这些类的方法。例如在实现对页面事件的收集时，主要<code>hook</code>了 <code>UIViewController</code> 的生命周期的方法：<code>viewDidLoad</code>、<code>viewDidAppear</code>、<code>viewDidDisappear</code>、<code>dealloc</code></p>
+<h3 id="系统类的-Delegate-方法"><a href="#系统类的-Delegate-方法" class="headerlink" title="系统类的 Delegate 方法"></a>系统类的 Delegate 方法</h3><p>系统类的 Delegate 方法主要指 UIKit 框架中提供的 Delegate 中的方法，如 UIScrollViewDelegate、UITableViewDelegate、UIWebViewDelegate 等。SDK 中的大多数功能都是通过<code>hook</code>这些协议中的方法来完成的。例如在实现列表元素点击事件的收集时，主要 <code>hook</code> 了 <code>UITableViewDelegate</code> 中的 <code>tableView:didSelectRowAtIndexPath:</code> 方法。</p>
+<h3 id="自定义类的方法"><a href="#自定义类的方法" class="headerlink" title="自定义类的方法"></a>自定义类的方法</h3><p>顾名思义，自定义类的方法是指开发人员在工程中自已定义的类，而非系统类的方法。SDK的一些功能是通过<code>hook</code> 这些类的方法来实现。例如在SDK实现对手势操作的事件收集时，需要<code>hook</code>手势对象所指定的target 中的 action 方法，而 target 通常都是自定义类。其实<code>hook</code>系统类的 delegate 方法也可以看成是 hook 自定义类的方法，因为系统类的 delegate 方法大多都是需要在自定义类中实现。</p>
+<p>这部分看起来是借助于 AOP 来添加数据收集的代码，但是在真正做的时候，也并没有想的那么简单，涉及到很多细节上的问题，例如：如何将导航栏与系统弹窗的点击事件归属到合适页面中、如何区分<code>UIControlEventValueChanged</code>事件、如何解决<code>hook</code>手势操作引起的性能问题等等。不过这部分内容并不是本篇文章的重点，因此这里不打算多说，之后会单独写一篇文章来讲述遇到的一些坑。</p>
+<h2 id="SDK的关键技术的实现"><a href="#SDK的关键技术的实现" class="headerlink" title="SDK的关键技术的实现"></a>SDK的关键技术的实现</h2><h3 id="viewPath-及-viewId-的生成及优化"><a href="#viewPath-及-viewId-的生成及优化" class="headerlink" title="viewPath 及 viewId 的生成及优化"></a>viewPath 及 viewId 的生成及优化</h3><p>为了对 APP 中某个页面的某个 view 进行数据收集、统计与分析，首先就需要能够唯一的标识与定位这个视图，这可以说是数据收集 SDK 的一个重要前提。那么怎样去唯一的标识 APP 中的某个 view 呢？SDK 中使用了 <code>viewPath</code> 与 <code>viewId</code> 来完成。</p>
+<h4 id="1-viewPath-的组成"><a href="#1-viewPath-的组成" class="headerlink" title="1. viewPath 的组成"></a>1. viewPath 的组成</h4><p>其实整个 APP 的视图结构可以看成是一颗树（<code>viewTree</code>），树的根节点就是 UIWindow，树的枝干由<code>UIViewController</code>及<code>UIView</code>组成，树的叶节点都是由<code>UIView</code>组成。</p>
+<p>那么在<code>viewTree</code>中用什么信息来表示其中任意一个 view 的位置呢？很容易想到的就是使用目标 view 到根之间的每个节点的深度（层次）组成一个路径，而节点的深度（层次）是指此节点在父节点中的 index。这样确实能够唯一的表示此 view 了，但是有一个缺点：它的可读性很差。因此在此基础上又增加了每个节点的名称，节点的名称由当前节点的 view 的类名来表示。</p>
+<p>因此，在 <code>viewTree</code> 中，由一个 view 到根节点之间的每个节点的名称与深度（层次）共同组成的信息构成了此 view 的<code>viewPath</code>。另外，由于在做 view 的统计分析时，都是以页面为单位的，因此 SDK 在生成 <code>viewPath</code> 时，只到 view 所在的 UIViewController 级别，而非根部的 UIWindow。这样做也在一定程度上减少了<code>viewPath</code> 的长度。</p>
+<h4 id="2-UITableViewCell-x2F-UICollectionCell-的深度表示"><a href="#2-UITableViewCell-x2F-UICollectionCell-的深度表示" class="headerlink" title="2. UITableViewCell&#x2F;UICollectionCell 的深度表示"></a>2. UITableViewCell&#x2F;UICollectionCell 的深度表示</h4><p>在 App 开发中，最常用而且最重要的控件就是<code>UITableView</code>与<code>UICollectionView</code>。针对这种可复用视图，里面会包含很多 Cell，而且 Cell 个数也不确定，那么里面的每一个 Cell 应该怎么去表示其深度呢？答案是<code>indexPath</code>。虽然每个 Cell 都可能被复用，但是不同的 Cell 都对应一个唯一的<code>indexPath</code>，因此完全可以使用<code>indexPath</code>值来表示其深度。</p>
+<h4 id="3-viewPath-的表示形式与示例"><a href="#3-viewPath-的表示形式与示例" class="headerlink" title="3. viewPath 的表示形式与示例"></a>3. viewPath 的表示形式与示例</h4><p>我们已经知道，<code>viewPath</code>就是由各节点的类名与深度组成，那么接下来就使用这些信息来表示出 <code>viewPath</code>。下面结合一个具体的示例来简单说一下，我随便从项目中找了一个：</p>
+<p>路径中各个节点的类名是：</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">HYGHallSlideViewController-<span class="built_in">UIScrollView</span>-HYGHallProductTableView-<span class="built_in">UITableViewWrapperView</span>-HYGHallProductCell-<span class="built_in">UITableViewCellContentView</span>-HYGHallProductView。</span><br></pre></td></tr></table></figure>
+
+<p>路径中各个节点的深度是：<code>0-0-1-0-0:2-0-1</code></p>
+<p>接下来就是将这两者放到一起来构成 <code>viewPath</code>，SDK 的表示方式如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">viewPath：HYGHallSlideViewController-UIScrollView-HYGHallProductTableView-UITableViewWrapperView-HYGHallProductCell-UITableViewCellContentView-HYGHallProductView &amp; 0-0-1-0-0:2-0-1</span><br></pre></td></tr></table></figure>
+
+<p>其实就是使用 <code>&amp;</code> 连接符简单的拼接到一起。这样做可以方便将两者组合与分离开，便于后面的<code>viewPath</code>匹配。另外，网上还有一种类似于 <code>xPath</code> 的表示方式：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">HYGHallSlideViewController[0]/UIScrollView[0]/HYGHallProductTableView[1]/UITableViewWrapperView[0]/HYGHallProductCell[0:2]/UITableViewCellContentView[0]/HYGHallProductView[1]</span><br></pre></td></tr></table></figure>
+
+
+
+<p>不过个人觉得<code>xPath</code>的方式稍微复杂了点，在组合以及拆分上都相对麻烦些。不过话说回来，<code>viewPath</code>的形式是次要的，大家可以按照各自喜欢的方式去表示就行，无须纠结于哪种形式更好。</p>
+<h4 id="4-针对-viewPath-的优化"><a href="#4-针对-viewPath-的优化" class="headerlink" title="4.针对 viewPath 的优化"></a>4.针对 viewPath 的优化</h4><h5 id="4-1-优化节点的深度的计算方式"><a href="#4-1-优化节点的深度的计算方式" class="headerlink" title="4.1 优化节点的深度的计算方式"></a>4.1 优化节点的深度的计算方式</h5><p>上面提到在计算各节点的深度时，是采用当前 view 位于其父 view 中的所有子 view 中的 index 值。不过在实际的开发中，<code>viewTree</code> 有时候会根据用户的操作有所变动。仍然举个栗子：</p>
+<ul>
+<li>假设一个 UIView 中有三个子 view，先后加入的顺序是：label、button1、button2，按照之前的计算方式，这 3  个子 view 的深度依次是：0、1、2。这时候用户点击了一个按钮，label1 从父 view 中被移除了。此时 UIView 只有 2  个子view：button1、button2，而且深度变为了：0、1。如图所示：</li>
+</ul>
+<p><img src="1.webp" alt="img"></p>
+<p>可以看出仅仅由于其中一个子view 被移除，却导致其它子 view 的深度都发生了变化。因此，SDK 为了在新增&#x2F;移除某一 view  时，尽量减少对已有 view 的深度的影响，调整了对节点的深度的计算方式：采用当前 view 位于其父 view 中的所有 <strong>同类型</strong> 子 view 中的index 值。</p>
+<p>我们再看一下上面的这个例子，最初 label、button1、button2 的深度依次是：0、0、1。在 label  被移除后，button1、button2 的深度依次为：0、1。可以看出，在这个例子中，label 的移除并未对 button1、button2 的深度造成影响，这种调整后的计算方式在一定程度上增强了 <code>viewPath</code> 的抗干扰性。</p>
+<p>另外，调整后的深度的计算方式是依赖于各节点的类型的，因此，此时必须要将各节点的名称放到<code>viewPath</code>中，而不再是仅仅为了增加可读性。</p>
+<h5 id="4-2-viewPath-针对-Swift-的优化"><a href="#4-2-viewPath-针对-Swift-的优化" class="headerlink" title="4.2 viewPath 针对 Swift 的优化"></a>4.2 viewPath 针对 Swift 的优化</h5><p>众所周知，<code>Swift</code>文件在获取其类名时，会自动添加此文件所在的<code>Module</code>名前缀：如果<code>Swift</code>文件在主工程中，则会添加工程的名字；如果是在某个组件中，并且项目开启了 <code>use frameworks!</code> 选项，则会添加组件的名字。总的来说，在含有swift 的项目中（包括纯 swift&#x2F;OC 与 swift 混编），<code>viewPath</code>中会包含各 Swift 文件的<code>ModuleName</code>，那么在如下情况下：</p>
+<ul>
+<li>某个 OC 文件被使用 Swift 重写了</li>
+<li>某个 Swift 文件被从主工程移至某个组件库中，或者从组件库移至主工程中</li>
+<li>主工程在引用组件库时，在开启与关闭<code>use frameworks!</code>之间进行切换</li>
+</ul>
+<p>上述3种情况下，文件的类名都会由于<code>ModuleName</code>而发生变化，进而会导致 <code>viewPath</code> 的改变，工程文件在结构上的调整都可能会直接对<code>viewPath</code>造成影响。</p>
+<p>实际开发中，特别是对于较老的<code>OC</code>项目，经常会对项目的<code>OC</code>文件使用<code>Swift</code>重写。因此 SDK 有必要去避免<code>viewPath</code>因为这类情况而发生变化。</p>
+<p>其实这个问题的解决方案很简单，既然是由于类名中的<code>ModuleName</code>前缀的改变造成的，那么就干脆在生成<code>viewPath</code>时，去掉所有的<code>Swift</code>的<code>ModuleName</code>前缀。这种做法能够解决对<code>viewPath</code>的影响，但是细心的人可能会意识到另一个隐藏的问题：如果在不同的组件库中，两个不同的视图或控制器具有相同的名字（在<code>Swift</code>中是允许的，因为有<code>Module</code>进行区分），这种情况下，<code>viewPath</code>是否存在无法区分的情况？</p>
+<p>其实经过仔细考虑，这个担忧有点多余，因为就算两个Module中的视图或控制器名字一样，但是他们里面的视图结构会有所不同，进而深度也不一样，<code>viewPath</code>也不会完全相同。</p>
+<h5 id="4-3-在包含子VC时，优化VC的深度的计算"><a href="#4-3-在包含子VC时，优化VC的深度的计算" class="headerlink" title="4.3 在包含子VC时，优化VC的深度的计算"></a>4.3 在包含子VC时，优化VC的深度的计算</h5><p>前面提到，<code>viewPath</code>只表示到距离 view 最近的一个 VC，VC 的深度的计算也是此 VC 的 view 所在的父 view 的所有子 view 中的深度。在实际的 iOS 开发中，可能会经常使用<code>addChildViewController:</code>添加多个子 VC 来实现复杂的页面，但是在包含子 VC 时，VC 的深度计算就有可能会存在问题。还是举一个简单的栗子：</p>
+<ul>
+<li>假设一个 containerVC  中包含4个子VC：VC1、VC2、VC3、VC4。在每个子VC首次被展示时，子VC会先被add进来，而子 VC 的 view 也会被 add  到一个scrollView  上。这时候这几个子VC首次的查看顺序的不同将会导致它们的深度的变化：如果查看顺序是：VC1、VC2、VC3、VC4，那么它们的深度依次 为：VC1（0）、VC2（1）、VC3（2）、VC4（3）；如果查看顺序是：VC3、VC1、VC4、VC2，深度则变成了：VC1（1）、 VC2（3）、VC3（0）、VC4（2）。这种情况导致 <code>viewPath</code> 不可靠且无法保证唯一性。</li>
+</ul>
+<p>SDK 为了解决上述情况，调整了 VC 的深度的计算：不再采用其 view 的深度，而是直接使用固定的0。因为 VC 已经是<code>viewPath</code>的根级别了，它的深度信息已经不重要了。</p>
+<p>不过这种方案会引起另一个小问题，如果上述子 VC 的 VC1 和 VC2 是同一个类的不同实例，那么他们内部的视图结构是完全一样的，这时候如果使用固定的 VC 深度（0），通过<code>viewPath</code>就无法区分具体是哪个子 VC 的 view 了。针对这种同一类的不同实例，如果想进一步区分它们，SDK 采用了另一个方案：页面别名。</p>
+<h4 id="5-viewId-的生成"><a href="#5-viewId-的生成" class="headerlink" title="5. viewId 的生成"></a>5. viewId 的生成</h4><p><code>viewPath</code> 已经能够唯一标识某个 view 了，为何还需要<code>viewId</code>呢？其实主要原因是：<code>viewPath</code> 的长度不固定，而且一般都会比较长，不便于后台使用它作为 view 的唯一标识。因此 SDK 使用<code>viewPath</code>信息通过<code>MD5</code>加密生成一个固定长度的值作为<code>viewId</code>。</p>
+<h4 id="6-viewPath-与-viewId-重复时的解决方案"><a href="#6-viewPath-与-viewId-重复时的解决方案" class="headerlink" title="6. viewPath 与 viewId 重复时的解决方案"></a>6. viewPath 与 viewId 重复时的解决方案</h4><p>经过对<code>viewPath</code>的优化，SDK 已经尽可能的保证了<code>viewPath</code>的稳定性。但是并不表示只依靠<code>viewPath</code>就能区分所有的点击事件。有时同一个<code>viewPath</code>的 view 具有不同的表现形式与作用，例如下面的情况：</p>
+<ul>
+<li>同一个按钮在不同的状态下，显示不同的文字。例如：一个按钮在未添加商品前显示“添加”；添加了商品之后，立刻显示成“清除”</li>
+<li>同一个view上具有多处点击事件，例如 SegmentControl、<code>UISwitch</code>、<code>UIStepper</code>等</li>
+</ul>
+<p>上面的这2种情况，都是同一个<code>viewPath</code>对应多个事件，此时如果只使用<code>viewPath</code>无法区分出不同的状态或事件。</p>
+<p>针对这类问题，SDK 的解决方案是：<code>viewPath</code> + “其它信息” 。这里的 “其它信息”  是视不同情况而定的，比如: 在上面的情况1中，“其它信息” 就是按钮的 title。在情况2中，“其它信息” 是 SegmentControl 的 selectedIndex 和 UISwitch 的 isOn 属性的值。SDK 在进行数据收集时，会上传 view  的这些信息，再结合圈选SDK就能让后台在做统计时区分出这些不同的事件了。</p>
+<p>关于“其它信息”，再补充一点，除了 SDK  事先知道要获取的信息之外，还有一类就是业务数据。例如：有一个商品列表页，每一行显示一个商品，如果后台想统计的不是列表中每一行的点击，而是每个商品 的点击，那么此时的“其它信息”就应该是productId 了。关于 SDK 对业务层数据的获取与上报请看下面的介绍。</p>
+<h3 id="SDK无埋点业务数据收集的实现"><a href="#SDK无埋点业务数据收集的实现" class="headerlink" title="SDK无埋点业务数据收集的实现"></a>SDK无埋点业务数据收集的实现</h3><p>讲完了 <code>viewPath</code> 之后，接下来详细介绍下 SDK 的另一个关键技术：基于 <code>viewPath</code> 与 <code>KVC</code> 实现 SDK 的无埋点业务数据收集功能。首先，先简单分析一下传统的 <em>代码埋点</em> 存在的缺点，大致有以下几个：</p>
+<ul>
+<li>埋点代码与业务逻辑代码混合在一起，增加了代码的维护成本；</li>
+<li>埋点代码需要跟随APP版本一起发布，耽误数据的收集与统计；</li>
+<li>埋点时存在错埋、漏埋等情况，无法动态更新及添加；</li>
+</ul>
+<p>为了解决上述的 <em>代码埋点</em> 的缺陷，SDK 实现了真正意义上的 <strong>无埋点</strong> 来对业务数据进行收集。</p>
+<h4 id="1-无埋点的实现架构"><a href="#1-无埋点的实现架构" class="headerlink" title="1. 无埋点的实现架构"></a>1. 无埋点的实现架构</h4><p>SDK 的无埋点功能的实现主要依赖于 <code>viewPath</code> 与 <code>KVC</code>。<code>viewPath</code>前面已经介绍了，它主要用于标识<code>viewTree</code>中的某个 view。而<code>KVC</code>对于 iOS 开发者也不陌生，堪称 iOS 开发中的黑魔法之一。通过<code>KVC</code>我们能够通过 key 或 keyPath 直接访问对象的属性，而不需要调用明确的存取方法。关于<code>KVC</code>如果不太了解，请自行学习，这里不再过多阐述。</p>
+<p>那么如何实现不需要代码埋点就能随意获取想要的业务数据呢？先看一下 SDK 的无埋点技术的整体架构图：</p>
+<p><img src="2.webp" alt="img"></p>
+<p>从上图可以看出，在实现 SDK 的无埋点数据收集时，主要分为3步：上传KVC配置、请求KVC配置、业务数据的收集与上报。</p>
+<h4 id="2-什么是-KVC-配置"><a href="#2-什么是-KVC-配置" class="headerlink" title="2. 什么是 KVC 配置"></a>2. 什么是 KVC 配置</h4><p>在上图中出现了 KVC配置，那么下面先简单介绍下什么是KVC配置。其实 KVC配置 就是一些用来描述 App 应该在什么时机去收集什么数据的信息，包含的主要信息有：</p>
+<ul>
+<li><strong>appKey：</strong>用来标识是哪个应用</li>
+<li><strong>appVersion：</strong>用来标识应用的版本号</li>
+<li><strong>viewEvent：</strong>标识某个事件类型（收集时机），例如：ButtonClick、ListItemClick、ViewTap等</li>
+<li><strong>viewPath：</strong>目标 view 在<code>viewTree</code>中的信息</li>
+<li><strong>keyPath：</strong>目标 view 与要收集的业务数据间的关联路径，用于KVC取值</li>
+<li><strong>keyName：</strong>为要收集的业务数据定义一个key，最终组成 key-value 的形式上报。用于区分多个收集的数据</li>
+</ul>
+<h4 id="3-KVC配置的上传与下发"><a href="#3-KVC配置的上传与下发" class="headerlink" title="3. KVC配置的上传与下发"></a>3. KVC配置的上传与下发</h4><ul>
+<li>上传KVC配置<ul>
+<li>利用 圈选SDK 上传 KVC配置 的操作对于用户是透明的，主要由开发人员进行上传与管理。此操作可以在任何时候进行，在想要收集某个或某些版本的 App 中的业务数据时，上传相应的KVC配置信息至后台即可，达到了根据需要动态可配的效果。</li>
+</ul>
+</li>
+<li>请求KVC配置<ul>
+<li>SDK 在初始化时会触发 KVC配置 的请求操作，从后台拉取 App 当前版本对应的所有KVC配置，并将请求结果缓存起来，以提供给下一步使用。</li>
+</ul>
+</li>
+</ul>
+<h4 id="4-业务数据的收集与上报"><a href="#4-业务数据的收集与上报" class="headerlink" title="4. 业务数据的收集与上报"></a>4. 业务数据的收集与上报</h4><p>这一部分是 SDK 无埋点技术的核心，接下来详细介绍这部分的实现逻辑。它的实现流程如下：</p>
+<p><img src="3.webp" alt="img"></p>
+<p>这个环节的核心是基于<code>viewPath</code>的 view 匹配，主要实现是通过循环遍历<code>viewPath</code>的每个节点的信息与当前 view 及其父view 依次进行匹配。因此这一步会产生一定的时间与性能消耗。为了尽可能减少这部分的操作，SDK 中使用了一些方式进行优化，其中一个就是基于缓存view的优化。</p>
+<h5 id="4-1-基于缓存view的优化"><a href="#4-1-基于缓存view的优化" class="headerlink" title="4.1 基于缓存view的优化"></a>4.1 基于缓存view的优化</h5><p>SDK 采用缓存上一次匹配成功的 view 信息的方式，来减少一些不必要的<code>viewPath</code>匹配操作。这里主要缓存的 view 信息有：</p>
+<ul>
+<li>targetView：上一次通过<code>viewPath</code>匹配成功的 view 对象。</li>
+<li>indexPath： 上一次通过<code>viewPath</code>匹配成功的 view 的<code>indexPath</code>，如果没有则为nil。</li>
+</ul>
+<h5 id="1-viewEvent-匹配"><a href="#1-viewEvent-匹配" class="headerlink" title="1. viewEvent 匹配"></a>1. viewEvent 匹配</h5><p>第一步先进行事件类型的匹配。如果KVC配置信息指定的 viewEvent 是 ButtonClick，那么可以轻松的过滤掉 ListItemClick、ViewTap 等其它事件。这一步能够过滤一大部分事件，只有事件类型匹配成功才继续进行下一步。</p>
+<h5 id="2-targetView-匹配"><a href="#2-targetView-匹配" class="headerlink" title="2. targetView 匹配"></a>2. targetView 匹配</h5><p>接下来就是将缓存的 targetView 与当前 view 进行比较。如果两者指向同一对象，则进行第3步，否则直接进入第4步</p>
+<h5 id="3-indexPath-匹配"><a href="#3-indexPath-匹配" class="headerlink" title="3. indexPath 匹配"></a>3. indexPath 匹配</h5><p>有人可能不明白为何要添加这一步呢？其实这一步也很重要，是对第2步的补充，主要是用来处理 Cell 可复用性的情况。</p>
+<p>如果第2步中缓存的 targetView 是 Cell 或 Cell 中的某个 subview，那么第2步的匹配成功，并不能保证当前 view 就是我们真正想匹配的 view。这个可能不太容易理解，还是举个简单的例子来说明一下：</p>
+<ul>
+<li>假如一个 Cell 中有一个 button，在第1行的 button 被点击时，通过<code>viewPath</code>匹配成功 了，那么这时 targetView 缓存了第1行的 button  对象。接下来向下滑动列表，第一行被划出屏幕，第10行划入屏幕，同时第10行复用了第1行的 Cell，这时再点击 button 去匹配时，由于  Cell 复用的原因，targetView 与当前 button 肯定指向同一个对象，但是却不是我们真正想匹配的第1行的  button。可以看出：在有 Cell 复用的情况下，无法确定第2步的结果一定正确。</li>
+</ul>
+<p>因此，在第2步的基础上又增加了<code>indexPath</code>匹配。<code>indexPath</code>的匹配逻辑为：如果缓存的<code>indexPath</code>不为<code>nil</code>并且与当前view的<code>indexPath</code>不相等，则进入第4步；否则表明当前的 view 就是上次刚刚匹配成功的，也就没必要进行<code>viewPath</code>匹配，可以直接进入第5步。</p>
+<h5 id="4-viewPath-匹配"><a href="#4-viewPath-匹配" class="headerlink" title="4. viewPath 匹配"></a>4. viewPath 匹配</h5><p>这一步就是对当前的 view 及其父view 与<code>KVC</code>配置中的<code>viewPath</code>的各个节点进行逐个匹配。由于是一个循环操作，因此会有一定的时间消耗，其实在这部分的匹配中，也做了一些简单的优化。在真正进入循环匹配之前，先进行如下3步判断：</p>
+<ul>
+<li>判断 view 类名是否相等；</li>
+<li>判断 view 所在的 viewController 类名是否相等；</li>
+<li>判断 view 所在的 window 类名是否相等；</li>
+</ul>
+<p>上述的3个判断也能过滤很多不必要的匹配。只有这3个判断均通过后，才进行<code>viewPath</code>循环匹配。</p>
+<h5 id="5-KVC-取值与上报"><a href="#5-KVC-取值与上报" class="headerlink" title="5. KVC 取值与上报"></a>5. KVC 取值与上报</h5><p>到了这一步，就已经验证了数据收集的时机是正确的。接下来就可以直接使用 KVC配置信息中的<code>keyPath</code>调用 <code>valueForKeyPath:</code> 方法获取对应的值。如果值不为<code>nil</code>，就与 keyName 组成一个键值对，放到当前的事件数据中一起上报上去。这样后台就可以通过key去查找到相应的业务数据了。</p>
+<p>上面只是简要介绍了一下匹配时的逻辑，在实际开发中还会添加对 cell 的<code>indexPath</code>通配的情况的处理，由于文章篇幅这里不再详细讲解。</p>
+<h3 id="5-增加对-KVC-的异常处理"><a href="#5-增加对-KVC-的异常处理" class="headerlink" title="5. 增加对 KVC 的异常处理"></a>5. 增加对 KVC 的异常处理</h3><p>SDK 的无埋点功能的实现其实主要依赖于<code>KVC</code>，但是众所周知，<code>KVC</code>是非常危险的，很容易造成程序崩溃。例如一旦 key 或 keyPath 所对应的属性名不存在，立刻会导致程序抛出一个<code>NSUndefinedKeyException</code>异常，如果应用没有处理此异常，程序就会Crash。</p>
+<p>因此，为了避免程序Crash，SDK 内部增加了对<code>KVC</code>异常的处理。具体实现是给 <code>NSObject</code> 增加一个 Category ，重写 <code>valueForUndefinedKey:</code> 方法，并在方法中<code>return nil</code>。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">NSObject</span> (<span class="title">KVCExceptionHandler</span>)</span></span><br><span class="line">- (<span class="keyword">nullable</span> <span class="type">id</span>)valueForUndefinedKey:(<span class="built_in">NSString</span> *)key</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="其它关键技术"><a href="#其它关键技术" class="headerlink" title="其它关键技术"></a>其它关键技术</h3><p>当然，SDK 的实现中还有很多关键技术点，比如：SDK 对 RN 页面的数据收集、页面别名方案的实现、<code>Method Swizzling</code>与<code>Aspects</code>的兼容等。由于本文的篇幅已经很长了，而且考虑到大家读文章的耐性都不会太长，所以这里就先不讲解了，后续会再写文章单独介绍。</p>
+<h3 id="END"><a href="#END" class="headerlink" title="END"></a>END</h3><p>文章写了这么多，其实主要介绍了 SDK 中的两个关键技术点，希望对你们能有一些参考价值。另外，如果有人对本文的方案有更好的建议，欢迎一起讨论学习。</p>
+<p>最后，要特别感谢我的同事王佳乐，由于他对文章的排版与校对工作，才使得本文能更好的展示给大家。同时也要感谢组内的所有同事，在我开发遇到困难时，给予了我很多的帮助。</p>
+<h3 id="Q-amp-A"><a href="#Q-amp-A" class="headerlink" title="Q &amp; A"></a>Q &amp; A</h3><p>关于对本文内容提出的一些问题，将全部记录在这里（简书评论里的除外），并进行统一解答。</p>
+<h4 id="Q1-SDK-都使用KVC配置获取业务数据，是否会增加维护KVC配置的工作？"><a href="#Q1-SDK-都使用KVC配置获取业务数据，是否会增加维护KVC配置的工作？" class="headerlink" title="Q1: SDK 都使用KVC配置获取业务数据，是否会增加维护KVC配置的工作？"></a>Q1: SDK 都使用KVC配置获取业务数据，是否会增加维护KVC配置的工作？</h4><h4 id="A1-会有对-KVC配置-的维护与管理工作，不过-SDK-也简化了这块的管理工作。"><a href="#A1-会有对-KVC配置-的维护与管理工作，不过-SDK-也简化了这块的管理工作。" class="headerlink" title="A1: 会有对 KVC配置 的维护与管理工作，不过 SDK 也简化了这块的管理工作。"></a>A1: 会有对 KVC配置 的维护与管理工作，不过 SDK 也简化了这块的管理工作。</h4><p>一般来说，上传的所有的 KVC配置 需要与 App 的版本相对应，因为 App 版本不同会直接导致<code>keyPath</code>可能不一样。所以与 KVC配置 相关的工作有如下2个：</p>
+<ol>
+<li>针对当前 App 版本上传相应的 KVC配置，以获取想要的业务数据</li>
+<li>当 App 新版本发布时，需要对之前版本上的 KVC配置 逐一验证，是否仍然适用于新版本。如果仍然适用，则直接在管理后台上把新的版本号添加到此 KVC配置；如果不再适用，则对新版本再上传一个新的KVC配置。</li>
+</ol>
+<p>从上面可以看出，在 App 版本不断迭代的过程中，KVC配置 会越来越多，相应的维护与管理工作也相当繁琐。</p>
+<p>为了解决这个痛点，SDK 中增加了一种方案来避免这种重复且繁琐的工作。具体的方案是：</p>
+<ul>
+<li>在上传 KVC 配置时，指定某个区间的版本，或者不指定具体的版本（即应用到当前所有版本上）；</li>
+<li>SDK 在使用KVC配置获取业务数据失败时，添加相关的错误日志，并上报上去。其中错误日志里包含了<code>appKey</code>、<code>appVersion</code>、<code>keyPath</code>等信息，这样就能在后台清晰的看到哪些 KVC配置 在哪个 App 版本上存在问题；</li>
+<li>使用脚本监控与<code>KVC</code>相关的错误日志。如果监控到有错误日志上报，则发送邮件通知给相关人员；</li>
+</ul>
+<p>因此，SDK 采用此方案优化之后，KVC配置 的管理工作就只有1个了：</p>
+<ul>
+<li>根据Log信息快速找到对应的 KVC配置，并上传一个针对新版本的 KVC配置</li>
+</ul>
+<h4 id="Q2-对于-“内容与位置”-可能会随时间而变动时，如何实现数据收集与统计？"><a href="#Q2-对于-“内容与位置”-可能会随时间而变动时，如何实现数据收集与统计？" class="headerlink" title="Q2: 对于 “内容与位置” 可能会随时间而变动时，如何实现数据收集与统计？"></a>Q2: 对于 “内容与位置” 可能会随时间而变动时，如何实现数据收集与统计？</h4><h4 id="A2-使用圈选SDK与数据SDK共同完成动态数据的收集与统计"><a href="#A2-使用圈选SDK与数据SDK共同完成动态数据的收集与统计" class="headerlink" title="A2: 使用圈选SDK与数据SDK共同完成动态数据的收集与统计"></a>A2: 使用圈选SDK与数据SDK共同完成动态数据的收集与统计</h4><p>这个问题在实际产品中也比较常见，比如 App 首页的内容大多是通过后台配置的。<br> 这个问题其实可以转化或分解成如下的2个情况：</p>
+<ul>
+<li>同一位置会显示不同的内容</li>
+<li>同一内容会显示在不同的位置</li>
+</ul>
+<p>注意，这2个并非同一个，它们分别对应于不同的场景，同时数据收集的方案也有所不同。</p>
+<p>另外，“位置” 可以是在列表中，也可以是非列表中的，不过这个对整体的方案没有太大影响，仅仅是在不关心位置时<code>viewPath</code>中的通配符位置不同。</p>
+<h5 id="A2-1-同一位置显示不同的内容"><a href="#A2-1-同一位置显示不同的内容" class="headerlink" title="A2.1 同一位置显示不同的内容"></a>A2.1 同一位置显示不同的内容</h5><p>例子：在 App 首页有一个展示最近活动的位置，先展示活动1的图片，过一段时间运营人员又配成活动2的图片。如何统计活动1、活动2各自的点击量？</p>
+<p>针对这种场景，SDK 的解决方案是：<strong>“关心位置” + “关心内容”</strong>。<br> <strong>“关心位置”</strong> 的意思是只使用当前的位置，具体表现是<code>viewPath</code>中不包含任何通配符；<strong>“关心内容”</strong> 的意思是指定一个想要统计的内容。</p>
+<p>整个过程可以分解为如下3个环节：</p>
+<ul>
+<li>圈选SDK上传<strong>“关心位置”</strong>的KVC配置。KVC配置中指定获取活动的<code>url</code>的<code>keyPath</code>。</li>
+<li>数据SDK在活动发生点击时，收集当前活动对应的<code>url</code>，并跟随点击事件一起上报。</li>
+<li>圈选SDK上传<strong>“关心位置” + “关心内容”</strong>的圈选配置，关心的内容指定为想要统计的活动的<code>url</code>值。</li>
+</ul>
+<h5 id="A2-2-同一内容显示在不同的位置"><a href="#A2-2-同一内容显示在不同的位置" class="headerlink" title="A2.2 同一内容显示在不同的位置"></a>A2.2 同一内容显示在不同的位置</h5><p>例子：App 首页有4个固定的入口，假设其中一个叫“热门推荐”，那么根据后台配置的顺序不同，“热门推荐”可能被显示在4个位置中的任何1个，即一段时间显示在第1个，过一段时间可能显示在第2个位置。这时如何统计出“热门推荐”的点击量？</p>
+<p>针对这种场景，SDK 的解决方案是：<strong>“不关心位置” + “关心内容”</strong>。<br> <strong>“不关心位置”</strong> 是指<code>viewPath</code>中含有通配符，用于表示<code>viewTree</code>中的多个位置。例如想要匹配列表所有行时，则将<code>viewPath</code>中的<code>indexPath</code>替换为通配符。</p>
+<p>这个问题的解决过程也分为如下3步：</p>
+<ul>
+<li>圈选SDK上传<strong>“不关心位置”</strong>的KVC配置。KVC配置中指定获取入口的 title 的<code>keyPath</code>。</li>
+<li>数据SDK在4个中任何一个入口被点击时，都去收集入口的 title，并跟随点击事件一起上报。</li>
+<li>圈选SDK上传<strong>“不关心位置” + “关心内容”</strong>的圈选配置，关心的内容指定为“热门推荐”。</li>
+</ul>
+<p>到这里，数据收集与圈选配置的工作都已经做完了，接下来就是后台的数据统计了。<br> 上述2种情况对后台进行统计没有区别，都使用一个统计方案，这里也介绍一下后台大概的统计思路：</p>
+<ul>
+<li>拿到第3步中上传的圈选配置，根据<code>viewPath</code> 与 <strong>“关心的内容”</strong> 生成一个正则表达式，然后从数据 SDK 上报的原始数据中进行正则匹配，进而统计出相应数据。</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://liujiaboy.github.io/2023/01/03/iOS%E6%9E%B6%E6%9E%84/%E7%A7%BB%E5%8A%A8%E7%AB%AF%E7%9B%91%E6%8E%A7%E4%BD%93%E7%B3%BB%E4%B9%8B%E6%8A%80%E6%9C%AF%E5%8E%9F%E7%90%86%E5%89%96%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="不会飞的小白">
+      <meta itemprop="description" content="一只iOS程序猿，会陆陆续续的把之前的一些总结搬到这里。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="不会飞的小白">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/01/03/iOS%E6%9E%B6%E6%9E%84/%E7%A7%BB%E5%8A%A8%E7%AB%AF%E7%9B%91%E6%8E%A7%E4%BD%93%E7%B3%BB%E4%B9%8B%E6%8A%80%E6%9C%AF%E5%8E%9F%E7%90%86%E5%89%96%E6%9E%90/" class="post-title-link" itemprop="url">移动端监控体系之技术原理剖析</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2023-01-03 17:28:11 / 修改时间：18:40:08" itemprop="dateCreated datePublished" datetime="2023-01-03T17:28:11+08:00">2023-01-03</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">架构</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>本文为转载：</p>
+<p>作者：Joy_xx<br>链接：<a target="_blank" rel="noopener" href="https://juejin.cn/post/6844903498383900680">https://juejin.cn/post/6844903498383900680</a><br>来源：稀土掘金</p>
+<p>在这样一个注重用户体验的时代，<code>APM</code> 技术快速发展，国内更是百花齐放，最近对各个公司的 <code>APM</code> 产品有一个调研，并在此基础上进行了自己的实践。这里就从 iOS 的角度出发，谈谈自己对移动端 APM 的技术上的理解，并提供相对应的实例。</p>
+<h2 id="何为-APM"><a href="#何为-APM" class="headerlink" title="何为 APM"></a>何为 APM</h2><p><code>APM</code> 的全称是<code>Application performance management</code>，即应用性能管理，通过对应用的可靠性、稳定性等方面的监控，进而达到可以快速修复问题、提高用户体验的目的。</p>
+<p>国内各大公司都有自己的一套监控体系，这个系统可能是自己研发，也可能是第三方提供，当然对于这个数据为王的时代，很多有实力的公司倾向于自主研发，掌握核心数据。比较有代表性的 APM 产品有：听云、阿里百川、腾讯 bugly、NewRelic、OneAPM、网易云捕等</p>
+<p>说到监控，那么指标是我们所关注的呢？如下所示</p>
+<ul>
+<li>网络请求：成功率、状态码、流量、网络响应时间、HTTP与HTTPS的 DNS 解析、TCP握手、SSL握手（HTTP除外）、首包时间等时间</li>
+<li>界面卡顿、卡顿堆栈</li>
+<li>崩溃率、崩溃堆栈</li>
+<li>Abort 率：也就是由于内存过高的等原因，被系统杀死的情况</li>
+<li>交互监控：页面加载时间、页面的交互痕迹</li>
+<li>维度信息：地域、运营商、网络接入方式、操作系统、应用版本等</li>
+<li>其他：内存、帧率、CPU使用率、启动时间、电量等</li>
+</ul>
+<h2 id="聊聊原理"><a href="#聊聊原理" class="headerlink" title="聊聊原理"></a>聊聊原理</h2><h3 id="卡顿检测"><a href="#卡顿检测" class="headerlink" title="卡顿检测"></a>卡顿检测</h3><p>当应用发生卡顿的时候，一般会伴随着掉帧，所以帧率是最容易想到的指标来判断卡顿。对于线下的测试环境，我们可以使用帧率来对开发做一些提示，告诉他们可能发生了卡顿。但是帧率不稳定性较高，所以一般会采取另一种方式来做卡顿检测。那就是Runloop，对于细节可以查看 <code>Runloop</code> 源码，会发现对于事件的处理主要就是在<code>kCFRunLoopBeforeSources</code>和<code>kCFRunLoopBeforeWaiting</code>状态之间,还有<code>kCFRunLoopAfterWaiting</code>之后。那我们就可以对两个状态进行监控，如果消耗时间太久，就代表着卡顿的发生。</p>
+<p><img src="runloop.jpg" alt="runloop"></p>
+<p>上图摘自阿里百川，如图所示，我们会对卡顿次数做一个判断，如果次数为1，但时间超时，则为单次耗时较长的卡顿，如果次数到达阀值，则证明是连续短时间卡顿。</p>
+<p>当卡顿发生之后，我们为了定位，会收集当时的一个堆栈情况，在此你可以使用 <code>PLCrashReporter</code> 来做，也可以自己研发一个堆栈收集库（可<a href="http://www.jianshu.com%2Fp%2F7e4c7b94ca36">参考这里来做</a>）</p>
+<p>对于实例，网上已经有很多开源的项目，你可以<a href="https://link.juejin.cn/?target=https://github.com/suifengqjn/PerformanceMonitor">参考这个</a></p>
+<h3 id="崩溃检测"><a href="#崩溃检测" class="headerlink" title="崩溃检测"></a>崩溃检测</h3><p>对于崩溃的情况，一般是由 <code>Mach</code>异常或 <code>Objective-C</code> 异常（NSException）引起的。我们可以针对这两种情况抓取对应的 <code>Crash</code> 事件。</p>
+<h4 id="Mach-异常捕获"><a href="#Mach-异常捕获" class="headerlink" title="Mach 异常捕获"></a>Mach 异常捕获</h4><p>如果想要做<code>mach</code> 异常捕获，需要注册一个异常端口，这个异常端口会对当前任务的所有线程有效，如果想要针对单个线程，可以通过 <code>thread_set_exception_ports</code>注册自己的异常端口，发生异常时，首先会将异常抛给线程的异常端口，然后尝试抛给任务的异常端口，当我们捕获异常时，就可以做一些自己的工作，比如，当前堆栈收集等。</p>
+<p>对于如何注册一个异常端口，这里有示意图和 <a href="https://link.juejin.cn/?target=https://github.com/plausiblelabs/plcrashreporter">PLCrashReporter</a> 可以参考</p>
+<p><img src="machport.jpg" alt="machport"></p>
+<h3 id="Unix-信号捕获"><a href="#Unix-信号捕获" class="headerlink" title="Unix 信号捕获"></a>Unix 信号捕获</h3><p>对于Mach 异常，操作系统会将其转换为对应的 Unix信号，所以如果你对<code>Mach</code>不熟悉的话，也可以通过注册<code>signalHandler</code>的方式来做信号异常。对于实例，你可以<a href="https://link.juejin.cn/?target=https://github.com/xcysuccess/iOSCrashUncaught">参考这里</a></p>
+<figure class="highlight scss"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">signal</span>(SIGHUP, signalHandler);</span><br><span class="line"><span class="built_in">signal</span>(SIGINT, signalHandler);</span><br><span class="line"><span class="built_in">signal</span>(SIGQUIT, signalHandler);</span><br><span class="line">   </span><br><span class="line"><span class="built_in">signal</span>(SIGABRT, signalHandler);</span><br><span class="line"><span class="built_in">signal</span>(SIGILL, signalHandler);</span><br><span class="line"><span class="built_in">signal</span>(SIGSEGV, signalHandler);</span><br><span class="line"><span class="built_in">signal</span>(SIGFPE, signalHandler);</span><br><span class="line"><span class="built_in">signal</span>(SIGBUS, signalHandler);</span><br><span class="line"><span class="built_in">signal</span>(SIGPIPE, signalHandler);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="NSException-捕获"><a href="#NSException-捕获" class="headerlink" title="NSException 捕获"></a>NSException 捕获</h3><p>对于<code>NSException</code>异常，也比较容易处理，通过注册<code>NSUncaughtExceptionHandler</code>捕获异常信息即可，将拿到的<code>NSException</code>细节写入<code>Crash</code>日志，上传到后台做数据分析</p>
+<figure class="highlight scss"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// register the uncaught exception handler</span></span><br><span class="line"><span class="built_in">NSSetUncaughtExceptionHandler</span>(&amp;handler);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="Abort-率检测"><a href="#Abort-率检测" class="headerlink" title="Abort 率检测"></a>Abort 率检测</h3><p>目前对于内存过高被杀死的情况是没有办法直接统计的，一般通过排除法来做百分比的统计，原理如下</p>
+<ul>
+<li>程序启动，设置标志位</li>
+<li>程序正常退出，清楚标志</li>
+<li>程序<code>Crash</code>，清楚标志</li>
+<li>程序电量过低导致关机，这个也没办法直接监控，可以加入电量检测来辅助判断</li>
+<li>第二次启动，标志位如果存在，则代表<code>Abort</code>一次，上传后台做统计</li>
+</ul>
+<p><img src="abort.jpg" alt="abort"></p>
+<h3 id="交互监控"><a href="#交互监控" class="headerlink" title="交互监控"></a>交互监控</h3><p>对于页面的加载时间，这个比较容易实现，直接通过<code>Runtime hook</code>对应的生命周期方法即可，比如 <code>viewDidLoad</code>、<code>viewWillAppear</code>等</p>
+<p>对于用户的交互痕迹，比如点击了那个按钮、跳转到了那个页面，这些信息偏于用户行为的收集，我们也独立研发了一个无埋点的SDK，专门来做用户行为数据的收集与分析，核心也是基于 <code>hook AOP</code>的思想。细节可以<a target="_blank" rel="noopener" href="http://www.jianshu.com/p/69ce01e15042">参考我同事的作品</a></p>
+<h3 id="网络监控"><a href="#网络监控" class="headerlink" title="网络监控"></a>网络监控</h3><p>对于成功率、状态码、流量，以及网络的响应时间之类的，我们可以主要可以通过两种方式来做</p>
+<ul>
+<li>针对<code>URLConnection</code>、<code>CFNetwork</code>、<code>NSURLSession</code>三种网络做<code>Hook</code>，<code>hook</code>的具体技术可以是<code>method swizzle</code> 也可以是<code>Proxy</code>、<code>Fishhook</code>之类的</li>
+<li>也可以使用 <code>NSURLProtocol</code> 对网络请求的拦截，进而得到流量、响应时间等信息，但是<code>NSURLProtocol</code>有自己的局限，比如<code>NSURLProtocol</code>只能拦截<code>NSURLSession</code>，<code>NSURLConnection</code>以及<code>UIWebView</code>，但是对于<code>CFNetwork</code>则无能为力</li>
+</ul>
+<p>对于第一种方式可以<code>Hook</code>哪些方法的，可以参考这个图</p>
+<p><img src="NSURLMonitor.jpg" alt="网络监控"></p>
+<p>但是，因为我们所使用的<code>URLConnection</code>、<code>CFNetwork</code>、<code>NSURLSession</code>底层都是 <code>BSDSocket</code>，所以可以尝试在<code>socket</code>上动手脚来实现效果，类似于通过<code>ViewController</code>的生命周期方法来统计页面加载时间的做法，我们<code>Hook socket</code>相关的方法来做，比如通过<code>hook</code> <code>socket</code>连接时的 <code>connect</code>方法，拿到<code>tcp</code>握手的起始时间，通过<code>hook</code> <code>SSLHandshake</code>方法，在<code>SSLHandshake</code>执行的时候拿到 <code>SSL</code>握手的起始时间等。目前听云已经提供了 <code>HTTP</code> 的分段时间查询功能，大家去体验下</p>
+<figure class="highlight arduino"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span>	<span class="title">connect</span><span class="params">(<span class="type">int</span>, <span class="type">const</span> <span class="keyword">struct</span> sockaddr *, <span class="type">socklen_t</span>)</span> __<span class="title">DARWIN_ALIAS_C</span><span class="params">(connect)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function">OSStatus <span class="title">SSLHandshake</span><span class="params">(SSLContextRef ctx)</span> </span></span><br><span class="line"><span class="function">复制代码</span></span><br></pre></td></tr></table></figure>
+
+<p>但是对于 iOS 9 Apple 加入 ATS 新特性，并要求开发者使用 HTTPS，我在  iOS9、10上对 HTTPS  网络请求<code>Hook socket</code>方法时候，有一些方法<code>hook</code> 失效，猜想应该是Apple 进行了加固、加密，导致一些系统方法没办法<code>hook</code>，所以在 iOS9、10 上无法通过<code>socket</code>来取得<code>HTTPS</code>网络的分段时间（纠正：fishhook 无法 hook socket 的原因：<a target="_blank" rel="noopener" href="https://github.com/facebook/fishhook/issues/40%EF%BC%89">https://github.com/facebook/fishhook/issues/40）</a></p>
+<p>不过<code>apple</code>在 iOS 10 推出一个<code>API</code>，可以在 iOS10 版本以上进行网络信息的收集</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="type">void</span>)URLSession:(<span class="built_in">NSURLSession</span> *)session task:(<span class="built_in">NSURLSessionTask</span> *)task didFinishCollectingMetrics:(<span class="built_in">NSURLSessionTaskMetrics</span> *)metrics </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>打印结果如下</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">(<span class="keyword">Fetch</span> <span class="keyword">Start</span>) <span class="number">2017</span><span class="number">-02</span><span class="number">-24</span> <span class="number">09</span>:<span class="number">03</span>:<span class="number">06</span> <span class="operator">+</span><span class="number">0000</span></span><br><span class="line">(Domain Lookup <span class="keyword">Start</span>) <span class="number">2017</span><span class="number">-02</span><span class="number">-24</span> <span class="number">09</span>:<span class="number">03</span>:<span class="number">06</span> <span class="operator">+</span><span class="number">0000</span></span><br><span class="line">(Domain Lookup <span class="keyword">End</span>) <span class="number">2017</span><span class="number">-02</span><span class="number">-24</span> <span class="number">09</span>:<span class="number">03</span>:<span class="number">06</span> <span class="operator">+</span><span class="number">0000</span></span><br><span class="line">(<span class="keyword">Connect</span> <span class="keyword">Start</span>) <span class="number">2017</span><span class="number">-02</span><span class="number">-24</span> <span class="number">09</span>:<span class="number">03</span>:<span class="number">14</span> <span class="operator">+</span><span class="number">0000</span></span><br><span class="line">(Secure Connection <span class="keyword">Start</span>) <span class="number">2017</span><span class="number">-02</span><span class="number">-24</span> <span class="number">09</span>:<span class="number">03</span>:<span class="number">14</span> <span class="operator">+</span><span class="number">0000</span></span><br><span class="line">(Secure Connection <span class="keyword">End</span>) <span class="number">2017</span><span class="number">-02</span><span class="number">-24</span> <span class="number">09</span>:<span class="number">03</span>:<span class="number">16</span> <span class="operator">+</span><span class="number">0000</span></span><br><span class="line">(<span class="keyword">Connect</span> <span class="keyword">End</span>) <span class="number">2017</span><span class="number">-02</span><span class="number">-24</span> <span class="number">09</span>:<span class="number">03</span>:<span class="number">16</span> <span class="operator">+</span><span class="number">0000</span></span><br><span class="line">(Request <span class="keyword">Start</span>) <span class="number">2017</span><span class="number">-02</span><span class="number">-24</span> <span class="number">09</span>:<span class="number">03</span>:<span class="number">16</span> <span class="operator">+</span><span class="number">0000</span></span><br><span class="line">(Request <span class="keyword">End</span>) <span class="number">2017</span><span class="number">-02</span><span class="number">-24</span> <span class="number">09</span>:<span class="number">03</span>:<span class="number">16</span> <span class="operator">+</span><span class="number">0000</span></span><br><span class="line">(Response <span class="keyword">Start</span>) <span class="number">2017</span><span class="number">-02</span><span class="number">-24</span> <span class="number">09</span>:<span class="number">03</span>:<span class="number">16</span> <span class="operator">+</span><span class="number">0000</span></span><br><span class="line">(Response <span class="keyword">End</span>) <span class="number">2017</span><span class="number">-02</span><span class="number">-24</span> <span class="number">09</span>:<span class="number">03</span>:<span class="number">16</span> <span class="operator">+</span><span class="number">0000</span></span><br></pre></td></tr></table></figure>
+
+<p>当然，对于网络各层次的时间获取，如果你有好的方案，希望您可以留言告知。同时对于一些维度信息和内存等基础指标，很容易获取，这里就不细谈了</p>
+<h2 id="大礼包"><a href="#大礼包" class="headerlink" title="大礼包"></a>大礼包</h2><p>在调研和学习APM技术的过程中，发现了很多优秀的博客，所以在此推荐给大家，有需要的可以自取</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="http://www.infoq.com/cn/presentations/mobile-terminal-full-link-tracking-and-security-system">蘑菇街移动端全链路跟踪保障体系</a></li>
+<li><a target="_blank" rel="noopener" href="http://mp.weixin.qq.com/s/MwgjpHj_5RaG74Z0JjNv5g">美团外卖移动端性能监测体系实现</a></li>
+<li><a target="_blank" rel="noopener" href="https://wereadteam.github.io/2016/12/12/Monitor/">微信读书 iOS 质量保证及性能监控</a></li>
+<li><a target="_blank" rel="noopener" href="http://www.infoq.com/cn/articles/netease-ios-sdk-neteaseapm-technology-share">网易NeteaseAPM iOS SDK技术实现分享</a></li>
+<li><a target="_blank" rel="noopener" href="http://www.imooc.com/article/14205?block_id=tuijian_wz">阿里百川码力APP监控来了 重量级选手进入APM市场</a></li>
+<li><a href="https://link.juejin.cn/?target=https://github.com/joy0304/Joy-Blog/blob/master/iOS%20Collection.md">APM最佳实践系列文章专题合辑</a></li>
+<li><a href="https://mp.weixin.qq.com%2Fs%3F__biz%3DMzAxNDEwNjk5OQ%3D%3D%26mid%3D2650400312%26idx%3D1%26sn%3Dce8468991c70ab2e06634f59cd2b6865%26chksm%3D83952e20b4e2a736f701853a483da535312a258a56ca87d65b8ef77e8cf012dab9145659a0aa%26scene%3D0%26key%3D459eeebe1b51063320bc30b7024529048032de1a4d3a8e7cf01dbfc995da8f74fe85688c8be0471b1fdcb82d9b875d163a62f42e9ca04946e2c899194097fb93632ca7790f6fb7395d897442b9272213%26ascene%3D0%26uin%3DMTY3NzkzNjI0NA%3D%3D%26devicetype%3DiMac%2BMacBookPro12%2C1%2BOSX%2BOSX%2B10.12.2%2Bbuild(16C67)%26version%3D12020010%26nettype%3DWIFI%26fontScale%3D100%26pass_ticket%3DJE5tAT8H%2BfKdFzHQq72mWMIv%2BitHWOqOma3xmX5OeGGPWz2mPXxz3kaQE1WSKJlw">手机淘宝：亿级用户APP的快速运维交付实践</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://liujiaboy.github.io/2022/12/30/OC%E5%85%B6%E5%AE%83/apple%E7%9B%B8%E5%85%B3%E6%96%87%E6%A1%A3/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -187,10 +693,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2022-12-30 13:54:00 / 修改时间：14:39:28" itemprop="dateCreated datePublished" datetime="2022-12-30T13:54:00+08:00">2022-12-30</time>
+              <time title="创建时间：2022-12-30 13:54:00" itemprop="dateCreated datePublished" datetime="2022-12-30T13:54:00+08:00">2022-12-30</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-01-03 15:52:59" itemprop="dateModified" datetime="2023-01-03T15:52:59+08:00">2023-01-03</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -215,9 +727,9 @@
           <table>
 <thead>
 <tr>
-<th></th>
-<th></th>
-<th></th>
+<th>编号</th>
+<th>地址</th>
+<th>备注</th>
 </tr>
 </thead>
 <tbody><tr>
@@ -318,10 +830,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2022-12-28 16:24:23 / 修改时间：19:22:12" itemprop="dateCreated datePublished" datetime="2022-12-28T16:24:23+08:00">2022-12-28</time>
+              <time title="创建时间：2022-12-28 16:24:23" itemprop="dateCreated datePublished" datetime="2022-12-28T16:24:23+08:00">2022-12-28</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-01-03 17:29:59" itemprop="dateModified" datetime="2023-01-03T17:29:59+08:00">2023-01-03</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -343,23 +861,24 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="软件架构模式"><a href="#软件架构模式" class="headerlink" title="软件架构模式"></a>软件架构模式</h1><h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>对程序员来说很常见一种情况是在没有合理的程序架构时就开始编程，没有一个清晰的和定义好的架构的时候，大多数开发者和架构师通常会使用标准式的传统分层架构模式（也被称为多层架构）——通过将源码模块分割为几个不同的层到不同的包中。不幸的是，这种编码方式会导致一系列没有组织性的代码模块，这些模块缺乏明确的规则、职责和同其他模块之间的关联。这通常被称为架构大泥球。</p>
+          <h1 id="软件架构模式"><a href="#软件架构模式" class="headerlink" title="软件架构模式"></a>软件架构模式</h1><p>转载：原文地址：<a target="_blank" rel="noopener" href="https://gitlab.com/BangHeriSetiawan/android-tech-frontier/blob/00911a665a20cb4c85c1db7ade4410c292d32ed5/software-architecture-patterns/%E8%BD%AF%E4%BB%B6%E6%9E%B6%E6%9E%84%E6%A8%A1%E5%BC%8F.md#appendix">软件架构模式</a></p>
+<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>对程序员来说很常见一种情况是在没有合理的程序架构时就开始编程，没有一个清晰的和定义好的架构的时候，大多数开发者和架构师通常会使用标准式的传统分层架构模式（也被称为多层架构）——通过将源码模块分割为几个不同的层到不同的包中。不幸的是，这种编码方式会导致一系列没有组织性的代码模块，这些模块缺乏明确的规则、职责和同其他模块之间的关联。这通常被称为架构大泥球。</p>
 <p>应用程序缺乏合理的架构一般会导致程序过度耦合、容易被破坏、难以应对变化，同时很难有一个清晰的版本或者方向性。这样的结果是，如果你没有充分理解程序系统里每个组件和模块，就很难定义这个程序的结构特征。有关于程序的部署和维护的基本问题都难以回答，比如：程序架构是什么规模?应用程序有什么性能特点?应用程序有多容易应对变化?应用程序的部署特点是什么?架构是如何反应的?</p>
 <p>架构模式帮助你定义应用程序的基本特征和行为。例如，一些架构模式会让程序自己自然而然地朝着具有良好伸缩性的方向发展，而其他架构模式会让程序朝着高度灵活的方向发展。知道了这些特点，了解架构模式的优点和缺点是非常必要的，它帮助我们选择一个适合自己特定的业务需求和目标的的程序。</p>
 <p>作为一个架构师,你必须证明你的架构模式的决策是正确的,特别是当需要选择一个特定的体系结构模式或方法的时候。这本迷你书的目的就是给你足够的信息让你去做出正确的架构决策。</p>
 <h2 id="第一章-分层架构"><a href="#第一章-分层架构" class="headerlink" title="第一章 分层架构"></a>第一章 分层架构</h2><p>分层架构是一种很常见的架构模式，它也叫N层架构。这种架构是大多数Jave EE应用的实际标准，因此很多的架构师，设计师，还有程序员都知道它。许多传统IT公司的组织架构和分层模式十分的相似。所以它很自然的成为大多数应用的架构模式。</p>
 <h3 id="模式分析"><a href="#模式分析" class="headerlink" title="模式分析"></a>模式分析</h3><p>分层架构模式里的组件被分成几个平行的层次，每一层都代表了应用的一个功能(展示逻辑或者业务逻辑)。尽管分层架构没有规定自身要分成几层几种，大多数的结构都分成四个层次:展示层，业务层，持久层，和数据库层。如表1-1，有时候，业务层和持久层会合并成单独的一个业务层，尤其是持久层的逻辑绑定在业务层的组件当中。因此，有一些小的应用可能只有3层，一些有着更复杂的业务的大应用可能有5层或者更多的分层。</p>
 <p>分层架构中的每一层都着特定的角色和职能。举个例子，展示层负责处理所有的界面展示以及交互逻辑，业务层负责处理请求对应的业务。架构里的层次是具体工作的高度抽象，它们都是为了实现某种特定的业务请求。比如说展示层并不需要关心怎样得到用户数据，它只需在屏幕上以特定的格式展示信息。业务层并不关心要展示在屏幕上的用户数据格式，也不关心这些用户数据从哪里来。它只需要从持久层得到数据，执行与数据有关的相应业务逻辑，然后把这些信息传递给展示层。</p>
-<p><img src="1-1.png" alt="img"></p>
+<p><img src="1-1.png" alt="1-1"></p>
 <p>分层架构的一个突出特性是组件间关注点分离 (separation of concerns)。一个层中的组件只会处理本层的逻辑。比如说，展示层的组件只会处理展示逻辑，业务层中的组件只会去处理业务逻辑。多亏了组件分离，让我们更容易构造有效的角色和强力的模型。这样应用变的更好开发，测试，管理和维护。</p>
 <h3 id="关键概念"><a href="#关键概念" class="headerlink" title="关键概念"></a>关键概念</h3><p>注意表1-2中每一层都是封闭的。这是分层架构中非常重要的特点。这意味request必须一层一层的传递。举个例子，从展示层传递来的请求首先会传递到业务层，然后传递到持久层，最后才传递到数据层。</p>
-<p><img src="1-2.png" alt="img"></p>
+<p><img src="1-2.png" alt="1-2"></p>
 <p>那么为什么不允许展示层直接访问数据层呢。如果只是获得以及读取数据，展示层直接访问数据层，比穿过一层一层来得到数据来的快多了。这涉及到一个概念:层隔离。</p>
 <p>层隔离就是说架构中的某一层的改变不会影响到其他层:这些变化的影响范围限于当前层次。如果展示层能够直接访问持久层了，假如持久层中的SQL变化了，这对业务层和展示层都有一定的影响。这只会让应用变得紧耦合，组件之间互相依赖。这种架构会非常的难以维护。</p>
 <p>从另外一个方面来说，分层隔离使得层与层之间都是相互独立的，架构中的每一层的互相了解都很少。为了说明这个概念的牛逼之处，想象一个超级重构，把展示层从JSP换成JSF。假设展示层和业务层的之间的联系保持一致，业务层不会受到重构的影响，它和展示层所使用的界面架构完全独立。</p>
 <p>然而封闭的架构层次也有不便之处，有时候也应该开放某一层。如果想往包含了一些由业务层的组件调用的普通服务组件的架构中添加一个分享服务层。在这个例子里，新建一个服务层通常是一个好主意，因为从架构上来说，它限制了分享服务访问业务层(也不允许访问展示层)。如果没有隔离层，就没有任何架构来限制展示层访问普通服务，难以进行权限管理。</p>
 <p>在这个例子中，新的服务层是处于业务层之下的，展示层不能直接访问这个服务层中的组件。但是现在业务层还要通过服务层才能访问到持久层，这一点也不合理。这是分层架构中的老问题了，解决的办法是开放某些层。如表1-3所示，服务层现在是开放的了。请求可以绕过这一层，直接访问这一层下面的层。既然服务层是开放的，业务层可以绕过服务层，直接访问数据持久层。这样就非常合理。</p>
-<p><img src="1-3.png" alt="img"></p>
+<p><img src="1-3.png" alt="1-3"></p>
 <p>开放和封闭层的概念确定了架构层和请求流之间的关系，并且给设计师和开发人员提供了必要的信息理解架构里各种层之间的访问限制。如果随意的开放或者封闭架构里的层，整个项目可能都是紧耦合，一团糟的。以后也难以测试，维护和部署。</p>
 <h3 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h3><p>为了演示分层架构是如何工作的，想象一个场景，如表1-4，用户发出了一个请求要获得客户的信息。黑色的箭头是从数据库中获得用户数据的请求流，红色箭头显示用户数据的返回流的方向。在这个例子中，用户信息由客户数据和订单数组组成(客户下的订单)。</p>
 <p>用户界面只管接受请求以及显示客户信息。它不管怎么得到数据的，或者说得到这些数据要用到哪些数据表。如果用户界面接到了一个查询客户信息的请求，它就会转发这个请求给用户委托(Customer Delegate)模块。这个模块能找到业务层里对应的模块处理对应数据(约束关系)。业务层里的customer object聚合了业务请求需要的所有信息(在这个例子里获取客户信息)。这个模块调用持久层中的 customer dao 来得到客户信息，调用order dao来得到订单信息。这些模块会执行SQL语句，然后返回相应的数据给业务层。当 customer object收到数据以后，它就会聚合这些数据然后传递给 customer delegate,然后传递这些数据到customer screen 展示在用户面前。</p>
@@ -1350,210 +1869,10 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://liujiaboy.github.io/2021/09/15/SoftWare/coderunner/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="不会飞的小白">
-      <meta itemprop="description" content="一只iOS程序猿，会陆陆续续的把之前的一些总结搬到这里。">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="不会飞的小白">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/09/15/SoftWare/coderunner/" class="post-title-link" itemprop="url">coderunner使用问题</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2021-09-15 19:01:29" itemprop="dateCreated datePublished" datetime="2021-09-15T19:01:29+08:00">2021-09-15</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-12-24 17:13:15" itemprop="dateModified" datetime="2022-12-24T17:13:15+08:00">2022-12-24</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>CodeRunner本身是一个收费软件，功能强大，好处就不说了。在一些破解网站上可以找到破解版的，断网输入对应的激活码就能破解成功。</p>
-<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>每次重新打开，都需要重新破解。</p>
-<h2 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h2><p>猜想的是每次打开CodeRunner时都会向其主站发送消息，查看是否激活，这里就是通过直接断开链接的方式来处理。</p>
-<h3 id="step1"><a href="#step1" class="headerlink" title="step1"></a>step1</h3><p>Mac系统下打开<code>/private/etc/</code>文件，hosts是文本。</p>
-<h3 id="step2"><a href="#step2" class="headerlink" title="step2"></a>step2</h3><p>在hosts文件中，增加一行：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># CodeRunner App</span><br><span class="line">127.0.0.1 coderunnerapp.com</span><br></pre></td></tr></table></figure>
-
-<p>这样就可以验证成功了，不需要每次都重新激活。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://liujiaboy.github.io/2021/09/13/%E9%80%86%E5%90%91/nx-8-logos/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="不会飞的小白">
-      <meta itemprop="description" content="一只iOS程序猿，会陆陆续续的把之前的一些总结搬到这里。">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="不会飞的小白">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/09/13/%E9%80%86%E5%90%91/nx-8-logos/" class="post-title-link" itemprop="url">nx-8-logos</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2021-09-13 16:27:26" itemprop="dateCreated datePublished" datetime="2021-09-13T16:27:26+08:00">2021-09-13</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-12-24 17:13:15" itemprop="dateModified" datetime="2022-12-24T17:13:15+08:00">2022-12-24</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://liujiaboy.github.io/2021/09/13/%E9%80%86%E5%90%91/nx-8-lldb/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="不会飞的小白">
-      <meta itemprop="description" content="一只iOS程序猿，会陆陆续续的把之前的一些总结搬到这里。">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="不会飞的小白">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/09/13/%E9%80%86%E5%90%91/nx-8-lldb/" class="post-title-link" itemprop="url">nx-8-lldb</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2021-09-13 16:11:20" itemprop="dateCreated datePublished" datetime="2021-09-13T16:11:20+08:00">2021-09-13</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-12-24 17:13:15" itemprop="dateModified" datetime="2022-12-24T17:13:15+08:00">2022-12-24</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1621,7 +1940,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">49</span>
+          <span class="site-state-item-count">52</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
