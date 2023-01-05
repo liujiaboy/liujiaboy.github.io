@@ -2,24 +2,6 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>http://liujiaboy.github.io/baidu_verify_code-VKw4oO6kcH.html</loc>
-    
-    <lastmod>2023-01-05</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://liujiaboy.github.io/google90a27f59c648608f.html</loc>
-    
-    <lastmod>2023-01-04</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>http://liujiaboy.github.io/2023/01/04/iOS%E6%9E%B6%E6%9E%84/iOS%E6%97%A0%E5%9F%8B%E7%82%B9%E6%95%B0%E6%8D%AESDK%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1/</loc>
     
     <lastmod>2023-01-04</lastmod>
@@ -398,7 +380,7 @@
   </url>
   
   <url>
-    <loc>http://liujiaboy.github.io/2021/05/22/OC%E5%8E%9F%E7%90%86/block/</loc>
+    <loc>http://liujiaboy.github.io/2021/04/17/OC%E5%8E%9F%E7%90%86/oc-1-alloc-init-new/</loc>
     
     <lastmod>2022-12-24</lastmod>
     
@@ -407,7 +389,7 @@
   </url>
   
   <url>
-    <loc>http://liujiaboy.github.io/2021/04/17/OC%E5%8E%9F%E7%90%86/oc-1-alloc-init-new/</loc>
+    <loc>http://liujiaboy.github.io/2021/05/22/OC%E5%8E%9F%E7%90%86/block/</loc>
     
     <lastmod>2022-12-24</lastmod>
     
@@ -425,7 +407,7 @@
   </url>
   
   <url>
-    <loc>http://liujiaboy.github.io/2021/05/16/OC%E5%8E%9F%E7%90%86/GCD-3/</loc>
+    <loc>http://liujiaboy.github.io/2021/05/08/OC%E5%8E%9F%E7%90%86/KVC%E5%8E%9F%E7%90%86/</loc>
     
     <lastmod>2022-12-24</lastmod>
     
@@ -434,7 +416,7 @@
   </url>
   
   <url>
-    <loc>http://liujiaboy.github.io/2021/05/08/OC%E5%8E%9F%E7%90%86/KVC%E5%8E%9F%E7%90%86/</loc>
+    <loc>http://liujiaboy.github.io/2021/05/16/OC%E5%8E%9F%E7%90%86/GCD-3/</loc>
     
     <lastmod>2022-12-24</lastmod>
     
@@ -582,20 +564,6 @@
   </url>
   
   <url>
-    <loc>http://liujiaboy.github.io/tags/%E5%8C%85%E5%A4%A7%E5%B0%8F/</loc>
-    <lastmod>2023-01-05</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://liujiaboy.github.io/tags/coderunner/</loc>
-    <lastmod>2023-01-05</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
     <loc>http://liujiaboy.github.io/tags/%E9%80%9A%E7%9F%A5/</loc>
     <lastmod>2023-01-05</lastmod>
     <changefreq>weekly</changefreq>
@@ -610,14 +578,21 @@
   </url>
   
   <url>
-    <loc>http://liujiaboy.github.io/tags/Objective-C/</loc>
+    <loc>http://liujiaboy.github.io/tags/%E5%8C%85%E5%A4%A7%E5%B0%8F/</loc>
     <lastmod>2023-01-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>http://liujiaboy.github.io/tags/block/</loc>
+    <loc>http://liujiaboy.github.io/tags/coderunner/</loc>
+    <lastmod>2023-01-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://liujiaboy.github.io/tags/Objective-C/</loc>
     <lastmod>2023-01-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -631,28 +606,14 @@
   </url>
   
   <url>
+    <loc>http://liujiaboy.github.io/tags/block/</loc>
+    <lastmod>2023-01-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
     <loc>http://liujiaboy.github.io/tags/clang/</loc>
-    <lastmod>2023-01-05</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://liujiaboy.github.io/tags/flutter/</loc>
-    <lastmod>2023-01-05</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://liujiaboy.github.io/tags/github/</loc>
-    <lastmod>2023-01-05</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://liujiaboy.github.io/tags/DNS/</loc>
     <lastmod>2023-01-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -666,7 +627,21 @@
   </url>
   
   <url>
+    <loc>http://liujiaboy.github.io/tags/DNS/</loc>
+    <lastmod>2023-01-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
     <loc>http://liujiaboy.github.io/tags/%E5%9F%8B%E7%82%B9/</loc>
+    <lastmod>2023-01-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://liujiaboy.github.io/tags/flutter/</loc>
     <lastmod>2023-01-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -688,6 +663,13 @@
   
   <url>
     <loc>http://liujiaboy.github.io/tags/Struct/</loc>
+    <lastmod>2023-01-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://liujiaboy.github.io/tags/github/</loc>
     <lastmod>2023-01-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -773,20 +755,6 @@
   </url>
   
   <url>
-    <loc>http://liujiaboy.github.io/categories/flutter/</loc>
-    <lastmod>2023-01-05</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://liujiaboy.github.io/categories/github/</loc>
-    <lastmod>2023-01-05</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
     <loc>http://liujiaboy.github.io/categories/%E6%9E%B6%E6%9E%84/</loc>
     <lastmod>2023-01-05</lastmod>
     <changefreq>weekly</changefreq>
@@ -794,7 +762,21 @@
   </url>
   
   <url>
+    <loc>http://liujiaboy.github.io/categories/flutter/</loc>
+    <lastmod>2023-01-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
     <loc>http://liujiaboy.github.io/categories/Swift/</loc>
+    <lastmod>2023-01-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://liujiaboy.github.io/categories/github/</loc>
     <lastmod>2023-01-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
